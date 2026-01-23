@@ -1,0 +1,562 @@
+import React, { useCallback, useEffect, useRef } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useAuthStore } from '../../store/useAuthStore';
+import { useUnreadStore } from '../../store/useUnreadStore';
+import { useConnectionStore } from '../../store/useConnectionStore';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { useTasksIssued } from '../../features/tasks/tasksApi';
+import { useGlobalWebSocket } from '../../hooks/useGlobalWebSocket';
+import { useToast } from '../../design-system';
+import api from '../../api/client';
+import type { Channel } from '../../types';
+import { useTranslation } from 'react-i18next';
+import { playNotificationSound } from '../../utils/sound';
+import DocumentViewer from '../../features/board/components/DocumentViewer';
+import { useDocumentViewer } from '../../features/board/store/useDocumentViewer';
+import { sendSystemNotification } from '../../services/notificationService';
+import { SidebarNav } from './SidebarNav';
+
+const MainLayout: React.FC = () => {
+    const { t } = useTranslation();
+    const { user, token } = useAuthStore();
+    const { addToast } = useToast();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const queryClient = useQueryClient();
+    const openViewer = useDocumentViewer(state => state.open);
+    const { addUnread, syncUnreads, addDocUnread, clearDocUnread, setTasksUnread, setTasksReview } = useUnreadStore();
+    const { isConnected, isOffline } = useConnectionStore();
+
+    const getFullUrl = (path: string) => {
+        if (!path) return '';
+        if (path.startsWith('http')) return path;
+        const baseUrl = (import.meta.env.VITE_API_URL || api.defaults.baseURL || '').replace('/api', '');
+        return `${baseUrl}${path}`;
+    };
+
+    // Fetch channels to get initial unread counts
+    const { data: channels } = useQuery<Channel[]>({
+        queryKey: ['channels'],
+        queryFn: async () => {
+            const res = await api.get('/chat/channels');
+            return res.data;
+        },
+        enabled: !!token,
+    });
+
+    // Sync backend unread counts to store
+    useEffect(() => {
+        if (channels && Array.isArray(channels)) {
+            const counts: Record<number, number> = {};
+            channels.forEach(c => {
+                counts[c.id] = c.unread_count;
+            });
+            syncUnreads(counts);
+        }
+    }, [channels, syncUnreads]);
+
+    // Clear document unread when visiting the board
+    useEffect(() => {
+        if (location.pathname === '/board') {
+            clearDocUnread();
+        }
+    }, [location.pathname, clearDocUnread]);
+
+    // Fetch received tasks for badge count
+    const { data: tasks } = useQuery<unknown[]>({
+        queryKey: ['tasks', 'received'],
+        queryFn: async () => {
+            const res = await api.get('/tasks/received');
+            return res.data;
+        },
+        enabled: !!token,
+    });
+
+    // Update unread count based on active tasks
+    useEffect(() => {
+        if (Array.isArray(tasks)) {
+            // Count active tasks (IN_PROGRESS, OVERDUE)
+            const activeCount = (tasks as { status: string }[]).filter((t) =>
+                t.status === 'in_progress' || t.status === 'overdue'
+            ).length;
+            setTasksUnread(activeCount);
+        }
+    }, [tasks, setTasksUnread]);
+
+    // We need to fetch ISSUED tasks to know how many are on review
+    const { data: issuedTasks } = useTasksIssued();
+
+    useEffect(() => {
+        if (Array.isArray(issuedTasks)) {
+            const reviews = issuedTasks.filter(t => t.status === 'on_review').length;
+            setTasksReview(reviews);
+        }
+    }, [issuedTasks, setTasksReview]);
+
+    const onChannelCreated = useCallback((data: unknown) => {
+        const { channel } = data as { channel: Channel };
+        queryClient.invalidateQueries({ queryKey: ['channels'] });
+        if (channel && !channel.is_direct) {
+            addToast({
+                type: 'success',
+                title: t('chat.new_space'),
+                message: t('chat.new_space_created', { name: channel.display_name || channel.name }),
+                duration: 4000
+            });
+
+            if (user?.notify_browser) {
+                sendSystemNotification(t('chat.new_space'), {
+                    body: t('chat.new_space_created', { name: channel.display_name || channel.name }),
+                    icon: '/favicon.ico',
+                    tag: `channel-${channel.id}`,
+                });
+            }
+        }
+    }, [queryClient, addToast, user?.notify_browser, t]);
+
+    const onMessageReceived = useCallback((data: unknown) => {
+        const msgData = data as {
+            channel_id: number;
+            is_mentioned?: boolean;
+            message?: {
+                id?: number;
+                document_id?: number;
+                sender_name?: string;
+                sender_id?: number;
+                content?: string;
+                created_at?: string;
+            };
+        };
+        // Ensure channelId is a number
+        const channelId = Number(msgData.channel_id);
+        const currentChannelId = location.pathname.match(/\/chat\/(\d+)/)?.[1];
+        const currentChannelIdNum = currentChannelId ? Number(currentChannelId) : null;
+
+        // Strict comparison
+        if (!currentChannelIdNum || currentChannelIdNum !== channelId) {
+            const isSelf = msgData.message?.sender_id === user?.id;
+
+            if (!isSelf) {
+                addUnread(channelId);
+
+                const channel = Array.isArray(channels) ? channels.find(c => c.id === channelId) : undefined;
+                const isMuted = channel?.mute_until ? new Date(channel.mute_until) > new Date() : false;
+
+                if (user?.notify_sound && !isMuted) {
+                    playNotificationSound();
+                }
+
+                const shouldNotify = user?.notify_browser !== false;
+                const isDocumentShare = !!msgData.message?.document_id;
+
+                if (isDocumentShare && msgData.message?.document_id) {
+                    addDocUnread(msgData.message.document_id, channelId);
+                }
+
+                if (shouldNotify && !isDocumentShare && !isMuted) {
+                    const senderName = msgData.message?.sender_name || 'Someone';
+                    const content = msgData.message?.content || 'New message';
+                    const isMentioned = msgData.is_mentioned;
+
+                    const title = isMentioned
+                        ? t('chat.mentioned_by', { name: senderName })
+                        : senderName;
+
+                    if (isMentioned) {
+                        addToast({
+                            type: 'info',
+                            title: title,
+                            message: content,
+                            duration: 5000,
+                            onClick: () => navigate(`/chat/${channelId}`)
+                        });
+                    }
+
+                    sendSystemNotification(title, {
+                        body: content,
+                        icon: '/favicon.ico',
+                        tag: `message-${channelId}`,
+                    });
+                }
+            }
+        }
+
+        if (msgData.message) {
+            queryClient.setQueryData<Channel[]>(['channels'], (oldChannels) => {
+                if (!oldChannels) return oldChannels;
+                return oldChannels.map(ch => {
+                    if (ch.id === channelId) {
+                        return {
+                            ...ch,
+                            last_message: {
+                                id: msgData.message!.id || 0,
+                                content: (msgData.message!.content || '').slice(0, 100),
+                                sender_name: msgData.message!.sender_name || 'Unknown',
+                                created_at: msgData.message!.created_at || new Date().toISOString(),
+                            }
+                        };
+                    }
+                    return ch;
+                });
+            });
+        }
+    }, [addUnread, location.pathname, user?.notify_browser, user?.notify_sound, queryClient, addDocUnread, channels, t, navigate, addToast, user?.id]);
+
+    const onChannelDeleted = useCallback((data: unknown) => {
+        const { channel_id, deleted_by, is_direct, channel_name } = data as { channel_id: number; deleted_by: { full_name?: string; username: string } | null; is_direct: boolean; channel_name: string };
+        const currentChannelId = location.pathname.match(/\/chat\/(\d+)/)?.[1];
+        queryClient.invalidateQueries({ queryKey: ['channels'] });
+
+        const { clearUnread } = useUnreadStore.getState();
+        clearUnread(channel_id);
+
+        if (currentChannelId && parseInt(currentChannelId) === channel_id) {
+            navigate('/');
+        }
+
+        const deletedByName = deleted_by?.full_name || deleted_by?.username || t('common.unknown');
+        addToast({
+            type: 'deleted',
+            title: t('chat.chat_deleted'),
+            message: is_direct
+                ? t('chat.direct_chat_deleted_by', { name: deletedByName })
+                : t('chat.channel_deleted_by', { name: deletedByName, channel: '' }),
+            duration: 6000
+        });
+
+        if (user?.notify_browser) {
+            sendSystemNotification(t('chat.chat_deleted'), {
+                body: is_direct
+                    ? t('chat.direct_chat_deleted_by', { name: deletedByName })
+                    : t('chat.channel_deleted_by', { name: deletedByName, channel: channel_name }),
+                icon: '/favicon.ico',
+                tag: `channel-deleted-${channel_id}`,
+            });
+        }
+    }, [location.pathname, queryClient, navigate, addToast, user?.notify_browser, t]);
+
+    const onDocumentShared = useCallback((data: unknown) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const sharedData = data as any;
+        queryClient.invalidateQueries({ queryKey: ['documents', 'received'] });
+
+        const fileUrl = getFullUrl(sharedData.file_path);
+
+        addToast({
+            type: 'success',
+            title: t('common.new_document'),
+            message: t('common.document_shared_by', { owner: sharedData.owner_name, title: sharedData.title }),
+            duration: 10000,
+            onClick: () => {
+                if (fileUrl) {
+                    openViewer(fileUrl, sharedData.title);
+                }
+            }
+        });
+
+        const channelId = sharedData.channel_id;
+        const currentChannelId = location.pathname.match(/\/chat\/(\d+)/)?.[1];
+        const isViewingChannel = currentChannelId && parseInt(currentChannelId) === channelId;
+
+        if (location.pathname !== '/board' && !isViewingChannel) {
+            addDocUnread(sharedData.document_id, channelId);
+        }
+
+        const shouldNotify = user?.notify_browser !== false;
+
+        if (shouldNotify) {
+            sendSystemNotification(t('common.new_document'), {
+                body: t('common.document_shared_by', { owner: sharedData.owner_name, title: sharedData.title }),
+                icon: '/favicon.ico',
+                tag: `doc-${sharedData.id}`,
+            });
+        }
+    }, [queryClient, addToast, openViewer, user?.notify_browser, t, addDocUnread, location.pathname]);
+
+    const onUserPresence = useCallback((data: { user_id: number; status: 'online' | 'offline' }) => {
+        const delta = data.status === 'online' ? 1 : -1;
+
+        // Update channel_members cache for ALL channels using predicate
+        queryClient.getQueriesData<Array<{ id: number; is_online?: boolean; last_seen?: string }>>({ queryKey: ['channel_members'] }).forEach(([queryKey, queryData]) => {
+            if (queryData && Array.isArray(queryData)) {
+                const updated = queryData.map(m =>
+                    m.id === data.user_id
+                        ? { ...m, is_online: data.status === 'online', last_seen: data.status === 'offline' ? new Date().toISOString() : m.last_seen }
+                        : m
+                );
+                queryClient.setQueryData(queryKey, updated);
+            }
+        });
+
+        // Update channels cache for DM other_user.is_online
+        queryClient.setQueryData<Channel[]>(['channels'], (old) => {
+            if (!old) return old;
+            return old.map(c => {
+                if (c.is_direct && c.other_user?.id === data.user_id) {
+                    return {
+                        ...c,
+                        other_user: {
+                            ...c.other_user,
+                            is_online: data.status === 'online',
+                            last_seen: data.status === 'offline' ? new Date().toISOString() : c.other_user.last_seen
+                        }
+                    };
+                }
+                return c;
+            });
+        });
+
+        // Update current channel online_count directly in cache
+        queryClient.setQueriesData({ queryKey: ['channel'] }, (old: unknown) => {
+            if (!old || typeof old !== 'object') return old;
+            const channel = old as Channel;
+            // Only update if this user is a member (we'll check against channel_members)
+            const membersCache = queryClient.getQueryData<Array<{ id: number }>>(['channel_members', String(channel.id)]);
+            const isMember = membersCache?.some(m => m.id === data.user_id);
+            if (isMember) {
+                const newCount = Math.max(0, (channel.online_count || 0) + delta);
+                return { ...channel, online_count: newCount };
+            }
+            return old;
+        });
+    }, [queryClient]);
+
+    const onTaskAssigned = useCallback((data: { task_id: number; title: string; issuer_name: string }) => {
+        // Invalidate received tasks to show new task immediately
+        queryClient.invalidateQueries({ queryKey: ['tasks', 'received'] });
+
+        if (user?.notify_sound) {
+            playNotificationSound();
+        }
+
+        const title = t('layout.notification_new_task');
+        const message = t('layout.notification_new_task_message', { title: data.title, issuer_name: data.issuer_name });
+
+        addToast({
+            type: 'info',
+            title: title,
+            message: message,
+            duration: 6000,
+            onClick: () => navigate(`/tasks?tab=received&taskId=${data.task_id}`)
+        });
+
+        if (user?.notify_browser) {
+            sendSystemNotification(title, {
+                body: message,
+                icon: '/favicon.ico',
+                tag: `task-${data.task_id}`,
+            });
+        }
+    }, [queryClient, user?.notify_sound, user?.notify_browser, t, addToast, navigate]);
+
+    const onTaskReturned = useCallback((data: { task_id: number; title: string; sender_name: string }) => {
+        queryClient.invalidateQueries({ queryKey: ['tasks', 'received'] });
+
+        if (user?.notify_sound) playNotificationSound();
+
+        const title = t('layout.notification_task_returned');
+        const message = t('layout.notification_task_returned_message', { title: data.title, sender_name: data.sender_name });
+
+        addToast({
+            type: 'warning',
+            title: title,
+            message: message,
+            duration: 6000,
+            onClick: () => navigate(`/tasks?tab=received&taskId=${data.task_id}`)
+        });
+
+        if (user?.notify_browser) {
+            sendSystemNotification(title, {
+                body: message,
+                icon: '/favicon.ico',
+                tag: `task-returned-${data.task_id}`,
+            });
+        }
+    }, [queryClient, user?.notify_sound, user?.notify_browser, t, addToast, navigate]);
+
+    const onTaskSubmitted = useCallback((data: { task_id: number; title: string; sender_name: string }) => {
+        // Invalidate issues tasks for issuer
+        queryClient.invalidateQueries({ queryKey: ['tasks', 'issued'] });
+
+        if (user?.notify_sound) playNotificationSound();
+
+        const title = t('layout.notification_task_report');
+        const message = t('layout.notification_task_report_message', { title: data.title, sender_name: data.sender_name });
+
+        addToast({
+            type: 'success',
+            title: title,
+            message: message,
+            duration: 6000,
+            onClick: () => navigate(`/tasks?tab=issued&taskId=${data.task_id}`)
+        });
+
+        if (user?.notify_browser) {
+            sendSystemNotification(title, {
+                body: message,
+                icon: '/favicon.ico',
+                tag: `task-submitted-${data.task_id}`,
+            });
+        }
+    }, [queryClient, user?.notify_sound, user?.notify_browser, t, addToast, navigate]);
+
+    const onTaskConfirmed = useCallback((data: { task_id: number; title: string; sender_name: string }) => {
+        // Invalidate received tasks for assignee
+        queryClient.invalidateQueries({ queryKey: ['tasks', 'received'] });
+
+        if (user?.notify_sound) playNotificationSound();
+
+        const title = t('layout.notification_task_confirmed');
+        const message = t('layout.notification_task_confirmed_message', { title: data.title, sender_name: data.sender_name });
+
+        addToast({
+            type: 'success',
+            title: title,
+            message: message,
+            duration: 6000,
+            onClick: () => navigate(`/tasks?tab=completed&taskId=${data.task_id}`)
+        });
+
+        if (user?.notify_browser) {
+            sendSystemNotification(title, {
+                body: message,
+                icon: '/favicon.ico',
+                tag: `task-confirmed-${data.task_id}`,
+            });
+        }
+    }, [queryClient, user?.notify_sound, user?.notify_browser, t, addToast, navigate]);
+
+    const onMessageUpdated = useCallback((data: unknown) => {
+        const msgData = data as {
+            id: number;
+            channel_id: number;
+            content: string;
+            updated_at: string;
+        };
+
+        queryClient.setQueryData<Channel[]>(['channels'], (oldChannels) => {
+            if (!oldChannels) return oldChannels;
+            return oldChannels.map(ch => {
+                if (ch.id === msgData.channel_id && ch.last_message?.id === msgData.id) {
+                    return {
+                        ...ch,
+                        last_message: {
+                            ...ch.last_message,
+                            content: (msgData.content || '').slice(0, 100),
+                        }
+                    };
+                }
+                return ch;
+            });
+        });
+    }, [queryClient]);
+
+    useGlobalWebSocket(token, {
+        onChannelCreated,
+        onMessageReceived,
+        onMessageUpdated,
+        onChannelDeleted,
+        onDocumentShared,
+        onUserPresence,
+        onTaskAssigned,
+        onTaskReturned,
+        onTaskSubmitted,
+        onTaskConfirmed
+    });
+
+    useEffect(() => {
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }, []);
+
+    // Connection status notifications
+    const wasOfflineRef = useRef(isOffline);
+    const wasConnectedRef = useRef(isConnected);
+
+    useEffect(() => {
+        if (isOffline && !wasOfflineRef.current) {
+            addToast({
+                type: 'error',
+                title: t('layout.toast_offline_title'),
+                message: t('layout.toast_offline_message'),
+                duration: 5000
+            });
+        } else if (!isOffline && wasOfflineRef.current) {
+            addToast({
+                type: 'success',
+                title: t('layout.toast_online_title'),
+                message: t('layout.toast_online_message'),
+                duration: 3000
+            });
+        }
+        wasOfflineRef.current = isOffline;
+    }, [isOffline, addToast, t]);
+
+    useEffect(() => {
+        if (!isOffline) {
+            if (!isConnected && wasConnectedRef.current) {
+                addToast({
+                    type: 'warning',
+                    title: t('layout.toast_reconnecting_title'),
+                    message: t('layout.toast_reconnecting_message'),
+                    duration: 4000
+                });
+            } else if (isConnected && !wasConnectedRef.current) {
+                addToast({
+                    type: 'success',
+                    title: t('layout.toast_connected_title'),
+                    message: t('layout.toast_connected_message'),
+                    duration: 3000
+                });
+            }
+        }
+        wasConnectedRef.current = isConnected;
+    }, [isConnected, isOffline, addToast, t]);
+
+    // Fetch public system settings (for system notice)
+    const { data: systemSettings } = useQuery<Record<string, string>>({
+        queryKey: ['public-settings'],
+        queryFn: async () => (await api.get('/admin/public-settings')).data,
+        enabled: !!token,
+        staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    });
+
+    const systemNotice = systemSettings?.system_notice;
+
+    return (
+        <div className="flex h-screen overflow-hidden bg-teams-bg">
+            {/* Connectivity Banner */}
+            {isOffline ? (
+                <div className="fixed top-0 inset-x-0 bg-amber-500 text-white px-4 py-1.5 text-center text-xs font-black tracking-[0.15em] uppercase shadow-lg border-b border-white/10 z-[101] animate-in slide-in-from-top-full duration-500 flex items-center justify-center gap-3">
+                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                    <span>{t('layout.banner_offline')}</span>
+                </div>
+            ) : !isConnected ? (
+                <div className="fixed top-0 inset-x-0 bg-indigo-600 text-white px-4 py-1.5 text-center text-xs font-black tracking-[0.15em] uppercase shadow-lg border-b border-white/10 z-[101] animate-in slide-in-from-top-full duration-500 flex items-center justify-center gap-3">
+                    <div className="w-2 h-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>{t('layout.banner_connecting')}</span>
+                </div>
+            ) : null}
+
+            {/* System Notice Banner */}
+            {systemNotice && (
+                <div className="fixed top-0 inset-x-0 bg-gradient-to-r from-red-500/90 to-rose-600/90 backdrop-blur-md text-white px-4 py-1.5 text-center text-xs font-bold tracking-wide shadow-lg border-b border-white/10 z-[100] animate-in slide-in-from-top-full duration-500 whitespace-nowrap overflow-hidden text-ellipsis">
+                    {systemNotice}
+                </div>
+            )}
+
+            <SidebarNav />
+
+            <div className="flex-1 flex min-w-0 flex-col md:ml-[68px]">
+                <main className="flex-1 relative h-full">
+                    <Outlet />
+                </main>
+            </div>
+
+            <DocumentViewer />
+        </div>
+    );
+};
+
+export default MainLayout;

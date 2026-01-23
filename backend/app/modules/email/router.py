@@ -1,0 +1,280 @@
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, UploadFile, File, Form
+from fastapi.responses import FileResponse
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List, Optional
+import os
+import mimetypes
+
+from app.core.database import get_db
+from app.modules.auth.models import User
+from app.modules.auth.router import get_current_user
+from app.modules.email import service
+from app.modules.email import schemas
+from app.core.file_security import safe_file_path
+from app.core.config import get_settings
+
+settings = get_settings()
+router = APIRouter(prefix="/email", tags=["Email"])
+
+UPLOAD_DIR = "uploads/email_attachments"
+
+@router.get("/account", response_model=schemas.EmailAccount)
+async def get_my_account(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    account = await service.get_user_email_account(db, current_user.id)
+    if not account:
+        # Auto-create for now if doesn't exist? Or return 404?
+        # Let's auto-create <username>@coordinator.local
+        email_address = f"{current_user.username}@coordinator.local"
+        account = await service.create_email_account(db, current_user.id, email_address)
+    return account
+
+@router.get("/messages", response_model=List[schemas.EmailMessageList])
+async def list_messages(
+    folder: str = Query("inbox", enum=["inbox", "sent", "trash", "archive", "starred", "important"]),
+    skip: int = 0,
+    limit: int = 50,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    account = await service.get_user_email_account(db, current_user.id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Email account not set up")
+    
+    return await service.get_emails(db, account.id, folder, skip, limit)
+
+@router.get("/messages/{message_id}", response_model=schemas.EmailMessage)
+async def get_message(
+    message_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    account = await service.get_user_email_account(db, current_user.id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Email account not set up")
+        
+    message = await service.get_email_by_id(db, message_id, account.id)
+    if not message:
+        raise HTTPException(status_code=404, detail="Message not found")
+        
+    # Mark as read if not sent by us
+    if not message.is_read:
+        message.is_read = True
+        await db.commit()
+    
+    return message
+
+@router.post("/send", response_model=schemas.EmailMessage)
+async def send_email(
+    to_address: str = Form(...),
+    subject: str = Form(...),
+    body_text: Optional[str] = Form(None),
+    body_html: Optional[str] = Form(None),
+    cc_address: Optional[str] = Form(None),
+    bcc_address: Optional[str] = Form(None),
+    is_important: bool = Form(False),
+    attachments: Optional[List[UploadFile]] = File(None),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    account = await service.get_user_email_account(db, current_user.id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Email account not set up")
+
+    files_data = []
+    if attachments:
+        for file in attachments:
+            file_content = await file.read()
+            files_data.append((file.filename, file_content, file.content_type))
+
+    email_data = schemas.EmailMessageCreate(
+        to_address=to_address,
+        subject=subject,
+        body_text=body_text,
+        body_html=body_html,
+        cc_address=cc_address,
+        bcc_address=bcc_address,
+        is_important=is_important
+    )
+
+    return await service.send_email(db, account.id, email_data, files_data)
+
+@router.patch("/messages/{message_id}", response_model=schemas.EmailMessage)
+async def update_message(
+    message_id: int,
+    updates: schemas.EmailMessageUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    account = await service.get_user_email_account(db, current_user.id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Email account not set up")
+    
+    updated = await service.update_email_message(db, message_id, account.id, updates)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Message not found")
+    return updated
+
+@router.delete("/messages/{message_id}")
+async def delete_message(
+    message_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    account = await service.get_user_email_account(db, current_user.id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Email account not set up")
+    
+    await service.delete_email_message(db, message_id, account.id)
+    return {"status": "success"}
+
+@router.get("/messages/{message_id}/print")
+async def print_message(
+    message_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    account = await service.get_user_email_account(db, current_user.id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Email account not set up")
+        
+    message = await service.get_email_by_id(db, message_id, account.id)
+    if not message:
+        raise HTTPException(status_code=404, detail="Message not found")
+        
+    from fastapi.responses import HTMLResponse
+    content = f"<h1>{message.subject}</h1><p>From: {message.from_address}</p><p>To: {message.to_address}</p><hr/><div>{message.body_html or message.body_text}</div>"
+    return HTMLResponse(content=content)
+
+# --- Folders ---
+
+@router.get("/folders", response_model=List[schemas.EmailFolder])
+async def list_folders(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    account = await service.get_user_email_account(db, current_user.id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Email account not set up")
+    return await service.get_folders(db, account.id)
+
+
+@router.get("/stats", response_model=schemas.EmailStats)
+async def get_stats(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    account = await service.get_user_email_account(db, current_user.id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Email account not set up")
+    return await service.get_email_stats(db, account.id)
+
+
+@router.get("/unread-count", response_model=schemas.UnreadCount)
+async def get_unread_count(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    account = await service.get_user_email_account(db, current_user.id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Email account not set up")
+    return await service.get_unread_count(db, account.id)
+
+
+@router.post("/mark-all-read")
+async def mark_all_as_read(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    account = await service.get_user_email_account(db, current_user.id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Email account not set up")
+    
+    await service.mark_all_as_read(db, account.id)
+    return {"status": "success"}
+
+@router.post("/folders", response_model=schemas.EmailFolder)
+async def create_folder(
+    folder_data: schemas.EmailFolderCreate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    account = await service.get_user_email_account(db, current_user.id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Email account not set up")
+    return await service.create_folder(db, account.id, folder_data)
+
+@router.patch("/folders/{folder_id}", response_model=schemas.EmailFolder)
+async def rename_folder(
+    folder_id: int,
+    folder_data: schemas.EmailFolderUpdate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    account = await service.get_user_email_account(db, current_user.id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Email account not set up")
+    updated = await service.rename_folder(db, folder_id, account.id, folder_data.name)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Folder not found or cannot be renamed")
+    return updated
+
+@router.delete("/folders/{folder_id}")
+async def delete_folder(
+    folder_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    account = await service.get_user_email_account(db, current_user.id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Email account not set up")
+    await service.delete_folder(db, folder_id, account.id)
+    return {"status": "success"}
+
+@router.post("/folders/empty")
+async def empty_folder(
+    folder_type: str = Query(..., enum=["trash", "spam"]),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    account = await service.get_user_email_account(db, current_user.id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Email account not set up")
+    await service.empty_folder(db, account.id, folder_type)
+    return {"status": "success"}
+
+@router.get("/attachments/{attachment_id}/download")
+async def download_email_attachment(
+    attachment_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Securely download email attachment if authorized"""
+    attachment = await service.get_email_attachment(db, attachment_id, current_user.id)
+    if not attachment:
+        raise HTTPException(status_code=404, detail="Attachment not found or not authorized")
+    
+    # Secure path validation - prevents path traversal
+    try:
+        safe_path = safe_file_path(attachment.file_path, UPLOAD_DIR)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=403, detail="Invalid file path")
+    
+    if not os.path.exists(safe_path):
+        raise HTTPException(status_code=404, detail="File not found on disk")
+    
+    # Determine filename and media type
+    mime_type, _ = mimetypes.guess_type(safe_path)
+    if not mime_type:
+        mime_type = "application/octet-stream"
+    
+    # Use attachment filename for download
+    return FileResponse(
+        path=safe_path,
+        media_type=mime_type,
+        filename=attachment.filename
+    )
