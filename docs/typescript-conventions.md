@@ -41,6 +41,8 @@ npm run electron:build
 - Use `React.FC<Props>` for functional components
 - Prefer `interface` over `type` for object shapes
 - Use `type` for unions, primitives, and utility types
+- Avoid `any` - use `unknown` for truly dynamic types
+- Use `null` for missing values (not `undefined` for JSON API responses)
 
 **React Patterns**:
 - Use functional components with hooks
@@ -48,6 +50,7 @@ npm run electron:build
 - Use custom hooks for reusable logic
 - Use `useMemo`/`useCallback` for expensive computations
 - Key lists properly with stable identifiers
+- Use `React.forwardRef` when exposing refs from child components
 
 **State Management**:
 - Use Zustand for global state

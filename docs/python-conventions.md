@@ -11,7 +11,13 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --host 0.0.0.0 --port 5100
 
 # Testing
+# Run all tests
+python -m pytest tests/ -v
+# Run single test file
 python -m pytest tests/test_module.py -v
+# Run specific test function
+python -m pytest tests/test_module.py::test_function_name -v
+# With coverage
 python -m pytest --cov=app tests/
 
 # Database
@@ -57,4 +63,4 @@ black app/ tests/
 - Use SQLAlchemy 2.0 async models with `Mapped` syntax
 - Define relationships using `relationship()`
 - Add indexes on frequently queried fields
-- Use `datetime.utcnow` for timestamps
+- Use `datetime.now(timezone.utc)` for timestamps (timezone-aware)

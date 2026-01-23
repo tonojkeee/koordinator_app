@@ -1,5 +1,48 @@
 # Common Patterns
 
+## Advanced React Patterns
+
+**ForwardRef with Custom Components**:
+```typescript
+interface MessageInputHandle {
+  handleMention: (username: string) => void;
+  openForReaction: (msgId: number) => void;
+}
+
+interface MessageInputProps {
+  // ... props
+}
+
+const MessageInput = React.forwardRef<MessageInputHandle, MessageInputProps>(
+  (props, ref) => {
+    const [inputValue, setInputValue] = useState('');
+
+    // Expose methods to parent via imperative handle
+    React.useImperativeHandle(ref, () => ({
+      handleMention: (username: string) => {
+        setInputValue(prev => prev + '@' + username + ' ');
+      },
+      openForReaction: (msgId: number) => {
+        // Open emoji picker for this message
+      }
+    }));
+
+    return <input value={inputValue} onChange={e => setInputValue(e.target.value)} />;
+  }
+);
+
+// Usage in parent
+const ParentComponent = () => {
+  const messageInputRef = useRef<MessageInputHandle>(null);
+
+  const handleMentionClick = (username: string) => {
+    messageInputRef.current?.handleMention(username);
+  };
+
+  return <MessageInput ref={messageInputRef} />;
+};
+```
+
 ## API Calls (Frontend)
 
 **TanStack Query Pattern**:
@@ -18,6 +61,45 @@ const mutation = useMutation({
   },
   onError: (error) => {
     showToast({ message: "Failed to create user", type: "error" });
+  }
+});
+
+// With optimistic updates
+const updateMutation = useMutation({
+  mutationFn: async ({ id, content }: { id: number; content: string }) => {
+    const res = await api.put(`/messages/${id}`, { content });
+    return res.data;
+  },
+  onMutate: async ({ id, content }) => {
+    // Cancel any outgoing refetches
+    await queryClient.cancelQueries({ queryKey: ['messages'] });
+
+    // Snapshot the previous value
+    const previousMessages = queryClient.getQueryData(['messages']);
+
+    // Optimistically update to the new value
+    queryClient.setQueryData(['messages'], (old) => {
+      if (!old) return old;
+      return {
+        ...old,
+        pages: old.pages.map((page: Message[]) =>
+          page.map(m =>
+            m.id === id ? { ...m, content } : m
+          )
+        ),
+      };
+    });
+
+    // Return context with our snapshotted value
+    return { previousMessages };
+  },
+  onError: (err, variables, context) => {
+    // If the mutation fails, use the context returned from onMutate
+    queryClient.setQueryData(['messages'], context?.previousMessages);
+  },
+  onSettled: () => {
+    // Always refetch after error or success to ensure data is consistent
+    queryClient.invalidateQueries({ queryKey: ['messages'] });
   }
 });
 ```
@@ -88,18 +170,58 @@ const useWebSocket = (url: string) => {
 
   useEffect(() => {
     const ws = new WebSocket(url);
-    
+
     ws.onopen = () => setIsConnected(true);
     ws.onclose = () => setIsConnected(false);
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       // Handle message
     };
-    
+
     setSocket(ws);
     return () => ws.close();
   }, [url]);
 
   return { socket, isConnected };
+};
+```
+
+**Message Type Discriminator**:
+```typescript
+type WebSocketMessage =
+  | { type: 'new_message' } & Message
+  | { type: 'reaction_added'; message_id: number; reaction: Reaction }
+  | { type: 'user_presence'; user_id: number; status: 'online' | 'offline' };
+
+const handleMessage = (data: WebSocketMessage) => {
+  if (data.type === 'new_message') {
+    // Handle message
+  } else if (data.type === 'reaction_added') {
+    // Handle reaction
+  }
+  // TypeScript will infer proper types for each branch
+};
+```
+
+**Infinite Query (Pagination)**:
+```typescript
+const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
+  queryKey: ['messages', channelId],
+  queryFn: async ({ pageParam = 0 }) => {
+    const offset = pageParam * 50;
+    const res = await api.get(`/chat/channels/${channelId}/messages?limit=50&offset=${offset}`);
+    return res.data;
+  },
+  getNextPageParam: (lastPage, allPages) => {
+    return lastPage.length === 50 ? allPages.length : undefined;
+  },
+  initialPageParam: 0,
+});
+
+const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  const container = e.currentTarget;
+  if (container.scrollTop < 50 && hasNextPage && !isFetchingNextPage) {
+    fetchNextPage();
+  }
 };
 ```
