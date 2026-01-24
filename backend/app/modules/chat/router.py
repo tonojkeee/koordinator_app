@@ -31,6 +31,16 @@ from app.modules.chat.schemas import (
     MessageParentInfo
 )
 from app.modules.chat.service import ChatService
+from app.modules.chat.invitation_service import InvitationService
+from app.modules.chat.invitations import (
+    ChannelInvitationCreate,
+    ChannelInvitationResponse,
+    ChannelInvitationList,
+    InvitationAccept,
+    InvitationDecline,
+    PendingInvitations,
+    ChannelWithInvitations
+)
 from app.core.config_service import ConfigService
 from app.modules.admin.service import SystemSettingService
 from app.modules.chat.models import ChannelMember, Channel, Message, MessageReaction
@@ -1203,3 +1213,106 @@ async def export_chat_history(
         media_type="text/plain",
         headers={"Content-Disposition": f"attachment; filename=chat_{channel_id}_export.txt"}
     )
+
+
+# ===== INVITATION ENDPOINTS =====
+
+@router.post("/invitations", response_model=ChannelInvitationResponse, status_code=status.HTTP_201_CREATED)
+async def create_invitation(
+    invitation_data: ChannelInvitationCreate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Create a new channel invitation (admin only)"""
+    return await InvitationService.create_invitation(db, invitation_data, current_user.id)
+
+
+@router.post("/invitations/accept", response_model=ChannelResponse)
+async def accept_invitation(
+    accept_data: InvitationAccept,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Accept a channel invitation"""
+    channel = await InvitationService.accept_invitation(db, accept_data.invitation_id, current_user.id)
+    
+    # Enrich channel response
+    enriched_channel = await enrich_channel(db, channel, current_user.id)
+    
+    # Broadcast to channel that user joined
+    await manager.broadcast_to_channel(channel.id, {
+        "type": "member_joined",
+        "channel_id": channel.id,
+        "user": {
+            "id": current_user.id,
+            "username": current_user.username,
+            "full_name": current_user.full_name,
+            "avatar_url": current_user.avatar_url,
+            "rank": current_user.rank,
+            "is_online": True
+        },
+        "channel_owner_id": channel.created_by
+    })
+    
+    return enriched_channel
+
+
+@router.post("/invitations/decline")
+async def decline_invitation(
+    decline_data: InvitationDecline,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Decline a channel invitation"""
+    await InvitationService.decline_invitation(
+        db, 
+        decline_data.invitation_id, 
+        current_user.id, 
+        decline_data.reason
+    )
+    return {"status": "success"}
+
+
+@router.get("/invitations/pending", response_model=PendingInvitations)
+async def get_pending_invitations(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get all pending invitations for current user"""
+    return await InvitationService.get_pending_invitations(db, current_user.id)
+
+
+@router.get("/channels/{channel_id}/invitations", response_model=ChannelInvitationList)
+async def get_channel_invitations(
+    channel_id: int,
+    include_expired: bool = Query(False, description="Include expired invitations"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get all invitations for a channel (admin only)"""
+    return await InvitationService.get_channel_invitations(
+        db, 
+        channel_id, 
+        current_user.id, 
+        include_expired
+    )
+
+
+@router.delete("/invitations/{invitation_id}")
+async def cancel_invitation(
+    invitation_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Cancel a pending invitation (admin only)"""
+    await InvitationService.cancel_invitation(db, invitation_id, current_user.id)
+    return {"status": "success"}
+
+
+@router.get("/channels/with-invitations", response_model=List[ChannelWithInvitations])
+async def get_channels_with_invitations(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get all channels where user has pending invitations or can invite others"""
+    return await InvitationService.get_channels_with_invitations(db, current_user.id)

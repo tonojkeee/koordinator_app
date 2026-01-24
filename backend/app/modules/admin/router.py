@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
@@ -10,7 +10,8 @@ from app.modules.admin.service import AdminService, SystemSettingService
 from app.modules.admin.schemas import (
     OverviewStats, ActivityStat, StorageStat, 
     UnitStat, TopUserStat, ActivityLogEvent, AuditLogResponse,
-    SystemHealth, TaskUnitStat, SystemSettingResponse, SystemSettingUpdate
+    SystemHealth, TaskUnitStat, SystemSettingResponse, SystemSettingUpdate,
+    EmailSettingsResponse, EmailSettingsUpdate, EmailAccountRecreateResponse
 )
 from app.modules.tasks.schemas import TaskResponse
 
@@ -223,3 +224,32 @@ async def save_database_config(
         raise HTTPException(status_code=500, detail=error_msg)
          
     return {"status": "success", "message": "Configuration saved. Restart required."}
+
+
+# Email Settings Endpoints
+@router.get("/email/settings", response_model=EmailSettingsResponse)
+async def get_email_settings(
+    db: AsyncSession = Depends(get_db),
+    _ = Depends(get_admin_user)
+):
+    """Get current email configuration and statistics"""
+    return await AdminService.get_email_settings(db)
+
+
+@router.patch("/email/settings", response_model=EmailSettingsResponse)
+async def update_email_settings(
+    settings_data: EmailSettingsUpdate,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_admin_user)
+):
+    """Update email domain configuration"""
+    return await AdminService.update_email_settings(db, settings_data, admin.id)
+
+
+@router.post("/email/recreate-accounts", response_model=EmailAccountRecreateResponse)
+async def recreate_email_accounts(
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_admin_user)
+):
+    """Recreate all email accounts with the current domain setting"""
+    return await AdminService.recreate_email_accounts(db, admin.id)

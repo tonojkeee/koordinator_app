@@ -21,6 +21,7 @@ export interface User {
     unit_name: string | null;
     unit?: Unit | null;
     avatar_url: string | null;
+    timezone: string;
     notify_browser: boolean;
     notify_sound: boolean;
     notify_email: boolean;
@@ -57,6 +58,7 @@ export interface Channel {
     id: number;
     name: string;
     display_name?: string;
+    visibility?: 'public' | 'private';
     other_user?: {
         id: number;
         username: string;

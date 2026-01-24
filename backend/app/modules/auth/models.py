@@ -21,6 +21,7 @@ class User(Base):
     position: Mapped[str] = mapped_column(String(100), nullable=True)
     birth_date: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     avatar_url: Mapped[str] = mapped_column(String(255), nullable=True)
+    timezone: Mapped[str] = mapped_column(String(50), default="UTC", nullable=False)
     notify_browser: Mapped[bool] = mapped_column(default=True, nullable=False)
     notify_sound: Mapped[bool] = mapped_column(default=True, nullable=False)
     notify_email: Mapped[bool] = mapped_column(default=False, nullable=False)

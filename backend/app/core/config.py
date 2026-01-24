@@ -66,7 +66,7 @@ class Settings(BaseSettings):
     # Seeding / Initial Setup
     seed_test_data: bool = os.getenv("SEED_TEST_DATA", "false").lower() == "true"
     admin_username: str = os.getenv("ADMIN_USERNAME", "admin")
-    admin_email: str = os.getenv("ADMIN_EMAIL", "admin@sentinel.com")
+    admin_email: str = os.getenv("ADMIN_EMAIL", f"admin@{os.getenv('INTERNAL_EMAIL_DOMAIN', '40919.com')}")
     admin_password: str = os.getenv("ADMIN_PASSWORD", "admin")  # Default, should be changed
     
     def __init__(self, **kwargs) -> None:

@@ -42,9 +42,11 @@ async def enrich_channel(db: AsyncSession, channel: Channel, current_user_id: in
         resp.is_member = True
         resp.last_read_message_id = member.last_read_message_id
         resp.unread_count = await ChatService.get_unread_count(db, channel.id, current_user_id)
+        resp.user_role = member.role
     else:
         resp.is_member = False
         resp.unread_count = 0
+        resp.user_role = None
 
     # Get max last_read_message_id from others
     others_read_stmt = select(func.max(ChannelMember.last_read_message_id)).where(
@@ -118,6 +120,9 @@ async def enrich_last_message(
             sender_name=sender.full_name or sender.username if sender else "Unknown",
             created_at=last_msg.created_at
         )
+    else:
+        # Explicitly set to None if no message found
+        resp.last_message = None
     
     return resp
 

@@ -61,7 +61,9 @@
         "unavailable": "Недоступно",
         "enabled": "Включено",
         "disabled": "Выключено",
-        "kb": "КБ"
+        "kb": "КБ",
+        "clear": "Очистить",
+        "info": "Информация"
     },
     "auth": {
         "signInTitle": "Вход в ГИС «КООРДИНАТОР»",
@@ -127,6 +129,7 @@
         "deleteChat": "Удалить чат",
         "deleteConfirm": "Вы уверены, что хотите удалить этот чат? Все сообщения будут удалены навсегда.",
         "publicSpace": "Общее пространство",
+        "privateSpace": "Приватное пространство",
         "newChannelLabel": "Новый канал",
         "join_channel": "Подключиться к каналу",
         "leave_channel": "Покинуть канал",
@@ -212,11 +215,34 @@
             "noEligibleMembers": "Нет подходящих участников для передачи прав.",
             "confirmButton": "Передать права",
             "buttonTitle": "Передать владение",
+            "success": "Права владельца успешно переданы",
+            "error": "Ошибка при передаче прав владельца",
             "notification": {
                 "youAreNewOwner": "Вы стали новым владельцем канала!",
                 "youLostOwnership": "Вы больше не являетесь владельцем этого канала.",
                 "changed": "Права владельца переданы от {{oldOwner}} к {{newOwner}}"
             }
+        },
+        "invite_to_channel": "Пригласить в канал",
+        "search_users": "Поиск пользователей",
+        "select_users": "Выберите пользователей",
+        "invite_message": "Сообщение приглашения",
+        "invite_message_placeholder": "Добавьте сообщение к приглашению...",
+        "selected_users": "Выбранные пользователи",
+        "send_invitation": "Отправить приглашение",
+        "create_public_channel": "Создать публичный канал",
+        "create_private_channel": "Создать приватный канал",
+        "channel_name": "Название канала",
+        "channel_visibility": "Видимость канала",
+        "public_channel": "Публичный канал",
+        "private_channel": "Приватный канал",
+        "public_channel_description": "Доступен всем участникам",
+        "private_channel_description": "Только по приглашениям",
+        "private_channel_tooltip": "Приватный канал",
+        "leaveChannel": {
+            "confirm": "Вы уверены, что хотите покинуть канал?",
+            "error": "Ошибка при выходе из канала",
+            "ownerWarning": "Вы владелец канала. Сначала передайте права другому участнику."
         }
     },
     "sidebar": {

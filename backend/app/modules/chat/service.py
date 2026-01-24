@@ -18,6 +18,7 @@ class ChatService:
             name=channel_data.name,
             description=channel_data.description,
             is_direct=channel_data.is_direct,
+            visibility=channel_data.visibility,
             created_by=user_id
         )
         
@@ -79,6 +80,7 @@ class ChatService:
     async def get_user_channels(db: AsyncSession, user_id: int) -> List[Channel]:
         """Get all channels for a user:
         - All public channels (visible to everyone)
+        - Private channels where user is a member
         - DM channels where user is a member AND there is at least one message
         """
         from sqlalchemy import or_, exists
@@ -91,7 +93,15 @@ class ChatService:
             .outerjoin(ChannelMember, and_(ChannelMember.channel_id == Channel.id, ChannelMember.user_id == user_id))
             .where(
                 or_(
-                    Channel.is_direct == False,  # All public channels
+                    # Public channels (not DM and visibility=public)
+                    and_(Channel.is_direct == False, Channel.visibility == 'public'),
+                    # Private channels where user is a member
+                    and_(
+                        Channel.is_direct == False,
+                        Channel.visibility == 'private',
+                        ChannelMember.user_id == user_id
+                    ),
+                    # DM channels where user is a member AND there is at least one message
                     and_(
                         Channel.is_direct == True,
                         ChannelMember.user_id == user_id,

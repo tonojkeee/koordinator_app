@@ -556,3 +556,90 @@ class AdminService:
         )
         result = await db.execute(stmt)
         return result.scalars().all()
+
+    @staticmethod
+    async def get_email_settings(db: AsyncSession):
+        """Get current email configuration and statistics"""
+        from app.modules.email.models import EmailAccount, EmailMessage
+        from app.core.config_service import ConfigService
+        
+        # Get current settings
+        internal_domain = await ConfigService.get_value(db, "internal_email_domain", "40919.com")
+        smtp_host = await ConfigService.get_value(db, "email_smtp_host", "127.0.0.1")
+        smtp_port = await ConfigService.get_value(db, "email_smtp_port", "2525")
+        
+        # Get statistics
+        total_accounts = await db.scalar(select(func.count(EmailAccount.id)))
+        total_messages = await db.scalar(select(func.count(EmailMessage.id)))
+        
+        return {
+            "internal_email_domain": internal_domain,
+            "smtp_host": smtp_host,
+            "smtp_port": int(smtp_port),
+            "total_accounts": total_accounts or 0,
+            "total_messages": total_messages or 0
+        }
+
+    @staticmethod
+    async def update_email_settings(db: AsyncSession, settings_data, admin_id: int):
+        """Update email domain configuration"""
+        from app.core.config_service import ConfigService
+        from app.modules.email.models import EmailAccount, EmailMessage
+        
+        # Update the internal email domain setting
+        await SystemSettingService.set_value(
+            db, "internal_email_domain", settings_data.internal_email_domain, admin_id
+        )
+        
+        # Create audit log
+        await AdminService.create_audit_log(
+            db, admin_id, "update_email_domain", "system_setting", 
+            "internal_email_domain", 
+            f"Changed email domain to '{settings_data.internal_email_domain}'"
+        )
+        
+        # Return updated settings
+        return await AdminService.get_email_settings(db)
+
+    @staticmethod
+    async def recreate_email_accounts(db: AsyncSession, admin_id: int):
+        """Recreate all email accounts with the current domain setting"""
+        from app.modules.email.models import EmailAccount
+        from app.core.config_service import ConfigService
+        
+        # Get current domain setting
+        new_domain = await ConfigService.get_value(db, "internal_email_domain", "40919.com")
+        
+        # Get all email accounts with their users
+        stmt = (
+            select(EmailAccount, User.username)
+            .join(User, EmailAccount.user_id == User.id)
+        )
+        result = await db.execute(stmt)
+        accounts_data = result.all()
+        
+        updated_count = 0
+        
+        for account, username in accounts_data:
+            # Generate new email address with current domain
+            new_email = f"{username}@{new_domain}"
+            
+            # Only update if different
+            if account.email_address != new_email:
+                old_email = account.email_address
+                account.email_address = new_email
+                updated_count += 1
+                
+                # Log the change
+                await AdminService.create_audit_log(
+                    db, admin_id, "update_email_account", "email_account", 
+                    str(account.id), 
+                    f"Updated email from '{old_email}' to '{new_email}'"
+                )
+        
+        await db.commit()
+        
+        return {
+            "updated_accounts": updated_count,
+            "message": f"Successfully updated {updated_count} email accounts to use domain '{new_domain}'"
+        }

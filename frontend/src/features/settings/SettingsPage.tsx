@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
-import { User, Bell, Lock, Eye, Shield, Briefcase, Calendar, Server, Settings as SettingsIcon } from 'lucide-react';
+import { User, Bell, Lock, Eye, Shield, Briefcase, Calendar, Server, Settings as SettingsIcon, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
 import api from '../../api/client';
@@ -9,12 +9,33 @@ import { useToast } from '../../design-system';
 
 import { Avatar } from '../../design-system';
 import { Header, Modal, Input, Button } from '../../design-system';
+import { COMMON_TIMEZONES } from '../../utils/timezone';
 
 const SettingsPage: React.FC = () => {
     const { t } = useTranslation();
     const { user, updateUser } = useAuthStore();
     const { addToast } = useToast();
     const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const [availableTimezones, setAvailableTimezones] = React.useState<string[]>([]);
+    const [timezonesLoading, setTimezonesLoading] = React.useState(false);
+
+    // Fetch available timezones
+    React.useEffect(() => {
+        const fetchTimezones = async () => {
+            try {
+                setTimezonesLoading(true);
+                const res = await api.get('/auth/timezones');
+                setAvailableTimezones(res.data);
+            } catch (error) {
+                console.error('Failed to fetch timezones:', error);
+                // Fallback to common timezones
+                setAvailableTimezones(COMMON_TIMEZONES);
+            } finally {
+                setTimezonesLoading(false);
+            }
+        };
+        fetchTimezones();
+    }, []);
 
     const [activeSection, setActiveSection] = React.useState<string | null>(null);
     const [formData, setFormData] = React.useState({
@@ -68,7 +89,7 @@ const SettingsPage: React.FC = () => {
     });
 
     const updateProfileMutation = useMutation({
-        mutationFn: async (data: Partial<typeof formData> & { notify_browser?: boolean; notify_sound?: boolean; notify_email?: boolean; preferences?: Record<string, unknown> }) => {
+        mutationFn: async (data: Partial<typeof formData> & { timezone?: string; notify_browser?: boolean; notify_sound?: boolean; notify_email?: boolean; preferences?: Record<string, unknown> }) => {
             const res = await api.patch('/auth/me', data);
             return res.data;
         },
@@ -448,6 +469,36 @@ const SettingsPage: React.FC = () => {
                     size="md"
                 >
                     <div className="space-y-6">
+                        {/* Timezone */}
+                        <div>
+                            <h3 className="font-bold text-gray-900 mb-2">{t('settings.timezone')}</h3>
+                            <div className="relative">
+                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                <select
+                                    value={user?.timezone || 'UTC'}
+                                    onChange={(e) => updateProfileMutation.mutate({ timezone: e.target.value })}
+                                    disabled={timezonesLoading}
+                                    className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none appearance-none cursor-pointer"
+                                >
+                                    {timezonesLoading ? (
+                                        <option value="">Loading...</option>
+                                    ) : (
+                                        availableTimezones.map((tz) => (
+                                            <option key={tz} value={tz}>
+                                                {tz}
+                                            </option>
+                                        ))
+                                    )}
+                                </select>
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1.5 px-1">{t('settings.timezone_desc')}</p>
+                        </div>
+
                         {/* Start Page */}
                         <div>
                             <h3 className="font-bold text-gray-900 mb-2">{t('settings.start_page')}</h3>

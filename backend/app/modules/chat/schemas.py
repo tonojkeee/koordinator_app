@@ -30,6 +30,7 @@ class ChannelBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     description: Optional[str] = Field(None, max_length=500)
     is_direct: bool = False
+    visibility: str = Field("public", description="public or private")
 
 
 class ChannelCreate(ChannelBase):
@@ -62,6 +63,7 @@ class ChannelResponse(ChannelBase):
     last_message: Optional[LastMessageInfo] = None
     is_member: bool = False
     is_owner: bool = False
+    user_role: Optional[str] = None
 
     class Config:
         from_attributes = True

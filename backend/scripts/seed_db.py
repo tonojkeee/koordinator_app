@@ -140,16 +140,13 @@ async def seed_test_users(session: AsyncSession, units_map: dict) -> None:
 
     print("🧪 Seeding test users...")
     
-    # Check if we should recreate admin here? No, seed_initial_admin handles the main one.
-    # The list below duplicates admin/01. We should filter it or check existence.
+    # Use the configured internal email domain
+    email_domain = settings.internal_email_domain
     
     test_users_data = [
-        # Admin is handled separately, but we keep it here for full test suite consistency if needed?
-        # Better to remove 'admin' from here to avoid conflicts if params differ.
-        # But 'kuznetsov' is another admin.
         {
             "username": "ivanov",
-            "email": "ivanov@sentinel.com",
+            "email": f"ivanov@{email_domain}",
             "full_name": "Иванов Иван Иванович",
             "role": "user",
             "unit": "Служба связи",
@@ -158,7 +155,7 @@ async def seed_test_users(session: AsyncSession, units_map: dict) -> None:
         },
         {
             "username": "petrov",
-            "email": "petrov@sentinel.com",
+            "email": f"petrov@{email_domain}",
             "full_name": "Петров Петр Петрович",
             "role": "user",
             "unit": "Штаб",
@@ -167,7 +164,7 @@ async def seed_test_users(session: AsyncSession, units_map: dict) -> None:
         },
         {
             "username": "sidorov",
-            "email": "sidorov@sentinel.com",
+            "email": f"sidorov@{email_domain}",
             "full_name": "Сидоров Алексей Сергеевич",
             "role": "user",
             "unit": "Разведка",
@@ -176,7 +173,7 @@ async def seed_test_users(session: AsyncSession, units_map: dict) -> None:
         },
         {
             "username": "smirnova",
-            "email": "smirnova@sentinel.com",
+            "email": f"smirnova@{email_domain}",
             "full_name": "Смирнова Мария Викторовна",
             "role": "user",
             "unit": "Медслужба",
@@ -185,7 +182,7 @@ async def seed_test_users(session: AsyncSession, units_map: dict) -> None:
         },
         {
             "username": "kuznetsov",
-            "email": "kuznetsov@sentinel.com",
+            "email": f"kuznetsov@{email_domain}",
             "full_name": "Кузнецов Дмитрий Олегович",
             "role": "admin",
             "unit": "Управление",

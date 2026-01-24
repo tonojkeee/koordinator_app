@@ -1,7 +1,7 @@
 """add timezone to users table
 
 Revision ID: add_timezone
-Revises: 2fba65b8ba89
+Revises: ec814d867c58
 Create Date: 2026-01-24 06:20:00.000000
 
 """
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = 'add_timezone'
-down_revision: Union[str, None] = '2fba65b8ba89'
+down_revision: Union[str, None] = 'ec814d867c58'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

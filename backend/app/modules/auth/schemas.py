@@ -22,6 +22,7 @@ class UserBase(BaseModel):
     birth_date: Optional[datetime] = None
     role: str = "user"
     avatar_url: Optional[str] = Field(None, max_length=500)
+    timezone: str = "UTC"
     notify_browser: bool = True
     notify_sound: bool = True
     notify_email: bool = False
@@ -63,6 +64,7 @@ class UserUpdate(BaseModel):
     rank: Optional[str] = Field(None, max_length=50)
     position: Optional[str] = Field(None, max_length=100)
     birth_date: Optional[datetime] = None
+    timezone: Optional[str] = None
     notify_browser: Optional[bool] = None
     notify_sound: Optional[bool] = None
     notify_email: Optional[bool] = None
@@ -102,6 +104,7 @@ class UserResponse(UserBase):
     id: int
     is_active: bool
     status: str
+    timezone: str = "UTC"
     created_at: datetime
     last_seen: Optional[datetime] = None
     session_start: Optional[datetime] = None

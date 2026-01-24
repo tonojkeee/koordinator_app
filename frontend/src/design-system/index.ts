@@ -60,3 +60,6 @@ export type { ContextMenuOption } from './components/ContextMenu';
 export { ToastProvider } from './components/Toast';
 export type { Toast, ToastContextType } from './components/ToastContext';
 export { ToastContext, useToast } from './components/ToastContext';
+
+export { UserAutocomplete } from './components/UserAutocomplete';
+export type { AutocompleteUser } from './components/UserAutocomplete';

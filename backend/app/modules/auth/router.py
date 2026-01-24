@@ -27,6 +27,7 @@ from app.core.websocket_manager import websocket_manager
 from app.core.events import event_bus
 from app.modules.auth.events import UserCreated, UserDeleted, UserUpdated
 from app.modules.auth.handlers import UserEventHandlers
+from app.core.timezone_utils import get_common_timezones
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -260,6 +261,12 @@ async def refresh_token(
         "token_type": "bearer",
         "csrf_token": csrf_token
     }
+
+
+@router.get("/timezones")
+async def get_available_timezones() -> List[str]:
+    """Get list of available timezones"""
+    return get_common_timezones()
 
 
 @router.get("/me", response_model=UserResponse)

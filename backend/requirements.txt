@@ -9,6 +9,7 @@ python-multipart==0.0.21
 python-jose[cryptography]==3.5.0
 passlib[bcrypt]==1.7.4
 alembic==1.18.1
+pytz==2025.2
 websockets==16.0
 aiosmtpd==1.4.6
 aiosmtplib==5.0.0

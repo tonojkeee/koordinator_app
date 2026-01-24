@@ -91,3 +91,20 @@ class DatabaseConfig(BaseModel):
     user: Optional[str] = None
     password: Optional[str] = None
     database: Optional[str] = None
+
+
+class EmailSettingsResponse(BaseModel):
+    internal_email_domain: str
+    smtp_host: str
+    smtp_port: int
+    total_accounts: int
+    total_messages: int
+
+
+class EmailSettingsUpdate(BaseModel):
+    internal_email_domain: str
+
+
+class EmailAccountRecreateResponse(BaseModel):
+    updated_accounts: int
+    message: str

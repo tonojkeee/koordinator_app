@@ -6,7 +6,7 @@ import type { Message, Channel, User } from '../../types';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useUnreadStore } from '../../store/useUnreadStore';
 import { useWebSocket } from '../../hooks/useWebSocket';
-import { Send, MessageSquare, Smile, Trash2, Users, X, Hash, Bell, BellOff, Plus, Crown, Check, CheckCheck, FileText, Pencil, Search, Download, LogOut } from 'lucide-react';
+import { Send, MessageSquare, Smile, Trash2, Users, X, Hash, Bell, BellOff, Plus, Crown, Check, CheckCheck, FileText, Pencil, Search, Download, LogOut, UserPlus } from 'lucide-react';
 import EmojiPicker, { EmojiStyle, Theme, type EmojiClickData } from 'emoji-picker-react';
 import { parseUTCDate } from '../../utils/date';
 
@@ -18,6 +18,7 @@ import { Avatar, ContextMenu, type ContextMenuOption, useToast } from '../../des
 import MuteModal from './MuteModal';
 import SearchModal from './components/SearchModal';
 import TransferOwnershipModal from './components/TransferOwnershipModal';
+import InviteModal from './components/InviteModal';
 import { formatDate, renderMessageContent } from './utils';
 import { formatName } from '../../utils/formatters';
 
@@ -365,6 +366,7 @@ const ChatPage: React.FC = () => {
     const [editingMessage, setEditingMessage] = useState<Message | null>(null);
     const [searchModalOpen, setSearchModalOpen] = useState(false);
     const [showTransferOwnershipModal, setShowTransferOwnershipModal] = useState(false);
+    const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
     const updateMessageMutation = useMutation({
         mutationFn: async ({ id, content }: { id: number; content: string }) => {
@@ -1258,6 +1260,16 @@ const ChatPage: React.FC = () => {
                                         <Download size={18} />
                                     </button>
 
+                                    {channel && !channel.is_direct && channel.visibility === 'private' && channel.is_owner && (
+                                        <button
+                                            onClick={() => setIsInviteModalOpen(true)}
+                                            className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 rounded-md transition-colors"
+                                            title={t('chat.invitations.invite_users')}
+                                        >
+                                            <UserPlus size={18} />
+                                        </button>
+                                    )}
+
                                     {channel && !channel.is_direct && isMember && (
                                         <>
                                             <div className="w-px h-4 bg-slate-200 mx-1" />
@@ -1332,6 +1344,23 @@ const ChatPage: React.FC = () => {
                             onTransfer={handleTransferOwnership}
                             currentOwnerId={channel?.created_by || 0}
                             currentUser={user}
+                        />
+
+                        <InviteModal
+                            isOpen={isInviteModalOpen}
+                            onClose={() => setIsInviteModalOpen(false)}
+                            channelId={channelId!}
+                            channelName={channel?.display_name || channel?.name || ''}
+                            onInvite={async (userIds: number[], message?: string) => {
+                                try {
+                                    // TODO: Implement invite API call
+                                    console.log('Inviting users:', userIds, 'with message:', message);
+                                    // await api.post(`/chat/channels/${channelId}/invite`, { user_ids: userIds, message });
+                                } catch (error) {
+                                    console.error('Error inviting users:', error);
+                                    throw error;
+                                }
+                            }}
                         />
 
                         <div className="flex-1 flex overflow-hidden">

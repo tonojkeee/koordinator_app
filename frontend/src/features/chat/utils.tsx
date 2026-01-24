@@ -3,37 +3,32 @@ import { FileIcon, FileText, FileSpreadsheet, FileQuestion } from 'lucide-react'
 
 export const formatDate = (dateString: string, t: (key: string) => string, locale: string = 'ru'): string => {
     try {
-        // Parse UTC date correctly by appending Z if missing
-        const isoStr = dateString.includes('Z') ? dateString : `${dateString}Z`;
-        const date = new Date(isoStr);
+        const date = new Date(dateString);
         
         // Check if date is valid
         if (isNaN(date.getTime())) {
             console.warn('Invalid date string:', dateString);
-            return dateString; // Return original string instead of "Invalid date"
+            return dateString;
         }
         
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const yesterday = new Date(today);
         yesterday.setDate(yesterday.getDate() - 1);
+        
+        const messageDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
-        // Compare dates in local timezone
-        const dateLocal = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-        const todayLocal = new Date(today.getTime() - today.getTimezoneOffset() * 60000);
-        const yesterdayLocal = new Date(yesterday.getTime() - yesterday.getTimezoneOffset() * 60000);
-
-        if (dateLocal.toDateString() === todayLocal.toDateString()) {
+        if (messageDate.getTime() === today.getTime()) {
             return t('chat.today') || 'Сегодня';
         }
-        if (dateLocal.toDateString() === yesterdayLocal.toDateString()) {
+        if (messageDate.getTime() === yesterday.getTime()) {
             return t('chat.yesterday') || 'Вчера';
         }
 
         return date.toLocaleDateString(locale, { day: 'numeric', month: 'long' });
     } catch (error) {
         console.warn('Date formatting error:', error, dateString);
-        return dateString; // Return original string instead of "Invalid date"
+        return dateString;
     }
 };
 

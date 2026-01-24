@@ -1,8 +1,14 @@
 from datetime import datetime, timezone
 from typing import Optional
-from sqlalchemy import String, DateTime, ForeignKey, Integer, Text, UniqueConstraint
+from sqlalchemy import String, DateTime, ForeignKey, Integer, Text, UniqueConstraint, Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship, backref
 from app.core.database import Base
+import enum
+
+
+class ChannelVisibility(str, enum.Enum):
+    PUBLIC = "public"
+    PRIVATE = "private"
 
 
 class Channel(Base):
@@ -13,6 +19,7 @@ class Channel(Base):
     description: Mapped[str] = mapped_column(Text, nullable=True)
     created_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     is_direct: Mapped[bool] = mapped_column(default=False, nullable=False, index=True)
+    visibility: Mapped[str] = mapped_column(String(20), nullable=False, default="public")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, 
@@ -20,6 +27,8 @@ class Channel(Base):
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False
     )
+    
+    invitations = relationship("ChannelInvitation", cascade="all, delete-orphan")
 
 
 class Message(Base):
@@ -46,6 +55,7 @@ class ChannelMember(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     channel_id: Mapped[int] = mapped_column(ForeignKey("channels.id"), nullable=False, index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    role: Mapped[str] = mapped_column(String(20), nullable=False, default="member")
     joined_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     last_read_message_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     is_pinned: Mapped[bool] = mapped_column(default=False, nullable=False, index=True)
@@ -70,4 +80,24 @@ class MessageReaction(Base):
     )
     
     user = relationship("User")
+
+
+class ChannelInvitation(Base):
+    __tablename__ = "channel_invitations"
+    
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    channel_id: Mapped[int] = mapped_column(ForeignKey("channels.id"), nullable=False, index=True)
+    inviter_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    invitee_email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    invitee_user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
+    role: Mapped[str] = mapped_column(String(20), nullable=False, default="member")
+    token: Mapped[str] = mapped_column(String(255), nullable=False, default="", unique=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    responded_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    
+    channel = relationship("Channel", overlaps="invitations")
+    inviter = relationship("User", foreign_keys=[inviter_id])
+    invitee = relationship("User", foreign_keys=[invitee_user_id])
 
