@@ -55,7 +55,13 @@ const LoginPage: React.FC = () => {
                 },
             });
 
-            const { access_token, refresh_token } = loginRes.data;
+            const { access_token, refresh_token, csrf_token } = loginRes.data;
+
+            // Сохраняем CSRF токен из ответа логина
+            if (csrf_token) {
+                setCsrfToken(csrf_token);
+                console.log('🔐 CSRF token saved from login response');
+            }
 
             const userRes = await api.get('/auth/me', {
                 headers: {

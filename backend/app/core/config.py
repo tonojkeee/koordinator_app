@@ -7,7 +7,7 @@ import os
 def get_app_version() -> str:
     """Read version from frontend/package.json"""
     try:
-        # Try different paths to find package.json depending on where the app is started from
+        # Try different paths to find package.json depending on where app is started from
         paths_to_try = [
             "frontend/package.json",
             "../frontend/package.json",
@@ -58,7 +58,8 @@ class Settings(BaseSettings):
     refresh_token_expire_days: int = 30
     
     # CORS - requires explicit configuration, no wildcards by default
-    cors_origins: list[str] = [origin.strip() for origin in os.getenv("CORS_ORIGINS", "").split(",") if origin.strip()] if os.getenv("CORS_ORIGINS") else []
+    # Упрощаем тип для совместимости
+    cors_origins: str = os.getenv("CORS_ORIGINS", "")
     
     # Email
     internal_email_domain: str = "40919.com"
@@ -98,18 +99,19 @@ class Settings(BaseSettings):
         
         # Validate CORS configuration in production
         if not self.debug:
-            if not self.cors_origins:
+            cors_origins_list = [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+            if not cors_origins_list:
                 raise ValueError(
                     "CORS_ORIGINS must be configured in production. "
                     "Set CORS_ORIGINS environment variable with comma-separated allowed domains."
                 )
-            if "*" in self.cors_origins:
+            if "*" in cors_origins_list:
                 raise ValueError(
                     "Wildcard CORS origin (*) is not allowed in production. "
                     "Specify exact allowed origins in CORS_ORIGINS."
                 )
             # Validate each origin is a valid URL
-            for origin in self.cors_origins:
+            for origin in cors_origins_list:
                 if not origin.startswith(("http://", "https://")):
                     raise ValueError(
                         f"Invalid CORS origin '{origin}'. "

@@ -117,6 +117,7 @@ export interface Message {
         full_name?: string | null;
     };
     reply_count?: number;
+    invitation_id?: number; // Add invitation ID for system messages with invitations
 }
 
 export interface TokenResponse {

@@ -51,6 +51,17 @@ export const useGlobalWebSocket = (token: string | null, options: GlobalWebSocke
 
     useEffect(() => {
         if (!token) {
+            // Если токен стал null (выход из системы), закрываем соединение
+            if (globalConnection) {
+                console.log('🔌 Closing global WebSocket due to logout');
+                if (globalConnection.socket.readyState === WebSocket.OPEN ||
+                    globalConnection.socket.readyState === WebSocket.CONNECTING) {
+                    globalConnection.socket.close(1000, 'User logged out');
+                }
+                globalConnection = null;
+                setIsConnected(false);
+                useConnectionStore.getState().setIsConnected(false);
+            }
             return;
         }
 
@@ -77,6 +88,12 @@ export const useGlobalWebSocket = (token: string | null, options: GlobalWebSocke
                     onDocumentSharedRef.current(data);
                 } else if (data.type === 'user_presence' && onUserPresenceRef.current) {
                     onUserPresenceRef.current(data);
+                } else if (data.type === 'invitation_received') {
+                    // Handle invitation notifications - just log for now, could add toast notification
+                    console.log('📩 Invitation received:', data);
+                } else if (data.type === 'invitation_status_changed' && onMessageReceivedRef.current) {
+                    // Handle invitation status changes through the message received callback
+                    onMessageReceivedRef.current(data);
                 } else if (data.type === 'new_task' && onTaskAssignedRef.current) {
                     onTaskAssignedRef.current(data);
                 } else if (data.type === 'task_returned' && onTaskReturnedRef.current) {

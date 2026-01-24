@@ -25,11 +25,24 @@ export const useWebSocket = (channelId: number | undefined, token: string | null
 
     useEffect(() => {
         if (!channelId || !token) {
+            // Если channelId стал undefined, принудительно закрываем соединение
+            if (connectionKeyRef.current) {
+                const conn = connectionRegistry.get(connectionKeyRef.current);
+                if (conn && (conn.socket.readyState === WebSocket.OPEN || conn.socket.readyState === WebSocket.CONNECTING)) {
+                    console.log('🔌 Force closing WebSocket connection due to channelId change');
+                    conn.socket.close(1000, 'Channel changed');
+                    connectionRegistry.delete(connectionKeyRef.current);
+                    setIsConnected(false);
+                }
+                connectionKeyRef.current = null;
+            }
             return;
         }
 
         const connectionKey = `channel-${channelId}`;
         connectionKeyRef.current = connectionKey;
+
+        console.log('🔌 WebSocket connecting to channel:', channelId);
 
         const handleMessage = (event: MessageEvent) => {
             try {

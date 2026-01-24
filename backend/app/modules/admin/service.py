@@ -164,7 +164,8 @@ class AdminService:
         user_count = await db.scalar(select(func.count(User.id)))
         
         # Count Online Users from real-time WebSocket manager
-        online_count = len(manager.user_connections)
+        online_user_ids = await manager.get_online_user_ids()
+        online_count = len(online_user_ids)
         
         # Count Messages Today
         today = datetime.now(timezone.utc).date()
@@ -330,7 +331,7 @@ class AdminService:
         """Get list of users currently 'online' using real-time connections"""
         from app.modules.auth.models import User
         
-        online_user_ids = manager.get_online_user_ids()
+        online_user_ids = await manager.get_online_user_ids()
         if not online_user_ids:
             return []
             

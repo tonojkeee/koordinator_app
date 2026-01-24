@@ -53,9 +53,6 @@ const ParticipantsList: React.FC<ParticipantsListProps> = ({ channelId, onMentio
             queryClient.invalidateQueries({ queryKey: ['channels'] });
             navigate(`/chat/${channel.id}`);
         },
-        onError: (error) => {
-            console.error('Failed to create DM', error);
-        }
     });
 
     const handleMessage = (e: React.MouseEvent, targetUserId: number) => {

@@ -38,7 +38,6 @@ function InviteModal({ isOpen, onClose, channelId, channelName, onInvite }: Invi
       
       return filtered.slice(0, 10); // Limit to 10 results
     } catch (error) {
-      console.error('Error searching users:', error);
       return [];
     }
   };
@@ -56,7 +55,6 @@ function InviteModal({ isOpen, onClose, channelId, channelName, onInvite }: Invi
       );
       handleClose();
     } catch (error) {
-      console.error('Error inviting users:', error);
       setError(error instanceof Error ? error.message : 'Failed to send invitations');
     } finally {
       setIsLoading(false);

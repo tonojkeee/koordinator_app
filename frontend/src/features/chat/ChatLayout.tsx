@@ -2,9 +2,16 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import ChannelSidebar from './ChannelSidebar';
 import { Menu } from 'lucide-react';
+import { useNotificationsChannel } from '../../hooks/useNotificationsChannel';
 
 const ChatLayout: React.FC = () => {
     const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+    // Auto-connect to notifications channel to receive system messages
+    useNotificationsChannel(() => {
+        // System messages from notifications channel are handled by global WebSocket
+        // This connection ensures real-time delivery even if user is not viewing channel
+    });
 
     return (
         <div className="flex w-full h-full bg-[#F5F5F7]">

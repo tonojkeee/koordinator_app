@@ -25,10 +25,8 @@ async def enrich_channel(db: AsyncSession, channel: Channel, current_user_id: in
     result = await db.execute(member_count_stmt)
     resp.members_count = result.scalar() or 0
 
-    # Get online count by intersecting channel members with globally online users
-    member_ids = await ChatService.get_channel_member_ids(db, channel.id)
-    online_user_ids = set(manager.get_online_user_ids())
-    resp.online_count = len(online_user_ids.intersection(set(member_ids)))
+    # Get online count - users actually connected to this channel via WebSocket
+    resp.online_count = await manager.get_online_count(channel.id)
 
     # Get unread count and last_read_message_id for current user
     stmt = select(ChannelMember).where(
@@ -91,7 +89,7 @@ async def enrich_direct_channel(
     if other_user:
         resp.display_name = other_user.full_name or other_user.username
         user_info = UserBasicInfo.from_orm(other_user)
-        user_info.is_online = other_user.id in manager.get_online_user_ids()
+        user_info.is_online = other_user.id in await manager.get_online_user_ids()
         resp.other_user = user_info
     else:
         resp.display_name = "Self" if channel.created_by == current_user_id else "Unknown"

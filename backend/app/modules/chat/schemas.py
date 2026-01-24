@@ -119,4 +119,5 @@ class MessageWithUser(MessageResponse):
     reactions: List[ReactionResponse] = []
     reply_count: int = 0
     parent: Optional[MessageParentInfo] = None
+    invitation_id: Optional[int] = None  # For system messages with invitations
 

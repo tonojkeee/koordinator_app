@@ -4,15 +4,16 @@ export interface ChannelInvitation {
   id: number;
   channel_id: number;
   channel_name: string;
-  invited_by: number;
-  invited_by_name: string;
-  invited_user_id: number | null;
-  email: string | null;
-  message: string | null;
+  channel_visibility: string;
+  inviter_id: number;
+  inviter_name: string;
+  invitee_email: string;
   status: 'pending' | 'accepted' | 'declined' | 'cancelled' | 'expired';
-  expires_at: string | null;
+  role: string;
+  token: string;
   created_at: string;
-  updated_at: string;
+  expires_at: string;
+  responded_at: string | null;
 }
 
 export interface CreateInvitationRequest {
@@ -40,10 +41,10 @@ export const channelInvitationsApi = {
 
   // Получить приглашения для текущего пользователя
   getMyInvitations: async () => {
-    const response = await apiClient.get<ChannelInvitation[]>(
-      '/channels/invitations/my'
+    const response = await apiClient.get<{ invitations: ChannelInvitation[] }>(
+      '/chat/invitations/pending'
     );
-    return response.data;
+    return response.data.invitations;
   },
 
   // Получить приглашения для канала
@@ -56,11 +57,19 @@ export const channelInvitationsApi = {
 
   // Принять или отклонить приглашение
   respondToInvitation: async (data: RespondInvitationRequest) => {
-    const response = await apiClient.post<ChannelInvitation>(
-      '/channels/invitations/respond',
-      data
-    );
-    return response.data;
+    if (data.action === 'accept') {
+      const response = await apiClient.post<any>(
+        '/chat/invitations/accept',
+        { invitation_id: data.invitation_id }
+      );
+      return response.data;
+    } else {
+      const response = await apiClient.post<any>(
+        '/chat/invitations/decline',
+        { invitation_id: data.invitation_id }
+      );
+      return response.data;
+    }
   },
 
   // Отменить приглашение

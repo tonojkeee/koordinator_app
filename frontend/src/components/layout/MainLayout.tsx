@@ -72,16 +72,18 @@ const MainLayout: React.FC = () => {
         enabled: !!token,
     });
 
-    // Update unread count based on active tasks
-    useEffect(() => {
-        if (Array.isArray(tasks)) {
-            // Count active tasks (IN_PROGRESS, OVERDUE)
-            const activeCount = (tasks as { status: string }[]).filter((t) =>
-                t.status === 'in_progress' || t.status === 'overdue'
-            ).length;
-            setTasksUnread(activeCount);
-        }
-    }, [tasks, setTasksUnread]);
+            // Update unread count based on active tasks
+            useEffect(() => {
+                if (Array.isArray(tasks)) {
+                    // Count active tasks (IN_PROGRESS, OVERDUE)
+                    const activeCount = (tasks as { status: string }[]).filter((t) =>
+                        t.status === 'in_progress' || t.status === 'overdue'
+                    ).length;
+                    setTasksUnread(activeCount);
+                }
+            }, [tasks, setTasksUnread]);
+
+
 
     // We need to fetch ISSUED tasks to know how many are on review
     const { data: issuedTasks } = useTasksIssued();
@@ -315,7 +317,16 @@ const MainLayout: React.FC = () => {
             const isMember = membersCache?.some(m => m.id === data.user_id);
             if (isMember) {
                 const newCount = Math.max(0, (channel.online_count || 0) + delta);
-                return { ...channel, online_count: newCount };
+                // Also update other_user if it's a DM and this is the user
+                const otherUser = channel.is_direct && channel.other_user?.id === data.user_id 
+                    ? { 
+                        ...channel.other_user, 
+                        is_online: data.status === 'online',
+                        last_seen: data.status === 'offline' ? new Date().toISOString() : channel.other_user.last_seen
+                      } 
+                    : channel.other_user;
+                
+                return { ...channel, online_count: newCount, other_user: otherUser };
             }
             return old;
         });

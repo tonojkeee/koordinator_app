@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Check, X, Clock, User, Calendar, Lock } from 'lucide-react';
 import { channelInvitationsApi, type ChannelInvitation } from '../../api/channelInvitations';
 
@@ -10,6 +11,7 @@ export const InvitationsList: React.FC<InvitationsListProps> = ({ onAccept }) =>
   const [invitations, setInvitations] = useState<ChannelInvitation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [responding, setResponding] = useState<number | null>(null);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     loadInvitations();
@@ -43,6 +45,12 @@ export const InvitationsList: React.FC<InvitationsListProps> = ({ onAccept }) =>
       setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
 
       if (action === 'accept') {
+        // Инвалидируем кэш каналов при принятии приглашения
+        queryClient.invalidateQueries({ queryKey: ['channels'] });
+        // Также инвалидируем кэш участников для всех каналов
+        queryClient.invalidateQueries({ queryKey: ['channel_members'] });
+        // Инвалидируем кэш конкретного канала для обновления members_count
+        queryClient.invalidateQueries({ queryKey: ['channel'] });
         onAccept?.();
       }
     } catch (error: any) {
@@ -94,7 +102,7 @@ export const InvitationsList: React.FC<InvitationsListProps> = ({ onAccept }) =>
               </h3>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <User className="h-4 w-4" />
-                <span>{invitation.invited_by_name}</span>
+                <span>{invitation.inviter_name}</span>
               </div>
             </div>
             <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
@@ -109,9 +117,9 @@ export const InvitationsList: React.FC<InvitationsListProps> = ({ onAccept }) =>
             </p>
           )}
 
-          {invitation.email && (
+          {invitation.invitee_email && (
             <div className="text-sm text-gray-500 mb-3">
-              Приглашение отправлено на: {invitation.email}
+              Приглашение отправлено на: {invitation.invitee_email}
             </div>
           )}
 

@@ -198,6 +198,66 @@ class RedisManager:
             logger.error(f"Redis HGETALL error: {e}")
             return self._memory_cache.get(name, {})
     
+    # ==================== Set Operations ====================
+    
+    async def sadd(self, name: str, value: str) -> int:
+        """Add member to set"""
+        if self._fallback_mode:
+            if name not in self._memory_cache:
+                self._memory_cache[name] = set()
+            elif not isinstance(self._memory_cache[name], set):
+                # Handle case where key was used for something else
+                self._memory_cache[name] = set()
+            
+            if value in self._memory_cache[name]:
+                return 0
+            self._memory_cache[name].add(value)
+            return 1
+        try:
+            return await self._redis.sadd(name, value)
+        except Exception as e:
+            logger.error(f"Redis SADD error: {e}")
+            return await self.sadd.__wrapped__(self, name, value) # Recursive call to fallback logic
+
+    async def srem(self, name: str, value: str) -> int:
+        """Remove member from set"""
+        if self._fallback_mode:
+            if name in self._memory_cache and isinstance(self._memory_cache[name], set):
+                if value in self._memory_cache[name]:
+                    self._memory_cache[name].remove(value)
+                    return 1
+            return 0
+        try:
+            return await self._redis.srem(name, value)
+        except Exception as e:
+            logger.error(f"Redis SREM error: {e}")
+            return 0
+            
+    async def scard(self, name: str) -> int:
+        """Get set cardinality (size)"""
+        if self._fallback_mode:
+            if name in self._memory_cache and isinstance(self._memory_cache[name], set):
+                return len(self._memory_cache[name])
+            return 0
+        try:
+            return await self._redis.scard(name)
+        except Exception as e:
+            logger.error(f"Redis SCARD error: {e}")
+            return 0
+
+    async def smembers(self, name: str) -> List[str]:
+        """Get all members of a set"""
+        if self._fallback_mode:
+            if name in self._memory_cache and isinstance(self._memory_cache[name], set):
+                return list(self._memory_cache[name])
+            return []
+        try:
+            members = await self._redis.smembers(name)
+            return list(members)
+        except Exception as e:
+            logger.error(f"Redis SMEMBERS error: {e}")
+            return []
+    
     # ==================== Pub/Sub Operations ====================
     
     async def publish(self, channel: str, message: dict):

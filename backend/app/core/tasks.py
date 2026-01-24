@@ -146,6 +146,7 @@ def send_notification_email(self, user_id: int, subject: str, body: str) -> None
     async def _send() -> None:
         from app.core.database import AsyncSessionLocal
         from app.modules.auth.service import UserService
+        from app.core.config_service import ConfigService
         import aiosmtplib
         from email.message import EmailMessage
         
@@ -154,6 +155,15 @@ def send_notification_email(self, user_id: int, subject: str, body: str) -> None
             if not user or not user.email:
                 logger.warning(f"Cannot send email to user {user_id}: no email")
                 return
+            
+            # Get SMTP configuration
+            smtp_host = await ConfigService.get_value(db, "email_smtp_host", "127.0.0.1")
+            smtp_port = await ConfigService.get_value(db, "email_smtp_port", "2525")
+            smtp_enabled = await ConfigService.get_value(db, "email_notifications_enabled", True)
+            
+            if not smtp_enabled:
+                logger.info(f"Email notifications disabled, skipping email to {user.email}")
+                return
                 
             msg = EmailMessage()
             msg["Subject"] = subject
@@ -161,9 +171,15 @@ def send_notification_email(self, user_id: int, subject: str, body: str) -> None
             msg["To"] = user.email
             msg.set_content(body, subtype="html")
             
-            # In production, configure SMTP settings
-            # For now, just log
-            logger.info(f"Would send email to {user.email}: {subject}")
+            try:
+                # Try to send via SMTP
+                async with aiosmtplib.SMTP(hostname=smtp_host, port=int(smtp_port)) as smtp:
+                    await smtp.send_message(msg)
+                logger.info(f"Email sent successfully to {user.email}: {subject}")
+            except Exception as smtp_error:
+                logger.warning(f"SMTP send failed to {user.email}, falling back to log: {smtp_error}")
+                # Fallback: just log the email content
+                logger.info(f"EMAIL NOTIFICATION:\nTo: {user.email}\nSubject: {subject}\nBody: {body}")
             
     try:
         run_async(_send())

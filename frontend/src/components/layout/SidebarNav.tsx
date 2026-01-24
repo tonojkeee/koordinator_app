@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageCircle, HelpCircle, Book, ClipboardList, Mail, FileText, Archive, Shield } from 'lucide-react';
+import { MessageCircle, HelpCircle, Book, ClipboardList, Mail, FileText, Archive, Shield, LogOut } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useUnreadStore } from '../../store/useUnreadStore';
@@ -8,7 +8,7 @@ import { Avatar } from '../../design-system';
 
 export const SidebarNav = () => {
   const { t } = useTranslation();
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const { unreadCounts, unreadDocs, tasksUnreadCount, tasksReviewCount } = useUnreadStore();
   
   const totalUnread = Object.values(unreadCounts).reduce((sum, count) => sum + count, 0);
@@ -96,6 +96,14 @@ export const SidebarNav = () => {
             />
         }
       />
+
+      <button
+        onClick={() => logout()}
+        className="group relative flex flex-col items-center justify-center w-12 h-12 rounded-lg transition-all duration-200 hover:text-white hover:bg-red-500/20 text-slate-400"
+        title={t('common.logout')}
+      >
+        <LogOut size={20} />
+      </button>
     </nav>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../api/client';
 import type { Channel } from '../../types';
@@ -15,6 +15,7 @@ import MuteModal from './MuteModal';
 interface ChannelSidebarProps {
   onCloseMobile?: () => void;
 }
+
 
 // Встроенный компонент CreateChannelModal
 interface CreateChannelModalProps {
@@ -143,6 +144,17 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
   const { t } = useTranslation();
   const { channelId } = useParams();
   const navigate = useNavigate();
+  
+  // Универсальная функция навигации с fallback
+  const navigateToChannel = useCallback((targetChannelId: number, channelName?: string) => {
+    try {
+      navigate(`/chat/${targetChannelId}`);
+    } catch (error) {
+      // Fallback в случае ошибки навигации
+      window.location.href = `/chat/${targetChannelId}`;
+    }
+  }, [navigate]);
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [muteModalChannelId, setMuteModalChannelId] = useState<number | null>(null);
@@ -187,7 +199,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
     onSuccess: (newChannel) => {
       queryClient.invalidateQueries({ queryKey: ['channels'] });
       setIsCreating(false);
-      navigate(`/chat/${newChannel.id}`);
+      navigateToChannel(newChannel.id, newChannel.name);
     },
   });
 
@@ -260,7 +272,6 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
     }
   });
 
-  // Handlers
   const handleMute = (duration: '1h' | '8h' | '24h' | 'forever' | null) => {
     if (!muteModalChannelId) return;
 
@@ -387,7 +398,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
                         isActive={Number(channelId) === channel.id}
                         unread={getUnreadDisplay(channel)}
                         onClick={() => {
-                          navigate(`/chat/${channel.id}`);
+                          navigateToChannel(channel.id, channel.name);
                           if (onCloseMobile) onCloseMobile();
                         }}
                         onPin={handlePin}
@@ -442,7 +453,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
                         isActive={Number(channelId) === channel.id}
                         unread={getUnreadDisplay(channel)}
                         onClick={() => {
-                          navigate(`/chat/${channel.id}`);
+                          navigateToChannel(channel.id, channel.name);
                           if (onCloseMobile) onCloseMobile();
                         }}
                         onPin={handlePin}
@@ -496,7 +507,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
                         isActive={Number(channelId) === channel.id}
                         unread={getUnreadDisplay(channel)}
                         onClick={() => {
-                          navigate(`/chat/${channel.id}`);
+                          navigateToChannel(channel.id, channel.name);
                           if (onCloseMobile) onCloseMobile();
                         }}
                         onPin={handlePin}
@@ -550,7 +561,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
                         isActive={Number(channelId) === channel.id}
                         unread={getUnreadDisplay(channel)}
                         onClick={() => {
-                          navigate(`/chat/${channel.id}`);
+                          navigateToChannel(channel.id, channel.name);
                           if (onCloseMobile) onCloseMobile();
                         }}
                         onPin={handlePin}
@@ -604,7 +615,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
                         isActive={Number(channelId) === channel.id}
                         unread={getUnreadDisplay(channel)}
                         onClick={() => {
-                          navigate(`/chat/${channel.id}`);
+                          navigateToChannel(channel.id, channel.name);
                           if (onCloseMobile) onCloseMobile();
                         }}
                         onPin={handlePin}
@@ -652,9 +663,20 @@ const ChannelItem = ({
   isSystem?: boolean
 }) => { 
 
+  const handleClick = (e: React.MouseEvent) => {
+    try {
+      onClick();
+    } catch (error) {
+      // Ошибка в обработчике клика
+      console.error('Error in onClick handler for channel:', channel.id, error);
+    }
+  };
+
   return (
     <div
-      onClick={onClick}
+      onClick={handleClick}
+      data-channel-item={channel.id}
+      data-channel-name={channel.name}
       className={`
         group relative flex items-center px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-200
         ${isActive 

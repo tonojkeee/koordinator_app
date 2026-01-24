@@ -49,7 +49,7 @@ async def get_csrf_token(response: Response) -> Dict[str, str]:
         value=csrf_token,
         httponly=False,
         secure=settings.use_https,
-        samesite="strict",
+        samesite="lax",
         max_age=settings.access_token_expire_minutes * 60,
         path="/"
     )
@@ -180,7 +180,7 @@ async def login(
         data={"sub": user.id}, expires_delta=access_token_expires
     )
     refresh_token = create_refresh_token(data={"sub": user.id})
-    
+
     # Generate and set CSRF token cookie
     csrf_token = CSRFProtection.generate_token()
     response.set_cookie(
@@ -188,7 +188,7 @@ async def login(
         value=csrf_token,
         httponly=False,  # Must be readable by JavaScript to send in headers
         secure=settings.use_https,  # Only send over HTTPS in production
-        samesite="strict",  # Prevent CSRF attacks
+        samesite="lax",
         max_age=settings.access_token_expire_minutes * 60,  # Match access token lifetime
         path="/"
     )
@@ -199,6 +199,26 @@ async def login(
         "token_type": "bearer",
         "csrf_token": csrf_token  # Also return in response for client to use
     }
+
+
+@router.post("/logout", status_code=status.HTTP_200_OK)
+async def logout(
+    response: Response,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Logout user and disconnect all WebSocket sessions"""
+    # Disconnect all WebSocket sessions for this user
+    await websocket_manager.disconnect_user_sessions(current_user.id)
+
+    response.delete_cookie(
+        key="csrf_token",
+        path="/",
+        samesite="lax",
+        secure=settings.use_https
+    )
+
+    return {"message": get_text("auth.logged_out")}
 
 
 @router.post("/refresh", response_model=Token)
@@ -242,7 +262,7 @@ async def refresh_token(
     )
     # We also return a new refresh token (refresh token rotation)
     new_refresh_token = create_refresh_token(data={"sub": user.id})
-    
+
     # Regenerate CSRF token on refresh
     csrf_token = CSRFProtection.generate_token()
     response.set_cookie(
@@ -250,7 +270,7 @@ async def refresh_token(
         value=csrf_token,
         httponly=False,
         secure=settings.use_https,
-        samesite="strict",
+        samesite="lax",
         max_age=settings.access_token_expire_minutes * 60,
         path="/"
     )
@@ -278,19 +298,20 @@ async def get_me(current_user: User = Depends(get_current_user)):
 @router.patch("/me", response_model=UserResponse)
 async def update_me(
     update_data: UserUpdate,
-    request: Request,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-    _csrf: None = Depends(require_csrf_token)
+    db: AsyncSession = Depends(get_db)
 ):
     """Update current user profile"""
     updated_user = await UserService.update_user_profile(db, current_user.id, update_data)
-
+    
     # TODO: Subscribe to UserUpdated event when user is updated
     # await event_bus.subscribe(UserUpdated, lambda event:
-    #     UserEventHandlers.on_user_updated(event.user_id, event.changes)
+    #     UserEventHandlers.on_user_updated(
+    #         event.user_id,
+    #         event.changes
+    #     )
     # )
-
+    
     return updated_user
 
 
@@ -305,17 +326,15 @@ async def get_users(db: AsyncSession = Depends(get_db), current_user: User = Dep
 async def get_online_users(current_user: User = Depends(get_current_user)):
     """Get list of online user IDs"""
     from app.modules.chat.websocket import manager
-    online_ids = manager.get_online_user_ids()
+    online_ids = await manager.get_online_user_ids()
     return {"online_user_ids": online_ids}
 
 
 @router.post("/change-password", status_code=status.HTTP_200_OK)
 async def change_password(
     password_data: UserChangePassword,
-    request: Request,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-    _csrf: None = Depends(require_csrf_token),
     _rate_limit: None = Depends(rate_limit_auth)
 ):
     """Change user password"""
@@ -331,21 +350,13 @@ async def change_password(
 @router.post("/users/avatar", response_model=UserResponse)
 async def upload_avatar(
     file: UploadFile = File(...),
-    request: Request = None,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-    _csrf: None = Depends(require_csrf_token),
     _rate_limit: None = Depends(rate_limit_file_upload)
 ):
     """Upload user avatar"""
-    # Check Content-Length header first (early rejection)
-    MAX_AVATAR_SIZE = 2 * 1024 * 1024  # 2MB
-    if request and request.headers.get("content-length"):
-        content_length = int(request.headers.get("content-length"))
-        if content_length > MAX_AVATAR_SIZE:
-            raise HTTPException(status_code=413, detail=get_text("auth.image_too_large"))
-    
     # Comprehensive file validation
+    MAX_AVATAR_SIZE = 2 * 1024 * 1024  # 2MB
     is_valid, error_msg = validate_avatar_upload(file, MAX_AVATAR_SIZE)
     if not is_valid:
         raise HTTPException(status_code=400, detail=error_msg)
@@ -395,20 +406,19 @@ async def upload_avatar(
 @router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(
     user_id: int,
-    request: Request,
-    db: AsyncSession = Depends(get_db), 
-    admin: User = Depends(get_admin_user),
-    _csrf: None = Depends(require_csrf_token)
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_admin_user)
 ):
     """Delete a user (Admin only)"""
     success = await UserService.delete_user(db, user_id)
     if not success:
         raise HTTPException(status_code=404, detail=get_text("auth.user_not_found"))
-
+    
     # TODO: Subscribe to UserDeleted event when user is deleted
     # await event_bus.subscribe(UserDeleted, lambda event:
     #     UserEventHandlers.on_user_deleted(event.user_id)
-    # )
+    #     )
     
     await AdminService.create_audit_log(
         db, admin.id, "delete_user", "user", user_id,

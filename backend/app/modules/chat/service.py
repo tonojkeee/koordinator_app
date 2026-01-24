@@ -148,14 +148,21 @@ class ChatService:
     
     @staticmethod
     @staticmethod
-    async def create_message(db: AsyncSession, message_data: MessageCreate, user_id: Optional[int], document_id: Optional[int] = None) -> Message:
+    async def create_message(
+        db: AsyncSession, 
+        message_data: MessageCreate, 
+        user_id: Optional[int], 
+        document_id: Optional[int] = None,
+        invitation_id: Optional[int] = None
+    ) -> Message:
         """Create a new message and update sender's last_read_message_id (if not system message)"""
         message = Message(
             channel_id=message_data.channel_id,
             user_id=user_id,  # Can be None for system messages
             content=message_data.content,
             document_id=document_id,
-            parent_id=message_data.parent_id
+            parent_id=message_data.parent_id,
+            invitation_id=invitation_id
         )
         
         db.add(message)

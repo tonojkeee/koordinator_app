@@ -1,12 +1,21 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { InvitationsList } from '../components/chat/InvitationsList';
 
 export const InvitationsPage: React.FC = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const handleAccept = () => {
+    // Инвалидируем кэш каналов чтобы обновить список
+    queryClient.invalidateQueries({ queryKey: ['channels'] });
+    // Также инвалидируем кэш участников для всех каналов
+    queryClient.invalidateQueries({ queryKey: ['channel_members'] });
+    // Инвалидируем кэш конкретного канала для обновления members_count
+    queryClient.invalidateQueries({ queryKey: ['channel'] });
+    
     // Перенаправляем на главную страницу чата после принятия приглашения
     navigate('/');
   };

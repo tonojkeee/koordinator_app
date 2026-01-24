@@ -8,10 +8,12 @@ Uses double-submit cookie pattern as defense-in-depth even with JWT authenticati
 import secrets
 import hmac
 import hashlib
+import logging
 from typing import Optional
 from fastapi import Request, HTTPException, status
 from app.core.config import get_settings
 
+logger = logging.getLogger(__name__)
 settings = get_settings()
 
 
@@ -45,15 +47,26 @@ class CSRFProtection:
             True if token is valid, False otherwise
         """
         if not token_from_header:
+            logger.warning("CSRF validation failed: no token in header")
             return False
         
         # Get token from cookie
         token_from_cookie = request.cookies.get("csrf_token")
         if not token_from_cookie:
+            logger.warning("CSRF validation failed: no token in cookie")
+            logger.warning(f"Available cookies: {list(request.cookies.keys())}")
             return False
         
+        logger.info(f"CSRF validation: header='{token_from_header[:10]}...', cookie='{token_from_cookie[:10]}...'")
+        
         # Constant-time comparison to prevent timing attacks
-        return hmac.compare_digest(token_from_header, token_from_cookie)
+        is_valid = hmac.compare_digest(token_from_header, token_from_cookie)
+        logger.info(f"CSRF validation result: {is_valid}")
+        
+        if not is_valid:
+            logger.warning(f"CSRF token mismatch - header: {token_from_header}, cookie: {token_from_cookie}")
+        
+        return is_valid
 
 
 async def require_csrf_token(request: Request) -> None:
@@ -67,10 +80,14 @@ async def require_csrf_token(request: Request) -> None:
     if request.method in ["GET", "HEAD", "OPTIONS"]:
         return
     
+    logger.info(f"CSRF check for {request.method} {request.url.path}")
+    
     # Get CSRF token from header
     csrf_token = request.headers.get("X-CSRF-Token")
     
     if not csrf_token:
+        logger.warning(f"CSRF token missing for {request.method} {request.url.path}")
+        logger.warning(f"Available headers: {dict(request.headers)}")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="CSRF token missing"
@@ -78,6 +95,7 @@ async def require_csrf_token(request: Request) -> None:
     
     # Validate token
     if not CSRFProtection.validate_token(request, csrf_token):
+        logger.warning(f"CSRF token invalid for {request.method} {request.url.path}")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="CSRF token invalid"

@@ -1,6 +1,7 @@
 from typing import List, Optional
 from datetime import datetime, timezone, timedelta
 import uuid
+import logging
 from sqlalchemy import select, and_, or_, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -17,6 +18,8 @@ from app.modules.chat.invitations import (
 from app.modules.auth.models import User
 from app.modules.chat.events import InvitationCreated
 from app.core.events import event_bus
+
+logger = logging.getLogger(__name__)
 
 
 class InvitationService:
@@ -112,7 +115,7 @@ class InvitationService:
         inviter = inviter_result.scalar_one_or_none()
         
         # Create invitation
-        expires_at = datetime.now(timezone.utc) + timedelta(hours=invitation_data.expires_hours)
+        expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=invitation_data.expires_hours)
         invitation = ChannelInvitation(
             channel_id=invitation_data.channel_id,
             inviter_id=inviter_id,
@@ -148,78 +151,208 @@ class InvitationService:
         user_id: int
     ) -> Channel:
         """Accept a channel invitation"""
-        invitation_result = await db.execute(
-            select(ChannelInvitation)
-            .options(selectinload(ChannelInvitation.channel))
-            .where(ChannelInvitation.id == invitation_id)
-        )
-        invitation = invitation_result.scalar_one_or_none()
-        
-        if not invitation:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Invitation not found"
+        try:
+            # Проверяем приглашение с блокировкой для предотвращения race conditions
+            invitation_result = await db.execute(
+                select(ChannelInvitation)
+                .options(selectinload(ChannelInvitation.channel))
+                .where(ChannelInvitation.id == invitation_id)
+                # Применяем блокировку для предотвращения одновременного принятия
+                .with_for_update()
             )
-        
-        # Verify email matches
-        user_result = await db.execute(
-            select(User).where(User.id == user_id)
-        )
-        user = user_result.scalar_one_or_none()
-        
-        if not user or user.email != invitation.invitee_email:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="This invitation is for a different email address"
+            invitation = invitation_result.scalar_one_or_none()
+            
+            if not invitation:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Invitation not found"
+                )
+            
+            # Проверяем email пользователя
+            user_result = await db.execute(
+                select(User).where(User.id == user_id)
             )
-        
-        # Verify invitation is pending and not expired
-        if invitation.status != "pending":
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invitation has already been {invitation.status}"
-            )
-        
-        if invitation.expires_at and invitation.expires_at < datetime.now(timezone.utc):
-            invitation.status = "expired"
-            await db.commit()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invitation has expired"
-            )
-        
-        # Check if user is already a member
-        is_member = await db.execute(
-            select(ChannelMember).where(
-                and_(
-                    ChannelMember.channel_id == invitation.channel_id,
-                    ChannelMember.user_id == user_id
+            user = user_result.scalar_one_or_none()
+            
+            if not user or user.email != invitation.invitee_email:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="This invitation is for a different email address"
+                )
+            
+            # Проверяем статус приглашения
+            # ИДЕМПОТЕНТНОСТЬ: если приглашение уже принято, возвращаем канал (idempotent operation)
+            if invitation.status == "accepted":
+                # Проверяем, что пользователь является участником канала
+                is_member = await db.execute(
+                    select(ChannelMember).where(
+                        and_(
+                            ChannelMember.channel_id == invitation.channel_id,
+                            ChannelMember.user_id == user_id
+                        )
+                    )
+                )
+                if is_member.scalar_one_or_none():
+                    # Пользователь уже участник - возвращаем канал (idempotent)
+                    return invitation.channel
+                else:
+                    # Приглашение помечено как принято, но пользователь не в канале - это ошибка данных
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail="Inconsistent state: invitation accepted but user not in channel"
+                    )
+            
+            if invitation.status in ["declined", "cancelled", "expired"]:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Invitation has already been {invitation.status}"
+                )
+            
+            # Проверяем срок действия приглашения
+            if invitation.expires_at and invitation.expires_at < datetime.now(timezone.utc).replace(tzinfo=None):
+                invitation.status = "expired"
+                await db.commit()
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invitation has expired"
+                )
+            
+            # Проверяем, не является ли пользователь уже участником
+            is_member = await db.execute(
+                select(ChannelMember).where(
+                    and_(
+                        ChannelMember.channel_id == invitation.channel_id,
+                        ChannelMember.user_id == user_id
+                    )
                 )
             )
-        )
-        if is_member.scalar_one_or_none():
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="You are already a member of this channel"
+            if is_member.scalar_one_or_none():
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="You are already a member of this channel"
+                )
+            
+            # Обновляем статус приглашения
+            invitation.status = "accepted"
+            invitation.responded_at = datetime.now(timezone.utc).replace(tzinfo=None)
+            invitation.invitee_user_id = user_id
+            
+            # Добавляем пользователя в канал
+            member = ChannelMember(
+                channel_id=invitation.channel_id,
+                user_id=user_id,
+                role=invitation.role
             )
-        
-        # Update invitation status
-        invitation.status = "accepted"
-        invitation.responded_at = datetime.now(timezone.utc)
-        invitation.invitee_user_id = user_id
-        
-        # Add user to channel
-        member = ChannelMember(
-            channel_id=invitation.channel_id,
-            user_id=user_id,
-            role=invitation.role
-        )
-        db.add(member)
-        
-        await db.commit()
-        await db.refresh(invitation.channel)
-        
-        return invitation.channel
+            db.add(member)
+            
+            # КОМИТ ТРАНЗАКЦИИ: все изменения сохраняются атомарно
+            await db.commit()
+            
+            # Обновляем объект канала для возврата
+            await db.refresh(invitation.channel)
+            
+            return invitation.channel
+            
+        except HTTPException:
+            # Перебрасываем HTTP исключения
+            raise
+        except Exception as e:
+            # Откатываем транзакцию при любой ошибке
+            await db.rollback()
+            logger.error(f"Error accepting invitation {invitation_id}: {e}", exc_info=True)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to accept invitation. Please try again."
+            )
+            
+            # Проверяем статус приглашения
+            # ИДЕМПОТЕНТНОСТЬ: если приглашение уже принято, возвращаем канал (idempotent operation)
+            if invitation.status == "accepted":
+                # Проверяем, что пользователь является участником канала
+                is_member = await db.execute(
+                    select(ChannelMember).where(
+                        and_(
+                            ChannelMember.channel_id == invitation.channel_id,
+                            ChannelMember.user_id == user_id
+                        )
+                    )
+                )
+                if is_member.scalar_one_or_none():
+                    # Пользователь уже участник - возвращаем канал (idempotent)
+                    await db.commit()
+                    return invitation.channel
+                else:
+                    # Приглашение помечено как принято, но пользователь не в канале - это ошибка данных
+                    await db.rollback()
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail="Inconsistent state: invitation accepted but user not in channel"
+                    )
+            
+            if invitation.status in ["declined", "cancelled", "expired"]:
+                await db.rollback()
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Invitation has already been {invitation.status}"
+                )
+            
+            # Проверяем срок действия приглашения
+            if invitation.expires_at and invitation.expires_at < datetime.now(timezone.utc).replace(tzinfo=None):
+                invitation.status = "expired"
+                await db.commit()
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invitation has expired"
+                )
+            
+            # Проверяем, не является ли пользователь уже участником
+            is_member = await db.execute(
+                select(ChannelMember).where(
+                    and_(
+                        ChannelMember.channel_id == invitation.channel_id,
+                        ChannelMember.user_id == user_id
+                    )
+                )
+            )
+            if is_member.scalar_one_or_none():
+                await db.rollback()
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="You are already a member of this channel"
+                )
+            
+            # Обновляем статус приглашения
+            invitation.status = "accepted"
+            invitation.responded_at = datetime.now(timezone.utc).replace(tzinfo=None)
+            invitation.invitee_user_id = user_id
+            
+            # Добавляем пользователя в канал
+            member = ChannelMember(
+                channel_id=invitation.channel_id,
+                user_id=user_id,
+                role=invitation.role
+            )
+            db.add(member)
+            
+            # КОМИТ ТРАНЗАКЦИИ: все изменения сохраняются атомарно
+            await db.commit()
+            
+            # Обновляем объект канала для возврата
+            await db.refresh(invitation.channel)
+            
+            return invitation.channel
+            
+        except HTTPException:
+            # Перебрасываем HTTP исключения
+            raise
+        except Exception as e:
+            # Откатываем транзакцию при любой ошибке
+            await db.rollback()
+            logger.error(f"Error accepting invitation {invitation_id}: {e}", exc_info=True)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to accept invitation. Please try again."
+            )
     
     @staticmethod
     async def decline_invitation(
@@ -229,42 +362,65 @@ class InvitationService:
         reason: Optional[str] = None
     ) -> bool:
         """Decline a channel invitation"""
-        invitation_result = await db.execute(
-            select(ChannelInvitation).where(ChannelInvitation.id == invitation_id)
-        )
-        invitation = invitation_result.scalar_one_or_none()
-        
-        if not invitation:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Invitation not found"
+        try:
+            # Проверяем приглашение с блокировкой для предотвращения race conditions
+            invitation_result = await db.execute(
+                select(ChannelInvitation).where(ChannelInvitation.id == invitation_id)
+                # Применяем блокировку для предотвращения одновременного отклонения
+                .with_for_update()
             )
-        
-        # Verify email matches
-        user_result = await db.execute(
-            select(User).where(User.id == user_id)
-        )
-        user = user_result.scalar_one_or_none()
-        
-        if not user or user.email != invitation.invitee_email:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="This invitation is for a different email address"
+            invitation = invitation_result.scalar_one_or_none()
+            
+            if not invitation:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Invitation not found"
+                )
+            
+            # Проверяем email пользователя
+            user_result = await db.execute(
+                select(User).where(User.id == user_id)
             )
-        
-        # Verify invitation is pending
-        if invitation.status != "pending":
+            user = user_result.scalar_one_or_none()
+            
+            if not user or user.email != invitation.invitee_email:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="This invitation is for a different email address"
+                )
+            
+            # Проверяем статус приглашения
+            # ИДЕМПОТЕНТНОСТЬ: если приглашение уже отклонено, возвращаем успех (idempotent operation)
+            if invitation.status == "declined":
+                # Приглашение уже отклонено - это idempotent операция
+                return True
+            
+            if invitation.status in ["accepted", "cancelled", "expired"]:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Invitation has already been {invitation.status}"
+                )
+            
+            # Обновляем статус приглашения
+            invitation.status = "declined"
+            invitation.responded_at = datetime.now(timezone.utc)
+            
+            # КОМИТ ТРАНЗАКЦИИ
+            await db.commit()
+            
+            return True
+            
+        except HTTPException:
+            # Перебрасываем HTTP исключения
+            raise
+        except Exception as e:
+            # Откатываем транзакцию при любой ошибке
+            await db.rollback()
+            logger.error(f"Error declining invitation {invitation_id}: {e}", exc_info=True)
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invitation has already been {invitation.status}"
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to decline invitation. Please try again."
             )
-        
-        # Update invitation status
-        invitation.status = "declined"
-        invitation.responded_at = datetime.now(timezone.utc)
-        
-        await db.commit()
-        return True
     
     @staticmethod
     async def get_pending_invitations(

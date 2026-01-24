@@ -40,18 +40,18 @@ export const setCsrfToken = (token: string) => {
 
 // Helper to get CSRF token from cookies
 const getCsrfToken = (): string | null => {
-    const name = 'csrf_token=';
-    const decodedCookie = decodeURIComponent(document.cookie);
-    const ca = decodedCookie.split(';');
-    for (let i = 0; i < ca.length; i++) {
-        let c = ca[i];
-        while (c.charAt(0) === ' ') {
-            c = c.substring(1);
-        }
-        if (c.indexOf(name) === 0) {
-            return c.substring(name.length, c.length);
+    // More robust cookie parsing
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'csrf_token') {
+            const token = decodeURIComponent(value);
+            console.log('🔐 CSRF token from cookie:', token ? 'present' : 'missing');
+            return token;
         }
     }
+    console.log('🔐 CSRF token cookie not found');
+    console.log('🔐 Available cookies:', document.cookie);
     return null;
 };
 
@@ -64,9 +64,13 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig): InternalAxios
 
     // Include CSRF token for state-changing methods
     if (config.method && !['get', 'head', 'options'].includes(config.method.toLowerCase())) {
-        const csrfToken = memoryCsrfToken || getCsrfToken();
+        // Всегда используем токен из cookie, так как сервер сравнивает именно с ним
+        const csrfToken = getCsrfToken();
         if (csrfToken) {
             config.headers['X-CSRF-Token'] = csrfToken;
+            console.log('🔐 Adding CSRF token to request:', config.url, 'token:', csrfToken.substring(0, 10) + '...');
+        } else {
+            console.warn('🔐 No CSRF token available for request:', config.url);
         }
     }
 
@@ -111,6 +115,7 @@ api.interceptors.response.use(
                         const res = await api.get('/auth/csrf-token');
                         if (res.data?.csrf_token) {
                             setCsrfToken(res.data.csrf_token);
+                            console.log('🔐 Got new CSRF token after 403 error');
                         }
                         // CSRF token is set in cookie, interceptor will pick it up on retry
                         return api(originalRequest);
@@ -157,7 +162,12 @@ api.interceptors.response.use(
             if (refreshToken) {
                 try {
                     const res = await axios.post(`${api.defaults.baseURL}/auth/refresh`, { refresh_token: refreshToken });
-                    const { access_token, refresh_token } = res.data;
+                    const { access_token, refresh_token, csrf_token } = res.data;
+
+                    // Сохраняем новый CSRF токен
+                    if (csrf_token) {
+                        setCsrfToken(csrf_token);
+                    }
 
                     // Update localStorage manually so next requests get it
                     const storage = JSON.parse(localStorage.getItem('auth-storage') || '{}');

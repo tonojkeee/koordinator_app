@@ -1,5 +1,6 @@
 import React from 'react';
 import { FileIcon, FileText, FileSpreadsheet, FileQuestion } from 'lucide-react';
+import { InvitationActions } from '../../components/chat/InvitationActions';
 
 export const formatDate = (dateString: string, t: (key: string) => string, locale: string = 'ru'): string => {
     try {
@@ -7,7 +8,6 @@ export const formatDate = (dateString: string, t: (key: string) => string, local
         
         // Check if date is valid
         if (isNaN(date.getTime())) {
-            console.warn('Invalid date string:', dateString);
             return dateString;
         }
         
@@ -27,7 +27,6 @@ export const formatDate = (dateString: string, t: (key: string) => string, local
 
         return date.toLocaleDateString(locale, { day: 'numeric', month: 'long' });
     } catch (error) {
-        console.warn('Date formatting error:', error, dateString);
         return dateString;
     }
 };
@@ -74,7 +73,28 @@ export const getFullUrl = (path: string, serverUrl: string | null, apiBaseUrl: s
     return `${baseUrl}${finalPath}`;
 };
 
-export const renderMessageContent = (content: string, isSent: boolean): (string | React.JSX.Element)[] => {
+export const renderMessageContent = (content: string, isSent: boolean, invitationId?: number): (string | React.JSX.Element)[] => {
+    if (!content) return [];
+
+    // Check for invitation actions pattern
+    const invitationActionsRegex = /\[INVITATION_ACTIONS:(\d+)\]/;
+    const invitationMatch = content.match(invitationActionsRegex);
+    
+    if (invitationMatch && invitationId) {
+        // Remove the action pattern from content and add the component
+        const cleanContent = content.replace(invitationActionsRegex, '').trim();
+        const contentParts = renderMessageContentInternal(cleanContent, isSent);
+        
+        return [
+            ...contentParts,
+            <InvitationActions key={`invitation-${invitationId}`} invitationId={invitationId} />
+        ];
+    }
+
+    return renderMessageContentInternal(content, isSent);
+};
+
+const renderMessageContentInternal = (content: string, isSent: boolean): (string | React.JSX.Element)[] => {
     if (!content) return [];
 
     const mentionRegex = /(\B@[a-zA-Z0-9_]+)/g;

@@ -366,6 +366,7 @@ async def get_channel_messages(
             rank=user.rank if user else None,
             role=user.role if user else None,
             avatar_url=user.avatar_url if user else None,
+            invitation_id=msg.invitation_id,  # Add invitation_id for system messages
             reactions=[
                 ReactionResponse(
                     emoji=r.emoji,
@@ -449,6 +450,7 @@ async def get_message_replies(
             rank=user.rank if user else None,
             role=user.role if user else None,
             avatar_url=user.avatar_url if user else None,
+            invitation_id=msg.invitation_id,  # Add invitation_id for system messages
             reactions=[
                 ReactionResponse(
                     emoji=r.emoji,
@@ -598,7 +600,7 @@ async def get_channel_members(
     result = await db.execute(stmt)
     users = result.scalars().all()
 
-    online_user_ids = manager.get_online_user_ids()
+    online_user_ids = await manager.get_online_user_ids()
     result = []
     for u in users:
         user_info = UserBasicInfo.from_orm(u)
@@ -648,39 +650,22 @@ async def user_websocket_endpoint(
         logger.error(f"Pre-authentication error: {e}")
         return
     
-    # STEP 2: Now accept the connection (only if all checks passed)
+    # STEP 2 & 3: Connect and handle online status
     try:
-        await websocket.accept()
-        logger.info(f"WebSocket connection accepted for user {user_id}")
-    except Exception as e:
-        logger.error(f"Failed to accept WebSocket connection: {e}")
-        return
-    
-    # STEP 3: Add to user_connections
-    try:
-        is_first_connection = user_id not in manager.user_connections
-        if is_first_connection:
-            manager.user_connections[user_id] = []
-        manager.user_connections[user_id].append(websocket)
+        await manager.connect_user(websocket, user_id)
+        logger.info(f"WebSocket connection established for user {user_id}")
         
-        # Update last_seen in DB immediately & broadcast online status
-        if is_first_connection:
-            try:
-                async with AsyncSessionLocal() as db_session:
-                    from sqlalchemy import update
-                    from datetime import datetime, timezone
-                    await db_session.execute(
-                        update(User).where(User.id == user_id).values(last_seen=datetime.now(timezone.utc))
-                    )
-                    await db_session.commit()
-                    
-                await manager.broadcast_to_all_users({
-                    "type": "user_presence",
-                    "user_id": user_id,
-                    "status": "online"
-                })
-            except Exception as e:
-                logger.error(f"Error in connection setup side-effects for user {user_id}: {e}")
+        # Update last_seen in DB immediately
+        try:
+            async with AsyncSessionLocal() as db_session:
+                from sqlalchemy import update
+                from datetime import datetime, timezone
+                await db_session.execute(
+                    update(User).where(User.id == user_id).values(last_seen=datetime.now(timezone.utc))
+                )
+                await db_session.commit()
+        except Exception as e:
+            logger.error(f"Error updating last_seen for user {user_id}: {e}")
                 
     except Exception as e:
         logger.error(f"Critical error in WebSocket setup for user {user_id}: {e}")
@@ -721,7 +706,6 @@ async def user_websocket_endpoint(
         logger.info(f"Cleaned up connection for user {user_id}")
 
 
-
 @router.websocket("/ws/{channel_id}")
 async def websocket_endpoint(
     websocket: WebSocket,
@@ -747,16 +731,19 @@ async def websocket_endpoint(
     async with AsyncSessionLocal() as db:
         # Check if user is a member
         is_member = await ChatService.is_user_member(db, channel_id, user_id)
+        channel = await ChatService.get_channel_by_id(db, channel_id)
+        if not channel:
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+            return
+        
         if not is_member:
-            channel = await ChatService.get_channel_by_id(db, channel_id)
-            if not channel:
+            if channel.is_direct or channel.visibility == 'private':
+                # Private channels and DMs require membership
                 await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
                 return
             
-            if channel.is_direct:
-                await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
-                return
-            # Public channels: allow connection without joining (preview mode)
+            # Public channels: allow connection without joining (READ-ONLY preview mode)
+            # Membership will be checked for each message attempt
         
         # Get user info
         user_result = await db.execute(select(User).where(User.id == user_id))
@@ -765,8 +752,8 @@ async def websocket_endpoint(
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Account disabled")
             return
     
-    # Connect
-    await manager.connect(websocket, channel_id, user_id)
+    # Connect with membership information
+    await manager.connect(websocket, channel_id, user_id, is_member)
     
     try:
         while True:
@@ -784,6 +771,28 @@ async def websocket_endpoint(
                 }, exclude_websocket=websocket)
                 continue
                 
+            # FIRST: Check if user is authorized to post messages
+            # Re-check membership for each message to handle dynamic joins
+            async with AsyncSessionLocal() as db:
+                is_current_member = await ChatService.is_user_member(db, channel_id, user_id)
+                channel = await ChatService.get_channel_by_id(db, channel_id)
+                
+                # Determine if user can post messages
+                if not is_current_member:
+                    if channel and not channel.is_direct and channel.visibility == 'public':
+                        # Public channel - user can view but not post without membership
+                        await websocket.send_json({
+                            "type": "error",
+                            "message": "Для отправки сообщений необходимо присоединиться к каналу. Нажмите кнопку 'Присоединиться' в верхней части чата.",
+                            "action_required": "join_channel",
+                            "channel_id": channel_id
+                        })
+                        continue
+                    else:
+                        # Private channel or DM - user should not be here
+                        await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="No longer a member")
+                        return
+            
             content = data.get("content", "").strip()
             document_id = data.get("document_id")
             parent_id = data.get("parent_id")
@@ -817,7 +826,7 @@ async def websocket_endpoint(
                         "message": "Слишком много сообщений. Пожалуйста, подождите."
                     })
                     continue
-            
+                
             # Parse mentions
             mentioned_usernames = parse_mentions(content)
             mentioned_user_ids = []
@@ -887,6 +896,7 @@ async def websocket_endpoint(
                     "document_id": message.document_id,
                     "parent_id": message.parent_id,
                     "parent": parent_info,
+                    "invitation_id": message.invitation_id,  # Add invitation_id for system messages
                     **doc_info,
                     "created_at": message.created_at.isoformat(),
                     "mentions": mentioned_user_ids,
@@ -910,7 +920,8 @@ async def websocket_endpoint(
                             "content": message.content[:100],  # Truncate for notification
                             "sender_id": user_id,
                             "sender_name": user.full_name or user.username,
-                            "created_at": message.created_at.isoformat()
+                            "created_at": message.created_at.isoformat(),
+                            "invitation_id": message.invitation_id  # Add invitation_id for system messages
                         }
                     })
     
@@ -1109,6 +1120,7 @@ async def update_message(
         rank=full_msg.user.rank if full_msg.user else None,
         role=full_msg.user.role if full_msg.user else None,
         avatar_url=full_msg.user.avatar_url if full_msg.user else None,
+        invitation_id=full_msg.invitation_id,  # Add invitation_id for system messages
         reactions=[
             ReactionResponse(
                 emoji=r.emoji,
@@ -1168,6 +1180,7 @@ async def search_messages_endpoint(
             rank=msg.user.rank if msg.user else None,
             role=msg.user.role if msg.user else None,
             avatar_url=msg.user.avatar_url if msg.user else None,
+            invitation_id=msg.invitation_id,  # Add invitation_id for system messages
             reactions=[], # Search doesn't need reactions usually, keeping light
             **doc_info
         ))
@@ -1254,6 +1267,17 @@ async def accept_invitation(
         "channel_owner_id": channel.created_by
     })
     
+    # IMPORTANT: Broadcast invitation status update to all users
+    # This ensures the UI immediately updates when invitation is accepted
+    await manager.broadcast_to_all_users({
+        "type": "invitation_status_changed",
+        "invitation_id": accept_data.invitation_id,
+        "status": "accepted",
+        "user_id": current_user.id,
+        "channel_id": channel.id,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    })
+    
     return enriched_channel
 
 
@@ -1270,6 +1294,17 @@ async def decline_invitation(
         current_user.id, 
         decline_data.reason
     )
+    
+    # IMPORTANT: Broadcast invitation status update to all users
+    # This ensures the UI immediately updates when invitation is declined
+    await manager.broadcast_to_all_users({
+        "type": "invitation_status_changed",
+        "invitation_id": decline_data.invitation_id,
+        "status": "declined",
+        "user_id": current_user.id,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    })
+    
     return {"status": "success"}
 
 

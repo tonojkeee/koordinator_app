@@ -125,7 +125,7 @@ Thumbs.db
 backend/uploads/
 backend/static/avatars/
 backend/teamchat.db
-
+frontend/.user-data-*
 # Certificates
 backend/certs/
 

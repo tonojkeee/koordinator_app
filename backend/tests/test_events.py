@@ -11,7 +11,7 @@ except ImportError:
 
 
 @dataclass
-class TestEvent:
+class TestEvent(Event):
     data: str
 
 
@@ -22,7 +22,8 @@ class TestEventBus:
         assert bus._handlers == {}
 
     @pytest.mark.skipif(not EVENTS_MODULE_EXISTS, reason="events module not implemented yet")
-    def test_subscribe_handler(self):
+    @pytest.mark.asyncio
+    async def test_subscribe_handler(self):
         bus = EventBus()
         handler_called = False
 
@@ -30,12 +31,13 @@ class TestEventBus:
             nonlocal handler_called
             handler_called = True
 
-        bus.subscribe(TestEvent, handler)
+        await bus.subscribe(TestEvent, handler)
         assert TestEvent in bus._handlers
         assert len(bus._handlers[TestEvent]) == 1
 
     @pytest.mark.skipif(not EVENTS_MODULE_EXISTS, reason="events module not implemented yet")
-    def test_subscribe_multiple_handlers(self):
+    @pytest.mark.asyncio
+    async def test_subscribe_multiple_handlers(self):
         bus = EventBus()
 
         async def handler1(event: TestEvent):
@@ -44,8 +46,8 @@ class TestEventBus:
         async def handler2(event: TestEvent):
             pass
 
-        bus.subscribe(TestEvent, handler1)
-        bus.subscribe(TestEvent, handler2)
+        await bus.subscribe(TestEvent, handler1)
+        await bus.subscribe(TestEvent, handler2)
 
         assert len(bus._handlers[TestEvent]) == 2
 
@@ -58,7 +60,7 @@ class TestEventBus:
         async def handler(event: TestEvent):
             results.append(event.data)
 
-        bus.subscribe(TestEvent, handler)
+        await bus.subscribe(TestEvent, handler)
         await bus.publish(TestEvent(data="test"))
 
         assert len(results) == 1
@@ -82,8 +84,8 @@ class TestEventBus:
         async def handler2(event: TestEvent):
             results.append("handler2")
 
-        bus.subscribe(TestEvent, handler1)
-        bus.subscribe(TestEvent, handler2)
+        await bus.subscribe(TestEvent, handler1)
+        await bus.subscribe(TestEvent, handler2)
         await bus.publish(TestEvent(data="test"))
 
         assert results == ["handler1", "handler2"]

@@ -6,9 +6,8 @@ import type { Message, Channel, User } from '../../types';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useUnreadStore } from '../../store/useUnreadStore';
 import { useWebSocket } from '../../hooks/useWebSocket';
-import { Send, MessageSquare, Smile, Trash2, Users, X, Hash, Bell, BellOff, Plus, Crown, Check, CheckCheck, FileText, Pencil, Search, Download, LogOut, UserPlus } from 'lucide-react';
+import { Send, MessageSquare, Smile, Trash2, X, Hash, Bell, Plus, Crown, Check, CheckCheck, FileText, Pencil } from 'lucide-react';
 import EmojiPicker, { EmojiStyle, Theme, type EmojiClickData } from 'emoji-picker-react';
-import { parseUTCDate } from '../../utils/date';
 
 import SendDocumentModal from '../board/components/SendDocumentModal';
 import { useTranslation } from 'react-i18next';
@@ -41,6 +40,7 @@ type WebSocketMessage =
     | { type: 'member_joined'; channel_id: number; user: User }
     | { type: 'member_left'; channel_id: number; user_id: number }
     | { type: 'owner_transferred'; channel_id: number; old_owner_id: number; new_owner_id: number; new_owner_username: string; channel_owner_id: number; old_owner_username?: string }
+    | { type: 'error'; message?: string; action_required?: string; channel_id?: number }
     | (Message & { type: 'new_message' })
     | (Message & { type?: never });
 
@@ -477,7 +477,7 @@ const ChatPage: React.FC = () => {
             link.click();
             link.remove();
         } catch (error) {
-            console.error('Export failed', error);
+            // Ошибка при экспорте чата
         }
     };
 
@@ -574,7 +574,6 @@ const ChatPage: React.FC = () => {
             alert(t('chat.transferOwnership.success'));
         },
         onError: (error: unknown) => {
-            console.error('Transfer ownership failed:', error);
             const err = error as { response?: { data?: { detail?: string } } };
             const message = err?.response?.data?.detail || t('chat.transferOwnership.error');
             alert(message);
@@ -625,6 +624,8 @@ const ChatPage: React.FC = () => {
         enabled: !!channelId,
     });
 
+    // Removed 30s polling as presence is now handled via global WebSocket in MainLayout
+    /*
     const { data: onlineData } = useQuery<{ online_user_ids: number[] }>({
         queryKey: ['users', 'online'],
         queryFn: async () => {
@@ -635,6 +636,7 @@ const ChatPage: React.FC = () => {
         enabled: channel?.is_direct === true,
     });
     const onlineUserIds = new Set(onlineData?.online_user_ids || []);
+    */
 
     const formatLastSeen = (lastSeen: string | null | undefined) => {
         if (!lastSeen) return t('chat.offline');
@@ -658,7 +660,7 @@ const ChatPage: React.FC = () => {
     };
 
     const dmPartner = channel?.other_user;
-    const isDmPartnerOnline = dmPartner ? onlineUserIds.has(dmPartner.id) : false;
+    const isDmPartnerOnline = dmPartner?.is_online ?? false;
 
     const markReadMutation = useMutation({
         mutationFn: async (id: number) => {
@@ -813,7 +815,25 @@ const ChatPage: React.FC = () => {
 
     const onMessage = useCallback((inputData: unknown) => {
         const data = inputData as WebSocketMessage;
-        
+
+        if (data.type === 'error') {
+            addToast({
+                type: 'error',
+                title: t('common.error'),
+                message: data.message || t('chat.send_error')
+            });
+
+            if (data.action_required === 'join_channel' && data.channel_id) {
+                addToast({
+                    type: 'info',
+                    title: t('common.info'),
+                    message: t('chat.join_channel_message'),
+                    duration: 10000
+                });
+            }
+            return;
+        }
+
         if (data.type === 'typing') {
             const { user_id, full_name, username, is_typing } = data;
             if (user_id === user?.id) return;
@@ -1000,14 +1020,14 @@ const ChatPage: React.FC = () => {
             // Обновляем кэш React Query для сообщений
             queryClient.setQueryData(['messages', channelId], (oldData: { pages: Message[][]; pageParams: number[] } | undefined) => {
                 if (!oldData) return oldData;
-                
+
                 // Проверяем, есть ли уже это сообщение
-                const messageExists = oldData.pages.some(page => 
+                const messageExists = oldData.pages.some(page =>
                     page.some(m => m.id === message.id)
                 );
-                
+
                 if (messageExists) return oldData;
-                
+
                 // Добавляем сообщение в последнюю страницу
                 const newPages = [...oldData.pages];
                 if (newPages.length > 0) {
@@ -1015,7 +1035,7 @@ const ChatPage: React.FC = () => {
                 } else {
                     newPages.push([message]);
                 }
-                
+
                 return {
                     ...oldData,
                     pages: newPages
@@ -1136,7 +1156,7 @@ const ChatPage: React.FC = () => {
                 await api.post(`/chat/messages/${messageId}/reactions?emoji=${encodeURIComponent(emoji)}`);
             }
         } catch (error) {
-            console.error('Error toggling reaction', error);
+            // Ошибка при добавлении/удалении реакции
         }
     };
 
@@ -1184,11 +1204,11 @@ const ChatPage: React.FC = () => {
                 {channelId ? (
                     <div className="flex-1 flex flex-col h-full transition-opacity duration-300" style={{ opacity: isHistoryLoading && messages.length === 0 ? 0.5 : 1 }}>
                         <ChannelHeader
-                            channel={channel}
+                            channel={channel as any}
                             isConnected={isConnected}
                             isMuted={isMuted}
                             isDmPartnerOnline={isDmPartnerOnline}
-                            dmPartner={dmPartner}
+                            dmPartner={dmPartner as any}
                             showParticipants={showParticipants}
                             setShowParticipants={setShowParticipants}
                             setIsMuteModalOpen={setIsMuteModalOpen}
@@ -1259,10 +1279,10 @@ const ChatPage: React.FC = () => {
                                     // Получаем email пользователей по их ID
                                     const usersResponse = await api.get('/auth/users');
                                     const allUsers = usersResponse.data;
-                                    
+
                                     let successCount = 0;
                                     let errors: string[] = [];
-                                    
+
                                     // Создаем приглашения для каждого пользователя
                                     for (const userId of userIds) {
                                         const user = allUsers.find((u: any) => u.id === userId);
@@ -1284,30 +1304,29 @@ const ChatPage: React.FC = () => {
                                             errors.push(`User with ID ${userId} not found or has no email`);
                                         }
                                     }
-                                    
+
                                     // Показываем результат
                                     if (successCount > 0) {
-                                        addToast({ 
-                                            type: 'success', 
-                                            title: t('common.success'), 
-                                            message: t('chat.invitations_sent', { count: successCount }) 
+                                        addToast({
+                                            type: 'success',
+                                            title: t('common.success'),
+                                            message: t('chat.invitations_sent', { count: successCount })
                                         });
                                     }
-                                    
+
                                     if (errors.length > 0) {
-                                        addToast({ 
-                                            type: 'error', 
-                                            title: t('common.error'), 
-                                            message: errors.join('; ') 
+                                        addToast({
+                                            type: 'error',
+                                            title: t('common.error'),
+                                            message: errors.join('; ')
                                         });
                                     }
-                                    
+
                                 } catch (error) {
-                                    console.error('Error inviting users:', error);
-                                    addToast({ 
-                                        type: 'error', 
-                                        title: t('common.error'), 
-                                        message: t('chat.invite_error') 
+                                    addToast({
+                                        type: 'error',
+                                        title: t('common.error'),
+                                        message: t('chat.invite_error')
                                     });
                                     throw error;
                                 }
@@ -1360,36 +1379,36 @@ const ChatPage: React.FC = () => {
                                                 const isLastInGroup = !nextMsg || nextMsg.user_id !== msg.user_id || (nextMsg && new Date(nextMsg.created_at).toDateString() !== msgDate);
 
                                                 const msgGroupClass = isFirstInGroup && isLastInGroup ? 'msg-single' : isFirstInGroup ? 'msg-first' : isLastInGroup ? 'msg-last' : 'msg-middle';
-                                                
+
                                                 const contextOptions: ContextMenuOption[] = [
-                                                     {
-                                                         label: t('chat.reply'),
-                                                         icon: MessageSquare,
-                                                         onClick: () => setActiveThread(msg)
-                                                     },
-                                                     {
-                                                         label: t('chat.copy_text'),
-                                                         icon: FileText,
-                                                         onClick: () => {
-                                                             navigator.clipboard.writeText(msg.content);
-                                                             addToast({ type: 'success', title: t('common.success'), message: t('chat.text_copied') });
-                                                         }
-                                                     }
+                                                    {
+                                                        label: t('chat.reply'),
+                                                        icon: MessageSquare,
+                                                        onClick: () => setActiveThread(msg)
+                                                    },
+                                                    {
+                                                        label: t('chat.copy_text'),
+                                                        icon: FileText,
+                                                        onClick: () => {
+                                                            navigator.clipboard.writeText(msg.content);
+                                                            addToast({ type: 'success', title: t('common.success'), message: t('chat.text_copied') });
+                                                        }
+                                                    }
                                                 ];
 
                                                 if (msg.user_id === user?.id || user?.role === 'admin') {
-                                                     contextOptions.push({
-                                                         label: t('common.edit'),
-                                                         icon: Pencil,
-                                                         onClick: () => setEditingMessage(msg),
-                                                         divider: true
-                                                     });
-                                                     contextOptions.push({
-                                                         label: t('common.delete'),
-                                                         icon: Trash2,
-                                                         variant: 'danger',
-                                                         onClick: () => handleDeleteMessage(msg.id)
-                                                     });
+                                                    contextOptions.push({
+                                                        label: t('common.edit'),
+                                                        icon: Pencil,
+                                                        onClick: () => setEditingMessage(msg),
+                                                        divider: true
+                                                    });
+                                                    contextOptions.push({
+                                                        label: t('common.delete'),
+                                                        icon: Trash2,
+                                                        variant: 'danger',
+                                                        onClick: () => handleDeleteMessage(msg.id)
+                                                    });
                                                 }
 
                                                 return (
@@ -1478,14 +1497,14 @@ const ChatPage: React.FC = () => {
 
                                                                             <div className="flex flex-col relative">
                                                                                 {msg.content && (!msg.document_id || !msg.content.startsWith('📎')) && (
-                                                                                    <p className={`leading-relaxed whitespace-pre-wrap break-words pr-14 ${isSent ? 'text-white' : 'text-slate-900'} ${msg.document_id ? 'mt-2 text-[13px] opacity-90' : ''}`}>
-                                                                    {renderMessageContent(msg.content, isSent)}
-                                                                    {msg.updated_at && (
-                                                                        <span className={`text-[10px] ml-1 opacity-60 italic select-none ${isSent ? 'text-white' : 'text-slate-500'}`}>
-                                                                            ({t('chat.edited')})
-                                                                        </span>
-                                                                    )}
-                                                                </p>
+                                                                                    <div className={`leading-relaxed whitespace-pre-wrap break-words pr-14 ${isSent ? 'text-white' : 'text-slate-900'} ${msg.document_id ? 'mt-2 text-[13px] opacity-90' : ''}`}>
+                                                                                        {renderMessageContent(msg.content, isSent, msg.invitation_id)}
+                                                                                        {msg.updated_at && (
+                                                                                            <span className={`text-[10px] ml-1 opacity-60 italic select-none ${isSent ? 'text-white' : 'text-slate-500'}`}>
+                                                                                                ({t('chat.edited')})
+                                                                                            </span>
+                                                                                        )}
+                                                                                    </div>
 
                                                                                 )}
 
@@ -1582,57 +1601,42 @@ const ChatPage: React.FC = () => {
                                     </div>
                                 </div>
 
-                                    {canChat && !channel?.is_system ? (
-                                        <MessageInput
-                                            ref={messageInputRef}
-                                            isConnected={isConnected}
-                                            sendMessage={sendMessage}
-                                            updateMessage={handleUpdateMessage}
-                                            sendTyping={sendTyping}
-                                            activeThread={activeThread}
-                                            setActiveThread={setActiveThread}
-                                            editingMessage={editingMessage}
-                                            onCancelEdit={() => setEditingMessage(null)}
-                                            setIsSendModalOpen={setIsSendModalOpen}
-                                            handleReactionClick={handleReactionClick}
-                                            typingUsers={typingUsers}
-                                        />
-                                    ) : channel?.is_system ? (
-                                        <div className="p-6 flex items-center justify-center bg-slate-50/50 backdrop-blur-xl">
-                                            <div className="text-center animate-in slide-in-from-bottom-4 duration-500">
-                                                <p className="text-slate-600 mb-2 font-medium text-sm">{t('chat.system_channel_readonly')}</p>
-                                                <p className="text-slate-400 text-xs">{t('chat.system_channel_description')}</p>
-                                            </div>
+                                {canChat ? (
+                                    <MessageInput
+                                        ref={messageInputRef}
+                                        isConnected={isConnected}
+                                        sendMessage={sendMessage}
+                                        updateMessage={handleUpdateMessage}
+                                        sendTyping={sendTyping}
+                                        activeThread={activeThread}
+                                        setActiveThread={setActiveThread}
+                                        editingMessage={editingMessage}
+                                        onCancelEdit={() => setEditingMessage(null)}
+                                        setIsSendModalOpen={setIsSendModalOpen}
+                                        handleReactionClick={handleReactionClick}
+                                        typingUsers={typingUsers}
+                                    />
+                                ) : channel?.is_system ? (
+                                    <div className="p-6 flex items-center justify-center bg-slate-50/50 backdrop-blur-xl">
+                                        <div className="text-center animate-in slide-in-from-bottom-4 duration-500">
+                                            <p className="text-slate-600 mb-2 font-medium text-sm">{t('chat.system_channel_readonly')}</p>
+                                            <p className="text-slate-400 text-xs">{t('chat.system_channel_description')}</p>
                                         </div>
-                                    ) : !canChat ? (
-                                        <MessageInput
-                                            ref={messageInputRef}
-                                            isConnected={isConnected}
-                                            sendMessage={sendMessage}
-                                            updateMessage={handleUpdateMessage}
-                                            sendTyping={sendTyping}
-                                            activeThread={activeThread}
-                                            setActiveThread={setActiveThread}
-                                            editingMessage={editingMessage}
-                                            onCancelEdit={() => setEditingMessage(null)}
-                                            setIsSendModalOpen={setIsSendModalOpen}
-                                            handleReactionClick={handleReactionClick}
-                                            typingUsers={typingUsers}
-                                        />
-                                    ) : (
-                                        <div className="p-6 flex items-center justify-center bg-indigo-50/50 backdrop-blur-xl">
-                                            <div className="text-center animate-in slide-in-from-bottom-4 duration-500">
-                                                <p className="text-slate-600 mb-4 font-bold text-lg">{t('chat.preview_mode_message')}</p>
-                                                <Button
-                                                    onClick={() => joinChannelMutation.mutate()}
-                                                    disabled={joinChannelMutation.isPending}
-                                                    className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/30 px-8 py-3 rounded-xl text-base font-bold transition-all hover:scale-105 active:scale-95"
-                                                >
-                                                    {joinChannelMutation.isPending ? t('common.loading') : t('chat.join_channel')}
-                                                </Button>
-                                            </div>
+                                    </div>
+                                ) : (
+                                    <div className="p-6 flex items-center justify-center bg-indigo-50/50 backdrop-blur-xl">
+                                        <div className="text-center animate-in slide-in-from-bottom-4 duration-500">
+                                            <p className="text-slate-600 mb-4 font-bold text-lg">{t('chat.preview_mode_message')}</p>
+                                            <Button
+                                                onClick={() => joinChannelMutation.mutate()}
+                                                disabled={joinChannelMutation.isPending}
+                                                className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/30 px-8 py-3 rounded-xl text-base font-bold transition-all hover:scale-105 active:scale-95"
+                                            >
+                                                {joinChannelMutation.isPending ? t('common.loading') : t('chat.join_channel')}
+                                            </Button>
                                         </div>
-                                    )}
+                                    </div>
+                                )}
                             </div>
 
                             {showParticipants && channelId && channel && !channel.is_direct && !channel.is_system && (
