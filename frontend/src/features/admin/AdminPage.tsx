@@ -31,7 +31,7 @@ import {
 } from './hooks/useAdminQueries';
 
 // Tabs
-import { OverviewTab, UsersTab, UnitsTab, TasksTab, SessionsTab } from './components/tabs';
+import { OverviewTab, UsersTab, UnitsTab, TasksTab, SessionsTab, EmailSettingsTab } from './components/tabs';
 
 // Modals
 import { EditUserModal, EditUnitModal, LogsModal } from './components/modals';
@@ -290,6 +290,8 @@ const AdminPage: React.FC = () => {
                         <React.Suspense fallback={<div className="text-center py-10">Loading...</div>}>
                             {activeTab === 'settings_database' ? (
                                 <DatabaseSettingsTab t={t} />
+                            ) : activeTab === 'settings_email' ? (
+                                <EmailSettingsTab />
                             ) : (
                                 <AppSettingsTab t={t} visibleGroup={activeTab.split('_')[1]} />
                             )}

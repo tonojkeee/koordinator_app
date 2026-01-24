@@ -33,6 +33,7 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const suggestionsRef = useRef<HTMLDivElement>(null);
+    const recipientInputRef = useRef<HTMLInputElement>(null);
 
     // Fetch settings for limits
     const { data: settings } = useQuery({
@@ -55,6 +56,17 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
             }
         };
         loadUsers();
+    }, []);
+
+    // Focus recipient input when modal opens
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (recipientInputRef.current) {
+                recipientInputRef.current.focus();
+            }
+        }, 150); // Slightly longer delay than Modal's focus management
+        
+        return () => clearTimeout(timer);
     }, []);
 
     // Handle outside click for suggestions
@@ -238,7 +250,7 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                     <label className="text-[10px] uppercase font-black text-slate-400 mb-2 block tracking-widest ml-1">{t('email.compose.recipients')}</label>
                     <div
                         className="w-full min-h-[56px] px-3 py-2 bg-white border-2 border-slate-100 focus-within:border-indigo-100 rounded-2xl shadow-sm focus-within:shadow-xl focus-within:shadow-indigo-500/5 transition-all flex flex-wrap gap-2 items-center cursor-text"
-                        onClick={() => document.getElementById('recipient-input')?.focus()}
+                        onClick={() => recipientInputRef.current?.focus()}
                     >
                         {recipients.map(email => (
                             <div key={email} className="flex items-center gap-1.5 bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-xl text-xs font-bold ring-1 ring-indigo-500/10 animate-in fade-in zoom-in duration-200">
@@ -253,6 +265,7 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                             </div>
                         ))}
                         <input
+                            ref={recipientInputRef}
                             id="recipient-input"
                             type="text"
                             className="flex-1 bg-transparent min-w-[150px] outline-none text-sm font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-medium h-8"
@@ -260,7 +273,7 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                             value={recipientInput}
                             onChange={e => setRecipientInput(e.target.value)}
                             onKeyDown={handleKeyDown}
-                            autoFocus
+                            tabIndex={0}
                         />
                     </div>
 
@@ -296,6 +309,7 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                     value={subject}
                     onChange={e => setSubject(e.target.value)}
                     fullWidth
+                    tabIndex={0}
                 />
 
                 {/* Body */}
@@ -306,6 +320,7 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                     onChange={e => setBody(e.target.value)}
                     rows={10}
                     fullWidth
+                    tabIndex={0}
                 />
 
                 {/* Files List */}

@@ -251,5 +251,5 @@ async def recreate_email_accounts(
     db: AsyncSession = Depends(get_db),
     admin: User = Depends(get_admin_user)
 ):
-    """Recreate all email accounts with the current domain setting"""
+    """Completely recreate all email accounts with new domain, deleting all messages"""
     return await AdminService.recreate_email_accounts(db, admin.id)

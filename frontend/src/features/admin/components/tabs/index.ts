@@ -7,3 +7,4 @@ export { UsersTab } from './UsersTab';
 export { UnitsTab } from './UnitsTab';
 export { TasksTab } from './TasksTab';
 export { SessionsTab } from './SessionsTab';
+export { EmailSettingsTab } from './EmailSettingsTab';

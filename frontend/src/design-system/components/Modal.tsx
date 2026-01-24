@@ -91,13 +91,22 @@ export const Modal = React.memo<ModalProps>(({
     // Store the element that had focus before modal opened
     previousActiveElement.current = document.activeElement as HTMLElement;
 
-    // Focus the modal container
-    if (modalRef.current) {
-      modalRef.current.focus();
-    }
-
     // Prevent body scroll
     document.body.style.overflow = 'hidden';
+
+    // Focus the first focusable element in modal after a short delay
+    setTimeout(() => {
+      if (modalRef.current) {
+        const firstFocusable = modalRef.current.querySelector<HTMLElement>(
+          'input:not([disabled]), button:not([disabled]), [href], select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled])'
+        );
+        if (firstFocusable) {
+          firstFocusable.focus();
+        } else {
+          modalRef.current.focus();
+        }
+      }
+    }, 100);
 
     return () => {
       // Restore body scroll
@@ -115,7 +124,7 @@ export const Modal = React.memo<ModalProps>(({
     if (e.key !== 'Tab' || !modalRef.current) return;
 
     const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled])'
     );
 
     const firstElement = focusableElements[0];

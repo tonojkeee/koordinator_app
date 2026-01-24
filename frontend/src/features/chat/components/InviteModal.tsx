@@ -16,6 +16,7 @@ function InviteModal({ isOpen, onClose, channelId, channelName, onInvite }: Invi
   const [selectedUsers, setSelectedUsers] = useState<AutocompleteUser[]>([]);
   const [inviteMessage, setInviteMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Search users function
   const searchUsers = async (query: string): Promise<AutocompleteUser[]> => {
@@ -46,6 +47,8 @@ function InviteModal({ isOpen, onClose, channelId, channelName, onInvite }: Invi
     if (selectedUsers.length === 0) return;
 
     setIsLoading(true);
+    setError(null);
+    
     try {
       await onInvite(
         selectedUsers.map(u => u.id),
@@ -54,6 +57,7 @@ function InviteModal({ isOpen, onClose, channelId, channelName, onInvite }: Invi
       handleClose();
     } catch (error) {
       console.error('Error inviting users:', error);
+      setError(error instanceof Error ? error.message : 'Failed to send invitations');
     } finally {
       setIsLoading(false);
     }
@@ -62,6 +66,7 @@ function InviteModal({ isOpen, onClose, channelId, channelName, onInvite }: Invi
   const handleClose = () => {
     setSelectedUsers([]);
     setInviteMessage('');
+    setError(null);
     onClose();
   };
 
@@ -101,6 +106,13 @@ function InviteModal({ isOpen, onClose, channelId, channelName, onInvite }: Invi
       }
     >
       <div className="space-y-6">
+        {/* Error message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
+
         {/* User selection with autocomplete */}
         <UserAutocomplete
           label={t('chat.search_users')}
@@ -121,6 +133,7 @@ function InviteModal({ isOpen, onClose, channelId, channelName, onInvite }: Invi
             rows={3}
             maxLength={500}
             fullWidth
+            disabled={isLoading}
           />
         </div>
       </div>

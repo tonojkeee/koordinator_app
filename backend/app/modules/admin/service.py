@@ -2,6 +2,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, text
 from sqlalchemy.orm import selectinload, defer
 from datetime import datetime, timedelta, timezone
+from fastapi import HTTPException
+
 from app.modules.admin.models import AuditLog
 from app.core.models import SystemSetting
 from app.core.websocket_manager import websocket_manager as manager
@@ -101,6 +103,10 @@ class SystemSettingService:
         
         await db.commit()
         await db.refresh(setting)
+        
+        # Invalidate cache for this key
+        SystemSettingService.invalidate_cache(key)
+        
         return setting
 
     @staticmethod
@@ -561,12 +567,11 @@ class AdminService:
     async def get_email_settings(db: AsyncSession):
         """Get current email configuration and statistics"""
         from app.modules.email.models import EmailAccount, EmailMessage
-        from app.core.config_service import ConfigService
         
-        # Get current settings
-        internal_domain = await ConfigService.get_value(db, "internal_email_domain", "40919.com")
-        smtp_host = await ConfigService.get_value(db, "email_smtp_host", "127.0.0.1")
-        smtp_port = await ConfigService.get_value(db, "email_smtp_port", "2525")
+        # Get current settings using SystemSettingService
+        internal_domain = await SystemSettingService.get_value(db, "internal_email_domain", "40919.com")
+        smtp_host = await SystemSettingService.get_value(db, "email_smtp_host", "127.0.0.1")
+        smtp_port = await SystemSettingService.get_value(db, "email_smtp_port", 2525)
         
         # Get statistics
         total_accounts = await db.scalar(select(func.count(EmailAccount.id)))
@@ -575,7 +580,7 @@ class AdminService:
         return {
             "internal_email_domain": internal_domain,
             "smtp_host": smtp_host,
-            "smtp_port": int(smtp_port),
+            "smtp_port": int(smtp_port) if isinstance(smtp_port, str) else smtp_port,
             "total_accounts": total_accounts or 0,
             "total_messages": total_messages or 0
         }
@@ -583,13 +588,13 @@ class AdminService:
     @staticmethod
     async def update_email_settings(db: AsyncSession, settings_data, admin_id: int):
         """Update email domain configuration"""
-        from app.core.config_service import ConfigService
-        from app.modules.email.models import EmailAccount, EmailMessage
-        
         # Update the internal email domain setting
         await SystemSettingService.set_value(
             db, "internal_email_domain", settings_data.internal_email_domain, admin_id
         )
+        
+        # Invalidate cache to ensure fresh data
+        SystemSettingService.invalidate_cache("internal_email_domain")
         
         # Create audit log
         await AdminService.create_audit_log(
@@ -603,43 +608,75 @@ class AdminService:
 
     @staticmethod
     async def recreate_email_accounts(db: AsyncSession, admin_id: int):
-        """Recreate all email accounts with the current domain setting"""
-        from app.modules.email.models import EmailAccount
-        from app.core.config_service import ConfigService
+        """Completely recreate all email accounts with new domain, deleting all messages"""
+        from app.modules.email.models import EmailAccount, EmailMessage, EmailFolder, EmailAttachment
+        from app.modules.auth.models import User
+        from sqlalchemy import delete
         
-        # Get current domain setting
-        new_domain = await ConfigService.get_value(db, "internal_email_domain", "40919.com")
-        
-        # Get all email accounts with their users
-        stmt = (
-            select(EmailAccount, User.username)
-            .join(User, EmailAccount.user_id == User.id)
-        )
-        result = await db.execute(stmt)
-        accounts_data = result.all()
-        
-        updated_count = 0
-        
-        for account, username in accounts_data:
-            # Generate new email address with current domain
-            new_email = f"{username}@{new_domain}"
+        try:
+            # Get current domain setting using SystemSettingService
+            new_domain = await SystemSettingService.get_value(db, "internal_email_domain", "40919.com")
             
-            # Only update if different
-            if account.email_address != new_email:
-                old_email = account.email_address
-                account.email_address = new_email
-                updated_count += 1
-                
-                # Log the change
-                await AdminService.create_audit_log(
-                    db, admin_id, "update_email_account", "email_account", 
-                    str(account.id), 
-                    f"Updated email from '{old_email}' to '{new_email}'"
+            # Get all users
+            result = await db.execute(select(User))
+            all_users = result.scalars().all()
+            
+            recreated_count = 0
+            
+            for user in all_users:
+                # Delete existing email account and all related data if exists
+                existing_account = await db.scalar(
+                    select(EmailAccount).where(EmailAccount.user_id == user.id)
                 )
-        
-        await db.commit()
-        
-        return {
-            "updated_accounts": updated_count,
-            "message": f"Successfully updated {updated_count} email accounts to use domain '{new_domain}'"
-        }
+                
+                if existing_account:
+                    # Delete all attachments first (due to foreign key constraints)
+                    await db.execute(
+                        delete(EmailAttachment)
+                        .where(EmailAttachment.message_id.in_(
+                            select(EmailMessage.id).where(EmailMessage.account_id == existing_account.id)
+                        ))
+                    )
+                    
+                    # Delete all messages
+                    await db.execute(
+                        delete(EmailMessage).where(EmailMessage.account_id == existing_account.id)
+                    )
+                    
+                    # Delete all folders
+                    await db.execute(
+                        delete(EmailFolder).where(EmailFolder.account_id == existing_account.id)
+                    )
+                    
+                    # Delete the account itself
+                    await db.delete(existing_account)
+                    
+                    # Flush to ensure deletion is committed before creating new account
+                    await db.flush()
+                
+                # Create new email account with current domain
+                new_email = f"{user.username}@{new_domain}"
+                new_account = EmailAccount(
+                    user_id=user.id,
+                    email_address=new_email
+                )
+                db.add(new_account)
+                
+                # Update user's email in profile
+                user.email = new_email
+                
+                recreated_count += 1
+            
+            await db.commit()
+            
+            return {
+                "updated_accounts": recreated_count,
+                "message": f"Successfully recreated {recreated_count} email accounts with domain '{new_domain}'. All previous messages were deleted."
+            }
+            
+        except Exception as e:
+            await db.rollback()
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Failed to recreate email accounts: {str(e)}"
+            )
