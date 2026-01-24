@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../api/client';
 import type { Channel } from '../../types';
 import { AxiosError } from 'axios';
-import { Loader2, Trash2, Layers, MessageSquare, Pin, BellOff, Crown, Filter, Edit, Search, Lock, Globe } from 'lucide-react';
+import { Loader2, Trash2, Layers, MessageSquare, Pin, BellOff, Crown, Filter, Edit, Search, Lock, Globe, Settings } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -151,12 +151,19 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
   const queryClient = useQueryClient();
   const [extraChannel, setExtraChannel] = useState<Channel | null>(null);
 
+  // Принудительно инвалидируем кэш каналов при монтировании компонента
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['channels'] });
+  }, [queryClient]);
+
   const { data: channels = [], isLoading } = useQuery<Channel[]>({
     queryKey: ['channels'],
     queryFn: async () => {
       const res = await api.get('/chat/channels');
       return res.data;
-    }
+    },
+    refetchInterval: 30000, // Обновляем каждые 30 секунд
+    refetchOnWindowFocus: true, // Обновляем при фокусе окна
   });
 
   useEffect(() => {
@@ -294,13 +301,16 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
     (c.display_name || c.name || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const pinnedChannels = filteredChannels.filter(c => c.is_pinned);
-  const publicChannels = filteredChannels.filter(c => !c.is_direct && !c.is_pinned && c.visibility === 'public');
-  const privateChannels = filteredChannels.filter(c => !c.is_direct && !c.is_pinned && c.visibility === 'private');
-  const directChannels = filteredChannels.filter(c => c.is_direct && !c.is_pinned);
+  const systemChannels = filteredChannels.filter(c => c.is_system);
+  const pinnedChannels = filteredChannels.filter(c => c.is_pinned && !c.is_system);
+  const publicChannels = filteredChannels.filter(c => !c.is_direct && !c.is_pinned && !c.is_system && c.visibility === 'public');
+  const privateChannels = filteredChannels.filter(c => !c.is_direct && !c.is_pinned && !c.is_system && c.visibility === 'private');
+  const directChannels = filteredChannels.filter(c => c.is_direct && !c.is_pinned && !c.is_system);
 
   if (extraChannel && (extraChannel.display_name || extraChannel.name || '').toLowerCase().includes(searchQuery.toLowerCase())) {
-    if (extraChannel.is_pinned) {
+    if (extraChannel.is_system) {
+      if (!systemChannels.some(c => c.id === extraChannel.id)) systemChannels.push(extraChannel);
+    } else if (extraChannel.is_pinned) {
       if (!pinnedChannels.some(c => c.id === extraChannel.id)) pinnedChannels.push(extraChannel);
     } else if (extraChannel.is_direct) {
       if (!directChannels.some(c => c.id === extraChannel.id)) directChannels.push(extraChannel);
@@ -320,6 +330,16 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
         <div className="flex items-center space-x-1">
           <button className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-md transition-colors">
             <Filter size={18} />
+          </button>
+          <button 
+            onClick={() => {
+              queryClient.invalidateQueries({ queryKey: ['channels'] });
+              queryClient.invalidateQueries({ queryKey: ['channel'] });
+            }}
+            className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-md transition-colors"
+            title="Обновить данные"
+          >
+            <Search size={18} />
           </button>
           <button 
             onClick={() => setIsCreating(true)}
@@ -348,6 +368,41 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
           <div className="flex justify-center py-4"><Loader2 className="animate-spin text-indigo-500" /></div>
         ) : (
           <>
+            {systemChannels.length > 0 && (
+              <div className="space-y-1">
+                {systemChannels.map((channel) => {
+                  // Системные каналы нельзя удалять или закреплять
+                  const contextOptions: ContextMenuOption[] = [
+                    {
+                      label: channel.mute_until && new Date(channel.mute_until) > new Date() ? t('chat.notifications.unmute') : t('chat.notifications.mute'),
+                      icon: BellOff,
+                      onClick: () => setMuteModalChannelId(channel.id)
+                    }
+                  ];
+
+                  return (
+                    <ContextMenu key={channel.id} options={contextOptions}>
+                      <ChannelItem 
+                        channel={channel} 
+                        isActive={Number(channelId) === channel.id}
+                        unread={getUnreadDisplay(channel)}
+                        onClick={() => {
+                          navigate(`/chat/${channel.id}`);
+                          if (onCloseMobile) onCloseMobile();
+                        }}
+                        onPin={handlePin}
+                        onDelete={handleDelete}
+                        onMute={() => setMuteModalChannelId(channel.id)}
+                        currentUser={currentUser}
+                        t={t}
+                        isSystem={true}
+                      />
+                    </ContextMenu>
+                  );
+                })}
+              </div>
+            )}
+
             {pinnedChannels.length > 0 && (
               <div className="space-y-1">
                 <div className="flex items-center space-x-2 px-2 text-[10px] font-bold text-indigo-500 uppercase tracking-[0.2em] mb-2 mt-2">
@@ -583,7 +638,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
 };
 
 const ChannelItem = ({ 
-  channel, isActive, unread, onClick, onPin, onDelete, onMute, currentUser, t 
+  channel, isActive, unread, onClick, onPin, onDelete, onMute, currentUser, t, isSystem = false
 }: {  
   channel: Channel, 
   isActive: boolean, 
@@ -593,7 +648,8 @@ const ChannelItem = ({
   onDelete: (e: React.MouseEvent, id: number) => void,
   onMute: () => void,
   currentUser: { id: number; role: string } | null,
-  t: (key: string) => string
+  t: (key: string) => string,
+  isSystem?: boolean
 }) => { 
 
   return (
@@ -619,6 +675,11 @@ const ChannelItem = ({
         {channel.visibility === 'private' && !channel.is_direct && (
           <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
             <Lock size={8} className="text-white" />
+          </div>
+        )}
+        {channel.is_system && (
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-slate-500 rounded-full flex items-center justify-center">
+            <Settings size={8} className="text-white" />
           </div>
         )}
         {channel.is_direct && (
@@ -661,14 +722,16 @@ const ChannelItem = ({
         >
           <BellOff size={14} fill={channel.mute_until && new Date(channel.mute_until) > new Date() ? "currentColor" : "none"} />
         </button>
-        <button 
-          onClick={(e) => onPin(e, channel.id)} 
-          className="p-1 text-slate-400 hover:text-indigo-500 transition-colors"
-          title={channel.is_pinned ? t('chat.unpin') : t('chat.pin')}
-        >
-          <Pin size={14} fill={channel.is_pinned ? "currentColor" : "none"} />
-        </button>
-        {(channel.created_by === currentUser?.id || currentUser?.role === 'admin') && (
+        {!isSystem && (
+          <button 
+            onClick={(e) => onPin(e, channel.id)} 
+            className="p-1 text-slate-400 hover:text-indigo-500 transition-colors"
+            title={channel.is_pinned ? t('chat.unpin') : t('chat.pin')}
+          >
+            <Pin size={14} fill={channel.is_pinned ? "currentColor" : "none"} />
+          </button>
+        )}
+        {!isSystem && (channel.created_by === currentUser?.id || currentUser?.role === 'admin') && (
           <button 
             onClick={(e) => onDelete(e, channel.id)} 
             className="p-1 text-slate-400 hover:text-rose-500 transition-colors"

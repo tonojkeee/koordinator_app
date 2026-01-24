@@ -8,6 +8,7 @@ class ChannelInvitationCreate(BaseModel):
     channel_id: int = Field(..., description="ID канала")
     invitee_email: EmailStr = Field(..., description="Email приглашаемого пользователя")
     role: str = Field("member", description="Роль в канале")
+    message: Optional[str] = Field(None, max_length=500, description="Сообщение к приглашению")
     expires_hours: Optional[int] = Field(24, ge=1, le=168, description="Время действия в часах (1-168)")
 
 

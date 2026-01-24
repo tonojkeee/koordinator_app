@@ -16,9 +16,11 @@ class Channel(Base):
     
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
+    display_name: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
     description: Mapped[str] = mapped_column(Text, nullable=True)
     created_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     is_direct: Mapped[bool] = mapped_column(default=False, nullable=False, index=True)
+    is_system: Mapped[bool] = mapped_column(default=False, nullable=False, index=True)
     visibility: Mapped[str] = mapped_column(String(20), nullable=False, default="public")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
@@ -36,14 +38,13 @@ class Message(Base):
     
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     channel_id: Mapped[int] = mapped_column(ForeignKey("channels.id"), nullable=False, index=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)  # Allow None for system messages
     document_id: Mapped[Optional[int]] = mapped_column(ForeignKey("documents.id"), nullable=True, index=True)
     parent_id: Mapped[Optional[int]] = mapped_column(ForeignKey("messages.id"), nullable=True, index=True)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
     updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, onupdate=lambda: datetime.now(timezone.utc))
     
-    document = relationship("Document")
     user = relationship("app.modules.auth.models.User")
     reactions = relationship("MessageReaction", cascade="all, delete-orphan")
     replies = relationship("Message", backref=backref("parent", remote_side=[id]), cascade="all, delete-orphan")
@@ -92,6 +93,7 @@ class ChannelInvitation(Base):
     invitee_user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
     role: Mapped[str] = mapped_column(String(20), nullable=False, default="member")
+    message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     token: Mapped[str] = mapped_column(String(255), nullable=False, default="", unique=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)

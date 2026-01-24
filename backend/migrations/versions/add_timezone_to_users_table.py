@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = 'add_timezone'
-down_revision: Union[str, None] = 'ec814d867c58'
+down_revision: Union[str, None] = 'add_message_to_channel_invitations'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

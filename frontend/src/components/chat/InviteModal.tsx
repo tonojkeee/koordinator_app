@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Mail, User } from 'lucide-react';
+import { X, Mail } from 'lucide-react';
 import { channelInvitationsApi } from '../../api/channelInvitations';
 
 interface InviteModalProps {
@@ -15,7 +15,6 @@ export const InviteModal: React.FC<InviteModalProps> = ({
   channelId,
   onInviteSent,
 }) => {
-  const [inviteType, setInviteType] = useState<'email' | 'user'>('email');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -29,7 +28,7 @@ export const InviteModal: React.FC<InviteModalProps> = ({
     setError('');
 
     try {
-      if (inviteType === 'email' && !email) {
+      if (!email) {
         setError('Укажите email');
         setIsLoading(false);
         return;
@@ -37,8 +36,7 @@ export const InviteModal: React.FC<InviteModalProps> = ({
 
       await channelInvitationsApi.createInvitation({
         channel_id: channelId,
-        [inviteType === 'email' ? 'email' : 'user_id']:
-          inviteType === 'email' ? email : undefined,
+        invitee_email: email,
         message: message || undefined,
       });
 
@@ -72,48 +70,16 @@ export const InviteModal: React.FC<InviteModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
-          {/* Тип приглашения */}
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setInviteType('email')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md border ${
-                inviteType === 'email'
-                  ? 'border-blue-500 bg-blue-50 text-blue-600'
-                  : 'border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              <Mail className="h-4 w-4" />
-              По Email
-            </button>
-            <button
-              type="button"
-              onClick={() => setInviteType('user')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md border ${
-                inviteType === 'user'
-                  ? 'border-blue-500 bg-blue-50 text-blue-600'
-                  : 'border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              <User className="h-4 w-4" />
-              По ID
-            </button>
-          </div>
-
-          {/* Email или User ID */}
+          {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {inviteType === 'email' ? 'Email пользователя' : 'ID пользователя'}
+              Email пользователя
             </label>
             <input
-              type={inviteType === 'email' ? 'email' : 'number'}
-              value={inviteType === 'email' ? email : undefined}
+              type="email"
+              value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder={
-                inviteType === 'email'
-                  ? 'user@example.com'
-                  : 'Введите ID пользователя'
-              }
+              placeholder="user@example.com"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />

@@ -15,6 +15,8 @@ from app.modules.chat.invitations import (
     ChannelWithInvitations
 )
 from app.modules.auth.models import User
+from app.modules.chat.events import InvitationCreated
+from app.core.events import event_bus
 
 
 class InvitationService:
@@ -45,13 +47,12 @@ class InvitationService:
                 detail="Cannot invite users to public channels"
             )
         
-        # Verify inviter is channel member with admin/owner role
+        # Verify inviter is channel member
         member_result = await db.execute(
             select(ChannelMember).where(
                 and_(
                     ChannelMember.channel_id == invitation_data.channel_id,
-                    ChannelMember.user_id == inviter_id,
-                    ChannelMember.role.in_(["admin", "owner"])
+                    ChannelMember.user_id == inviter_id
                 )
             )
         )
@@ -60,19 +61,31 @@ class InvitationService:
         if not member:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Only channel admins can invite users"
+                detail="Only channel members can invite users"
             )
         
-        # Check if user is already a member
-        existing_member_result = await db.execute(
-            select(ChannelMember).where(
-                and_(
-                    ChannelMember.channel_id == invitation_data.channel_id,
-                    ChannelMember.user_id == inviter_id
+        # Check if invitee is already a member (by email)
+        user_result = await db.execute(
+            select(User).where(User.email == invitation_data.invitee_email)
+        )
+        invitee_user = user_result.scalar_one_or_none()
+        
+        if invitee_user:
+            existing_member_result = await db.execute(
+                select(ChannelMember).where(
+                    and_(
+                        ChannelMember.channel_id == invitation_data.channel_id,
+                        ChannelMember.user_id == invitee_user.id
+                    )
                 )
             )
-        )
-        existing_member = existing_member_result.scalar_one_or_none()
+            existing_member = existing_member_result.scalar_one_or_none()
+            
+            if existing_member:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="User is already a member of this channel"
+                )
         
         # Check for existing pending invitation
         existing_invitation_result = await db.execute(
@@ -105,6 +118,7 @@ class InvitationService:
             inviter_id=inviter_id,
             invitee_email=invitation_data.invitee_email,
             role=invitation_data.role,
+            message=invitation_data.message,
             token=str(uuid.uuid4()),
             expires_at=expires_at
         )
@@ -112,6 +126,18 @@ class InvitationService:
         db.add(invitation)
         await db.commit()
         await db.refresh(invitation)
+        
+        # Publish invitation created event for notifications
+        event = InvitationCreated(
+            invitation_id=invitation.id,
+            channel_id=channel.id,
+            channel_name=channel.name,
+            inviter_id=inviter.id,
+            inviter_name=inviter.full_name or inviter.username,
+            invitee_email=invitation_data.invitee_email,
+            message=invitation_data.message
+        )
+        await event_bus.publish(event)
         
         return InvitationService._invitation_to_response(invitation, channel, inviter)
     

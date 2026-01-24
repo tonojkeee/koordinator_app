@@ -26,8 +26,8 @@ class ChatService:
         await db.commit()
         await db.refresh(channel)
         
-        # Add creator as member
-        member = ChannelMember(channel_id=channel.id, user_id=user_id)
+        # Add creator as owner
+        member = ChannelMember(channel_id=channel.id, user_id=user_id, role="owner")
         db.add(member)
         await db.commit()
         
@@ -79,11 +79,16 @@ class ChatService:
     @staticmethod
     async def get_user_channels(db: AsyncSession, user_id: int) -> List[Channel]:
         """Get all channels for a user:
+        - Notifications channel (always first)
         - All public channels (visible to everyone)
         - Private channels where user is a member
         - DM channels where user is a member AND there is at least one message
         """
         from sqlalchemy import or_, exists
+        from app.modules.auth.service import UserService
+        
+        # Ensure notifications channel exists for user
+        notifications_channel = await UserService.get_or_create_notifications_channel(db, user_id)
         
         # Subquery to check if channel has any messages
         message_exists = exists().where(Message.channel_id == Channel.id)
@@ -93,6 +98,11 @@ class ChatService:
             .outerjoin(ChannelMember, and_(ChannelMember.channel_id == Channel.id, ChannelMember.user_id == user_id))
             .where(
                 or_(
+                    # System channels where user is a member (notifications)
+                    and_(
+                        Channel.is_system == True,
+                        ChannelMember.user_id == user_id
+                    ),
                     # Public channels (not DM and visibility=public)
                     and_(Channel.is_direct == False, Channel.visibility == 'public'),
                     # Private channels where user is a member
@@ -110,7 +120,12 @@ class ChatService:
                 )
             )
             .distinct()
-            .order_by(func.coalesce(ChannelMember.is_pinned, False).desc(), Channel.created_at.desc())
+            .order_by(
+                # System channels (notifications) first
+                Channel.is_system.desc(),
+                func.coalesce(ChannelMember.is_pinned, False).desc(), 
+                Channel.created_at.desc()
+            )
         )
         
         channels = []
@@ -132,11 +147,12 @@ class ChatService:
         return list(result.scalars().all())
     
     @staticmethod
-    async def create_message(db: AsyncSession, message_data: MessageCreate, user_id: int, document_id: Optional[int] = None) -> Message:
-        """Create a new message and update sender's last_read_message_id"""
+    @staticmethod
+    async def create_message(db: AsyncSession, message_data: MessageCreate, user_id: Optional[int], document_id: Optional[int] = None) -> Message:
+        """Create a new message and update sender's last_read_message_id (if not system message)"""
         message = Message(
             channel_id=message_data.channel_id,
-            user_id=user_id,
+            user_id=user_id,  # Can be None for system messages
             content=message_data.content,
             document_id=document_id,
             parent_id=message_data.parent_id
@@ -146,15 +162,16 @@ class ChatService:
         await db.commit()
         await db.refresh(message, ["user"])
         
-        # Update sender's last_read_message_id
-        stmt = select(ChannelMember).where(
-            and_(ChannelMember.channel_id == message.channel_id, ChannelMember.user_id == user_id)
-        )
-        result = await db.execute(stmt)
-        member = result.scalars().first()
-        if member:
-            member.last_read_message_id = message.id
-            await db.commit()
+        # Update sender's last_read_message_id only for non-system messages
+        if user_id is not None:
+            stmt = select(ChannelMember).where(
+                and_(ChannelMember.channel_id == message.channel_id, ChannelMember.user_id == user_id)
+            )
+            result = await db.execute(stmt)
+            member = result.scalars().first()
+            if member:
+                member.last_read_message_id = message.id
+                await db.commit()
             
         return message
     
@@ -319,6 +336,10 @@ class ChatService:
         """Delete a channel. Creator/Admin only for groups, any member/Admin for DMs."""
         channel = await ChatService.get_channel_by_id(db, channel_id)
         if not channel:
+            return False
+            
+        # System channels cannot be deleted
+        if channel.is_system:
             return False
             
         # Permission check: Admin can delete anything

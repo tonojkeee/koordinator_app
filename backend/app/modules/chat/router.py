@@ -361,7 +361,7 @@ async def get_channel_messages(
             document_id=msg.document_id,
             content=msg.content,
             created_at=msg.created_at,
-            username=user.username if user else "Unknown",
+            username=user.username if user else None,  # None for system messages
             full_name=user.full_name if user else None,
             rank=user.rank if user else None,
             role=user.role if user else None,
@@ -1223,7 +1223,7 @@ async def create_invitation(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Create a new channel invitation (admin only)"""
+    """Create a new channel invitation"""
     return await InvitationService.create_invitation(db, invitation_data, current_user.id)
 
 

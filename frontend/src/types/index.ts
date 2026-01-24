@@ -59,6 +59,7 @@ export interface Channel {
     name: string;
     display_name?: string;
     visibility?: 'public' | 'private';
+    is_system?: boolean;
     other_user?: {
         id: number;
         username: string;

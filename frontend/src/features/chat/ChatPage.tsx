@@ -19,6 +19,7 @@ import MuteModal from './MuteModal';
 import SearchModal from './components/SearchModal';
 import TransferOwnershipModal from './components/TransferOwnershipModal';
 import InviteModal from './components/InviteModal';
+import ChannelHeader from './ChannelHeader';
 import { formatDate, renderMessageContent } from './utils';
 import { formatName } from '../../utils/formatters';
 
@@ -495,7 +496,7 @@ const ChatPage: React.FC = () => {
     });
 
     const isMember = channel?.is_member ?? false;
-    const canChat = channel?.is_direct || isMember;
+    const canChat = (channel?.is_direct || isMember) && !channel?.is_system;
 
     const muteMutation = useMutation({
         mutationFn: async ({ channelId, muteUntil }: { channelId: number; muteUntil: string | null }) => {
@@ -606,6 +607,13 @@ const ChatPage: React.FC = () => {
             });
         }
     }, [channelId]);
+
+    // Hide participants list for system channels
+    useEffect(() => {
+        if (channel?.is_system) {
+            setShowParticipants(false);
+        }
+    }, [channel?.is_system]);
 
     const { data: members } = useQuery<User[]>({
         queryKey: ['channel_members', channelId],
@@ -1175,125 +1183,20 @@ const ChatPage: React.FC = () => {
                 )}
                 {channelId ? (
                     <div className="flex-1 flex flex-col h-full transition-opacity duration-300" style={{ opacity: isHistoryLoading && messages.length === 0 ? 0.5 : 1 }}>
-                        <div className="h-14 shrink-0 border-b border-slate-200 bg-white sticky top-0 z-10">
-                            <div className="flex items-center justify-between px-4 h-full">
-                                <div className="flex items-center gap-3 flex-1 min-w-0">
-                                    <div className="relative shrink-0">
-                                        <Avatar 
-                                            src={channel?.is_direct ? channel.other_user?.avatar_url : undefined}
-                                            name={channel?.display_name || channel?.name || 'C'}
-                                            size="md"
-                                            className="rounded-lg"
-                                        />
-                                        {channel?.is_direct && (
-                                            <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-white rounded-full ${isDmPartnerOnline ? 'bg-green-500' : 'bg-slate-300'}`} />
-                                        )}
-                                    </div>
-
-                                    <div className="flex-1 min-w-0">
-                                        <h2 className="text-sm font-bold text-slate-800 truncate leading-tight">
-                                            {channel?.is_direct && channel.other_user
-                                                ? formatName(channel.other_user.full_name, channel.other_user.username)
-                                                : channel?.display_name || channel?.name || `${t('chat.channel')} ${channelId}`
-                                            }
-                                        </h2>
-                                        <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                                            {channel?.is_direct ? (
-                                                <>
-                                                    <div className={`w-1.5 h-1.5 rounded-full ${isDmPartnerOnline ? 'bg-green-500' : 'bg-slate-300'}`} />
-                                                    <span>{isDmPartnerOnline ? t('chat.online') : formatLastSeen(dmPartner?.last_seen)}</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-500' : 'bg-rose-500'}`} />
-                                                    <span>
-                                                        {t('chat.channelStatus', {
-                                                            count: channel?.members_count || 0,
-                                                            label: t('common.participants', { count: channel?.members_count || 0 }),
-                                                            online: channel?.online_count || 0
-                                                        })}
-                                                    </span>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center space-x-1">
-                                    <button
-                                        onClick={() => setSearchModalOpen(true)}
-                                        className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-md transition-colors"
-                                        title={t('chat.search_messages')}
-                                    >
-                                        <Search size={18} />
-                                    </button>
-
-                                    {channel && !channel.is_direct && (
-                                        <button
-                                            onClick={() => setShowParticipants(!showParticipants)}
-                                            className={`p-1.5 rounded-md transition-colors ${showParticipants
-                                                ? 'bg-indigo-50 text-indigo-600'
-                                                : 'text-slate-500 hover:bg-slate-100'
-                                                }`}
-                                            title={t('chat.participants')}
-                                        >
-                                            <Users size={18} />
-                                        </button>
-                                    )}
-
-                                    <button
-                                        onClick={() => setIsMuteModalOpen(true)}
-                                        className={`p-1.5 rounded-md transition-colors ${isMuted
-                                            ? 'bg-rose-50 text-rose-500'
-                                            : 'text-slate-500 hover:bg-slate-100'
-                                            }`}
-                                        title={isMuted ? t('chat.notifications.unmute') : t('chat.notifications.mute')}
-                                    >
-                                        {isMuted ? <BellOff size={18} /> : <Bell size={18} />}
-                                    </button>
-
-                                    <button
-                                        onClick={handleExportChat}
-                                        className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-md transition-colors"
-                                        title={t('chat.export_history')}
-                                    >
-                                        <Download size={18} />
-                                    </button>
-
-                                    {channel && !channel.is_direct && channel.visibility === 'private' && channel.is_owner && (
-                                        <button
-                                            onClick={() => setIsInviteModalOpen(true)}
-                                            className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 rounded-md transition-colors"
-                                            title={t('chat.invitations.invite_users')}
-                                        >
-                                            <UserPlus size={18} />
-                                        </button>
-                                    )}
-
-                                    {channel && !channel.is_direct && isMember && (
-                                        <>
-                                            <div className="w-px h-4 bg-slate-200 mx-1" />
-                                            {channel.is_owner && (
-                                                <button
-                                                    onClick={() => setShowTransferOwnershipModal(true)}
-                                                    className="p-1.5 text-amber-500 hover:bg-amber-50 rounded-md transition-colors"
-                                                    title={t('chat.transferOwnership.buttonTitle')}
-                                                >
-                                                    <Crown size={18} fill="currentColor" />
-                                                </button>
-                                            )}
-                                            <button
-                                                onClick={handleLeaveChannel}
-                                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors"
-                                                title={t('chat.leave_channel')}
-                                            >
-                                                <LogOut size={18} />
-                                            </button>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+                        <ChannelHeader
+                            channel={channel}
+                            isConnected={isConnected}
+                            isMuted={isMuted}
+                            isDmPartnerOnline={isDmPartnerOnline}
+                            dmPartner={dmPartner}
+                            showParticipants={showParticipants}
+                            setShowParticipants={setShowParticipants}
+                            setIsMuteModalOpen={setIsMuteModalOpen}
+                            handleExportChat={handleExportChat}
+                            onLeaveChannel={handleLeaveChannel}
+                            onOpenInviteModal={() => setIsInviteModalOpen(true)}
+                            formatLastSeen={formatLastSeen}
+                        />
 
                         <SendDocumentModal
                             isOpen={isSendModalOpen}
@@ -1353,11 +1256,59 @@ const ChatPage: React.FC = () => {
                             channelName={channel?.display_name || channel?.name || ''}
                             onInvite={async (userIds: number[], message?: string) => {
                                 try {
-                                    // TODO: Implement invite API call
-                                    console.log('Inviting users:', userIds, 'with message:', message);
-                                    // await api.post(`/chat/channels/${channelId}/invite`, { user_ids: userIds, message });
+                                    // Получаем email пользователей по их ID
+                                    const usersResponse = await api.get('/auth/users');
+                                    const allUsers = usersResponse.data;
+                                    
+                                    let successCount = 0;
+                                    let errors: string[] = [];
+                                    
+                                    // Создаем приглашения для каждого пользователя
+                                    for (const userId of userIds) {
+                                        const user = allUsers.find((u: any) => u.id === userId);
+                                        if (user && user.email) {
+                                            try {
+                                                await api.post('/chat/invitations', {
+                                                    channel_id: parseInt(channelId!),
+                                                    invitee_email: user.email,
+                                                    role: 'member',
+                                                    message: message || undefined,
+                                                    expires_hours: 24
+                                                });
+                                                successCount++;
+                                            } catch (error: any) {
+                                                const errorMsg = error?.response?.data?.detail || `Failed to invite ${user.full_name || user.username}`;
+                                                errors.push(errorMsg);
+                                            }
+                                        } else {
+                                            errors.push(`User with ID ${userId} not found or has no email`);
+                                        }
+                                    }
+                                    
+                                    // Показываем результат
+                                    if (successCount > 0) {
+                                        addToast({ 
+                                            type: 'success', 
+                                            title: t('common.success'), 
+                                            message: t('chat.invitations_sent', { count: successCount }) 
+                                        });
+                                    }
+                                    
+                                    if (errors.length > 0) {
+                                        addToast({ 
+                                            type: 'error', 
+                                            title: t('common.error'), 
+                                            message: errors.join('; ') 
+                                        });
+                                    }
+                                    
                                 } catch (error) {
                                     console.error('Error inviting users:', error);
+                                    addToast({ 
+                                        type: 'error', 
+                                        title: t('common.error'), 
+                                        message: t('chat.invite_error') 
+                                    });
                                     throw error;
                                 }
                             }}
@@ -1467,7 +1418,7 @@ const ChatPage: React.FC = () => {
                                                                         {isLastInGroup ? (
                                                                             <Avatar
                                                                                 src={isSent ? user?.avatar_url : msg.avatar_url}
-                                                                                name={isSent ? formatName(user?.full_name || '', user?.username || '') : formatName(msg.full_name, msg.username || '')}
+                                                                                name={isSent ? formatName(user?.full_name || '', user?.username || '') : (msg.username ? formatName(msg.full_name, msg.username || '') : 'Система')}
                                                                                 size="md"
                                                                                 className="shadow-sm border border-slate-200/50 relative z-10"
                                                                             />
@@ -1485,7 +1436,7 @@ const ChatPage: React.FC = () => {
                                                                                     </span>
                                                                                 )}
                                                                                 <span className={`font-bold text-[13px] tracking-tight ${isSent ? 'text-indigo-400' : 'text-indigo-600'}`}>
-                                                                                    {isSent ? t('chat.you') : formatName(msg.full_name, msg.username)}
+                                                                                    {isSent ? t('chat.you') : (msg.username ? formatName(msg.full_name, msg.username) : 'Система')}
                                                                                 </span>
                                                                                 {((isSent && user?.role === 'admin') || (!isSent && msg.role === 'admin')) && (
                                                                                     <div className="text-indigo-400" title={t('admin.roleAdmin')}>
@@ -1631,7 +1582,29 @@ const ChatPage: React.FC = () => {
                                     </div>
                                 </div>
 
-                                    {canChat ? (
+                                    {canChat && !channel?.is_system ? (
+                                        <MessageInput
+                                            ref={messageInputRef}
+                                            isConnected={isConnected}
+                                            sendMessage={sendMessage}
+                                            updateMessage={handleUpdateMessage}
+                                            sendTyping={sendTyping}
+                                            activeThread={activeThread}
+                                            setActiveThread={setActiveThread}
+                                            editingMessage={editingMessage}
+                                            onCancelEdit={() => setEditingMessage(null)}
+                                            setIsSendModalOpen={setIsSendModalOpen}
+                                            handleReactionClick={handleReactionClick}
+                                            typingUsers={typingUsers}
+                                        />
+                                    ) : channel?.is_system ? (
+                                        <div className="p-6 flex items-center justify-center bg-slate-50/50 backdrop-blur-xl">
+                                            <div className="text-center animate-in slide-in-from-bottom-4 duration-500">
+                                                <p className="text-slate-600 mb-2 font-medium text-sm">{t('chat.system_channel_readonly')}</p>
+                                                <p className="text-slate-400 text-xs">{t('chat.system_channel_description')}</p>
+                                            </div>
+                                        </div>
+                                    ) : !canChat ? (
                                         <MessageInput
                                             ref={messageInputRef}
                                             isConnected={isConnected}
@@ -1662,7 +1635,7 @@ const ChatPage: React.FC = () => {
                                     )}
                             </div>
 
-                            {showParticipants && channelId && channel && !channel.is_direct && (
+                            {showParticipants && channelId && channel && !channel.is_direct && !channel.is_system && (
                                 <ParticipantsList
                                     channelId={Number(channelId)}
                                     onMention={handleMention}

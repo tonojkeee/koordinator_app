@@ -61,6 +61,13 @@ class UserService:
         except Exception as e:
             import logging
             logging.getLogger(__name__).error(f"Failed to create email account for user {db_user.username}: {e}")
+        
+        # Create notifications channel for new user
+        try:
+            await UserService._create_notifications_channel(db, db_user.id)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Failed to create notifications channel for user {db_user.username}: {e}")
             
         return db_user
     
@@ -321,6 +328,60 @@ class UserService:
         user.hashed_password = get_password_hash(password)
         await db.commit()
         return True
+
+    @staticmethod
+    async def _create_notifications_channel(db: AsyncSession, user_id: int):
+        """Create notifications channel for user"""
+        from app.modules.chat.models import Channel, ChannelMember
+        
+        # Create notifications channel
+        notifications_channel = Channel(
+            name="notifications",
+            display_name="Уведомления",
+            description="Системные уведомления",
+            visibility="private",
+            created_by=user_id,
+            is_system=True  # Mark as system channel
+        )
+        
+        db.add(notifications_channel)
+        await db.flush()  # Get the ID
+        
+        # Add user as owner of the channel
+        channel_member = ChannelMember(
+            channel_id=notifications_channel.id,
+            user_id=user_id,
+            role="owner"
+        )
+        
+        db.add(channel_member)
+        await db.commit()
+        return notifications_channel
+
+    @staticmethod
+    async def get_or_create_notifications_channel(db: AsyncSession, user_id: int):
+        """Get or create notifications channel for user"""
+        from app.modules.chat.models import Channel, ChannelMember
+        from sqlalchemy import select
+        
+        # Check if notifications channel already exists for this user
+        stmt = (
+            select(Channel)
+            .join(ChannelMember, ChannelMember.channel_id == Channel.id)
+            .where(
+                Channel.name == "notifications",
+                Channel.is_system == True,
+                ChannelMember.user_id == user_id
+            )
+        )
+        result = await db.execute(stmt)
+        existing_channel = result.scalar_one_or_none()
+        
+        if existing_channel:
+            return existing_channel
+        
+        # Create new notifications channel
+        return await UserService._create_notifications_channel(db, user_id)
 
 
 class UnitService:

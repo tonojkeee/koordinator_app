@@ -17,9 +17,10 @@ export interface ChannelInvitation {
 
 export interface CreateInvitationRequest {
   channel_id: number;
-  email?: string;
-  user_id?: number;
+  invitee_email: string;
   message?: string;
+  role?: string;
+  expires_hours?: number;
 }
 
 export interface RespondInvitationRequest {

@@ -51,6 +51,7 @@ class ChannelResponse(ChannelBase):
     created_by: int
     created_at: datetime
     display_name: Optional[str] = None
+    is_system: bool = False
     other_user: Optional[UserBasicInfo] = None
     members_count: int = 0
     online_count: int = 0
@@ -86,7 +87,7 @@ class MessageUpdate(MessageBase):
 class MessageResponse(MessageBase):
     id: int
     channel_id: int
-    user_id: int
+    user_id: Optional[int] = None  # Allow None for system messages
     document_id: Optional[int] = None
     parent_id: Optional[int] = None
     created_at: datetime
@@ -107,7 +108,7 @@ class MessageParentInfo(BaseModel):
 
 
 class MessageWithUser(MessageResponse):
-    username: str
+    username: Optional[str] = None  # None for system messages
     full_name: Optional[str] = None
     rank: Optional[str] = None
     role: Optional[str] = None
