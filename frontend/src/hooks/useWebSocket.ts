@@ -32,7 +32,7 @@ export const useWebSocket = (channelId: number | undefined, token: string | null
                     console.log('🔌 Force closing WebSocket connection due to channelId change');
                     conn.socket.close(1000, 'Channel changed');
                     connectionRegistry.delete(connectionKeyRef.current);
-                    setIsConnected(false);
+                    setTimeout(() => setIsConnected(false), 0);
                 }
                 connectionKeyRef.current = null;
             }

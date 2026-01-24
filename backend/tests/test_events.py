@@ -10,7 +10,7 @@ except ImportError:
     EVENTS_MODULE_EXISTS = False
 
 
-@dataclass
+@dataclass(frozen=True)
 class TestEvent(Event):
     data: str
 

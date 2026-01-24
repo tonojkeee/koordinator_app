@@ -59,8 +59,10 @@ export const useGlobalWebSocket = (token: string | null, options: GlobalWebSocke
                     globalConnection.socket.close(1000, 'User logged out');
                 }
                 globalConnection = null;
-                setIsConnected(false);
-                useConnectionStore.getState().setIsConnected(false);
+                setTimeout(() => {
+                    setIsConnected(false);
+                    useConnectionStore.getState().setIsConnected(false);
+                }, 0);
             }
             return;
         }

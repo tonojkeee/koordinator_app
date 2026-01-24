@@ -514,11 +514,11 @@ const ChatPage: React.FC = () => {
         }
     });
 
+    const muteUntil = channel?.mute_until;
     const isMuted = React.useMemo(() => {
-        const muteUntil = channel?.mute_until;
         if (!muteUntil) return false;
         return new Date(muteUntil) > new Date();
-    }, [channel]);
+    }, [muteUntil]);
 
     const handleMute = (duration: '1h' | '8h' | '24h' | 'forever' | null) => {
         if (!channelId) return;
@@ -585,11 +585,16 @@ const ChatPage: React.FC = () => {
     };
 
     const [initialLastReadId, setInitialLastReadId] = useState<number | null>(null);
+
+    // Use ref to track current channelId to avoid race conditions in WebSocket callbacks
+    // where a message from the previous channel might be processed by a stale closure
+    // before the effect updates the callback ref
+    const channelIdRef = useRef(channelId);
+    channelIdRef.current = channelId;
+
     useEffect(() => {
         if (channel && channel.id === Number(channelId)) {
-            setTimeout(() => {
-                setInitialLastReadId(prev => (prev === null ? channel.last_read_message_id : prev));
-            }, 0);
+            setTimeout(() => setInitialLastReadId(prev => (prev === null ? channel.last_read_message_id : prev)), 0);
         }
     }, [channel, channelId]);
 
@@ -609,10 +614,10 @@ const ChatPage: React.FC = () => {
 
     // Hide participants list for system channels
     useEffect(() => {
-        if (channel?.is_system) {
-            setShowParticipants(false);
+        if (channel?.is_system && showParticipants) {
+            setTimeout(() => setShowParticipants(false), 0);
         }
-    }, [channel?.is_system]);
+    }, [channel?.is_system, showParticipants]);
 
     const { data: members } = useQuery<User[]>({
         queryKey: ['channel_members', channelId],
@@ -623,20 +628,6 @@ const ChatPage: React.FC = () => {
         },
         enabled: !!channelId,
     });
-
-    // Removed 30s polling as presence is now handled via global WebSocket in MainLayout
-    /*
-    const { data: onlineData } = useQuery<{ online_user_ids: number[] }>({
-        queryKey: ['users', 'online'],
-        queryFn: async () => {
-            const res = await api.get('/auth/users/online');
-            return res.data;
-        },
-        refetchInterval: 30000,
-        enabled: channel?.is_direct === true,
-    });
-    const onlineUserIds = new Set(onlineData?.online_user_ids || []);
-    */
 
     const formatLastSeen = (lastSeen: string | null | undefined) => {
         if (!lastSeen) return t('chat.offline');
@@ -687,17 +678,18 @@ const ChatPage: React.FC = () => {
         }
     };
 
+    const unreadCount = channel?.unread_count;
     const markAsRead = useCallback(() => {
-        if (channelId && channel && channel.unread_count > 0 && !markReadMutation.isPending) {
+        if (channelId && unreadCount && unreadCount > 0 && !markReadMutation.isPending) {
             markReadMutation.mutate(Number(channelId));
         }
-    }, [channelId, channel, markReadMutation]);
+    }, [channelId, unreadCount, markReadMutation]);
 
     useEffect(() => {
-        if (channelId && channel) {
+        if (channelId && unreadCount) {
             markAsRead();
         }
-    }, [channelId, channel, markAsRead]);
+    }, [channelId, unreadCount, markAsRead]);
 
     const {
         data: historyData,
@@ -834,6 +826,16 @@ const ChatPage: React.FC = () => {
             return;
         }
 
+        // Use ref to check for active channel
+        const currentChannelId = channelIdRef.current;
+        const msgChannelId = (data as any).channel_id;
+
+        // Verify this message belongs to the currently active channel context
+        if (msgChannelId && currentChannelId && Number(msgChannelId) !== Number(currentChannelId)) {
+            // Ignore messages from other channels that might have leaked due to race conditions
+            return;
+        }
+
         if (data.type === 'typing') {
             const { user_id, full_name, username, is_typing } = data;
             if (user_id === user?.id) return;
@@ -866,8 +868,8 @@ const ChatPage: React.FC = () => {
         }
 
         if (data.type === 'read_receipt') {
-            if (channelId && Number(channelId) === data.channel_id) {
-                queryClient.setQueryData<Channel>(['channel', channelId], (old) => {
+            if (currentChannelId && Number(currentChannelId) === data.channel_id) {
+                queryClient.setQueryData<Channel>(['channel', currentChannelId], (old) => {
                     if (!old) return old;
                     const newId = Math.max(old.others_read_id || 0, data.last_read_id);
                     return { ...old, others_read_id: newId };
@@ -912,7 +914,7 @@ const ChatPage: React.FC = () => {
         }
 
         if (data.type === 'presence') {
-            queryClient.setQueryData<Channel>(['channel', channelId], (old) => {
+            queryClient.setQueryData<Channel>(['channel', currentChannelId], (old) => {
                 if (!old) return old;
                 return { ...old, online_count: data.online_count };
             });
@@ -920,8 +922,8 @@ const ChatPage: React.FC = () => {
         }
 
         if (data.type === 'member_joined' || data.type === 'member_left') {
-            queryClient.invalidateQueries({ queryKey: ['channel_members', channelId] });
-            queryClient.setQueryData<Channel>(['channel', channelId], (old) => {
+            queryClient.invalidateQueries({ queryKey: ['channel_members', currentChannelId] });
+            queryClient.setQueryData<Channel>(['channel', currentChannelId], (old) => {
                 if (!old) return old;
                 return {
                     ...old,
@@ -934,7 +936,7 @@ const ChatPage: React.FC = () => {
         }
 
         if (data.type === 'owner_transferred') {
-            queryClient.setQueryData<Channel>(['channel', channelId], (old) => {
+            queryClient.setQueryData<Channel>(['channel', currentChannelId], (old) => {
                 if (!old) return old;
                 return {
                     ...old,
@@ -946,7 +948,7 @@ const ChatPage: React.FC = () => {
             queryClient.setQueryData<Channel[]>(['channels'], (old) => {
                 if (!old) return old;
                 return old.map(ch => {
-                    if (ch.id === Number(channelId)) {
+                    if (ch.id === Number(currentChannelId)) {
                         return {
                             ...ch,
                             created_by: data.new_owner_id,
@@ -973,7 +975,7 @@ const ChatPage: React.FC = () => {
 
         if (data.type === 'message_updated') {
             // Обновляем кэш React Query
-            queryClient.setQueryData(['messages', channelId], (oldData: { pages: Message[][]; pageParams: number[] } | undefined) => {
+            queryClient.setQueryData(['messages', currentChannelId], (oldData: { pages: Message[][]; pageParams: number[] } | undefined) => {
                 if (!oldData) return oldData;
                 return {
                     ...oldData,
@@ -999,7 +1001,7 @@ const ChatPage: React.FC = () => {
 
         if (data.type === 'message_deleted') {
             // Обновляем кэш React Query
-            queryClient.setQueryData(['messages', channelId], (oldData: { pages: Message[][]; pageParams: number[] } | undefined) => {
+            queryClient.setQueryData(['messages', currentChannelId], (oldData: { pages: Message[][]; pageParams: number[] } | undefined) => {
                 if (!oldData) return oldData;
                 return {
                     ...oldData,
@@ -1016,6 +1018,12 @@ const ChatPage: React.FC = () => {
 
         if (data.type === 'new_message' || !data.type) {
             const message: Message = data;
+
+            // Prevent cross-talk: Ignore messages from other channels
+            // This ensures that even if the socket receives a broadcast, we only show relevant data
+            if (currentChannelId && message.channel_id !== Number(currentChannelId)) {
+                return;
+            }
 
             // Обновляем кэш React Query для сообщений
             queryClient.setQueryData(['messages', channelId], (oldData: { pages: Message[][]; pageParams: number[] } | undefined) => {
@@ -1090,7 +1098,7 @@ const ChatPage: React.FC = () => {
             }, 10);
             return;
         }
-    }, [channelId, user?.id, markReadMutation, queryClient, t]);
+    }, [channelId, user?.id, markReadMutation, queryClient, t, addToast]);
 
     const { isConnected, sendMessage, sendTyping } = useWebSocket(
         channelId ? Number(channelId) : undefined,

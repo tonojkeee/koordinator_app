@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import { abbreviateRank, formatName } from '../../utils/formatters';
-import { parseUTCDate } from '../../utils/date';
 import OwnerIndicator from './components/OwnerIndicator';
 
 interface UserBasicInfo {

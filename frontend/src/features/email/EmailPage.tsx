@@ -14,7 +14,6 @@ import { Avatar, ContextMenu, type ContextMenuOption } from '../../design-system
 import { useToast } from '../../design-system';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
-import { parseUTCDate } from '../../utils/date';
 
 const EmailPage: React.FC = () => {
     const { t } = useTranslation();
