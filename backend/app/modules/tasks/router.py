@@ -11,6 +11,7 @@ from app.modules.auth.models import User
 from .models import Task, TaskStatus
 from .schemas import TaskCreate, TaskResponse, TaskReport, TaskReject
 from app.core.websocket_manager import websocket_manager as manager
+from app.modules.tasks.handlers import TaskEventHandlers
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -74,6 +75,15 @@ async def create_task(
     # Broadcast notifications
     for task in res_tasks:
         if task.assignee_id != current_user.id:
+            # Send event
+            await TaskEventHandlers.on_task_created(
+                task.id,
+                task.title,
+                current_user.id,
+                task.assignee_id
+            )
+
+            # Send websocket notification
             await manager.broadcast_to_user(task.assignee_id, {
                 "type": "new_task",
                 "task_id": task.id,
@@ -172,10 +182,21 @@ async def report_task(
     if task.status not in [TaskStatus.IN_PROGRESS, TaskStatus.OVERDUE]:
          raise HTTPException(status_code=400, detail="Task cannot be reported")
 
+    old_status = task.status
     task.status = TaskStatus.ON_REVIEW
     task.completion_report = report.report_text
     await db.commit()
     await db.refresh(task)
+
+    # Send status changed event
+    await TaskEventHandlers.on_task_status_changed(
+        task.id,
+        task.title,
+        old_status,
+        TaskStatus.ON_REVIEW,
+        task.assignee_id,
+        task.issuer_id
+    )
 
     # Notify Issuer
     issuer_name = f"{current_user.rank} {current_user.full_name}" if current_user.rank else (current_user.full_name or current_user.username)
@@ -215,6 +236,14 @@ async def confirm_task(
     await db.commit()
     await db.refresh(task)
 
+    # Send completion event
+    await TaskEventHandlers.on_task_completed(
+        task.id,
+        task.title,
+        task.assignee_id,
+        task.issuer_id
+    )
+
     # Notify Assignee that task is confirmed
     issuer_name = f"{current_user.rank} {current_user.full_name}" if current_user.rank else (current_user.full_name or current_user.username)
     await manager.broadcast_to_user(task.assignee_id, {
@@ -249,11 +278,22 @@ async def reject_task(
     if task.issuer_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
         
+    old_status = task.status
     task.status = TaskStatus.IN_PROGRESS if task.deadline > datetime.now(timezone.utc) else TaskStatus.OVERDUE
     task.return_reason = rejection.reason
-    
+
     await db.commit()
     await db.refresh(task)
+
+    # Send status changed event
+    await TaskEventHandlers.on_task_status_changed(
+        task.id,
+        task.title,
+        old_status,
+        task.status,
+        task.assignee_id,
+        task.issuer_id
+    )
 
     # Notify Assignee
     issuer_name = f"{current_user.rank} {current_user.full_name}" if current_user.rank else (current_user.full_name or current_user.username)

@@ -4,7 +4,6 @@ import { Paperclip, Download, Star, Trash2, Reply, Forward, Printer, FileText, M
 import { Avatar } from '../../../design-system';
 import DOMPurify from 'dompurify';
 import { useTranslation } from 'react-i18next';
-import { parseUTCDate } from '../../../utils/date';
 
 interface EmailDetailsProps {
     emailId: number;

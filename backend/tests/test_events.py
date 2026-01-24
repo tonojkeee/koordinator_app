@@ -11,7 +11,7 @@ except ImportError:
 
 
 @dataclass(frozen=True)
-class TestEvent(Event):
+class MockEvent(Event):
     data: str
 
 
@@ -27,29 +27,29 @@ class TestEventBus:
         bus = EventBus()
         handler_called = False
 
-        async def handler(event: TestEvent):
+        async def handler(event: MockEvent):
             nonlocal handler_called
             handler_called = True
 
-        await bus.subscribe(TestEvent, handler)
-        assert TestEvent in bus._handlers
-        assert len(bus._handlers[TestEvent]) == 1
+        await bus.subscribe(MockEvent, handler)
+        assert MockEvent in bus._handlers
+        assert len(bus._handlers[MockEvent]) == 1
 
     @pytest.mark.skipif(not EVENTS_MODULE_EXISTS, reason="events module not implemented yet")
     @pytest.mark.asyncio
     async def test_subscribe_multiple_handlers(self):
         bus = EventBus()
 
-        async def handler1(event: TestEvent):
+        async def handler1(event: MockEvent):
             pass
 
-        async def handler2(event: TestEvent):
+        async def handler2(event: MockEvent):
             pass
 
-        await bus.subscribe(TestEvent, handler1)
-        await bus.subscribe(TestEvent, handler2)
+        await bus.subscribe(MockEvent, handler1)
+        await bus.subscribe(MockEvent, handler2)
 
-        assert len(bus._handlers[TestEvent]) == 2
+        assert len(bus._handlers[MockEvent]) == 2
 
     @pytest.mark.skipif(not EVENTS_MODULE_EXISTS, reason="events module not implemented yet")
     @pytest.mark.asyncio
@@ -57,11 +57,11 @@ class TestEventBus:
         bus = EventBus()
         results = []
 
-        async def handler(event: TestEvent):
+        async def handler(event: MockEvent):
             results.append(event.data)
 
-        await bus.subscribe(TestEvent, handler)
-        await bus.publish(TestEvent(data="test"))
+        await bus.subscribe(MockEvent, handler)
+        await bus.publish(MockEvent(data="test"))
 
         assert len(results) == 1
         assert results[0] == "test"
@@ -70,7 +70,7 @@ class TestEventBus:
     @pytest.mark.asyncio
     async def test_publish_no_handlers(self):
         bus = EventBus()
-        await bus.publish(TestEvent(data="test"))
+        await bus.publish(MockEvent(data="test"))
 
     @pytest.mark.skipif(not EVENTS_MODULE_EXISTS, reason="events module not implemented yet")
     @pytest.mark.asyncio
@@ -78,15 +78,15 @@ class TestEventBus:
         bus = EventBus()
         results = []
 
-        async def handler1(event: TestEvent):
+        async def handler1(event: MockEvent):
             results.append("handler1")
 
-        async def handler2(event: TestEvent):
+        async def handler2(event: MockEvent):
             results.append("handler2")
 
-        await bus.subscribe(TestEvent, handler1)
-        await bus.subscribe(TestEvent, handler2)
-        await bus.publish(TestEvent(data="test"))
+        await bus.subscribe(MockEvent, handler1)
+        await bus.subscribe(MockEvent, handler2)
+        await bus.publish(MockEvent(data="test"))
 
         assert results == ["handler1", "handler2"]
 

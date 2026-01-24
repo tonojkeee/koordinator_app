@@ -47,7 +47,7 @@ export const useGlobalWebSocket = (token: string | null, options: GlobalWebSocke
         onTaskReturnedRef.current = options.onTaskReturned;
         onTaskSubmittedRef.current = options.onTaskSubmitted;
         onTaskConfirmedRef.current = options.onTaskConfirmed;
-    }, [options.onChannelCreated, options.onMessageReceived, options.onMessageUpdated, options.onChannelDeleted, options.onDocumentShared, options.onUserPresence, options.onTaskAssigned, options.onTaskReturned, options.onTaskSubmitted, options.onTaskConfirmed]);
+    }, [options]);
 
     useEffect(() => {
         if (!token) {
@@ -93,6 +93,9 @@ export const useGlobalWebSocket = (token: string | null, options: GlobalWebSocke
                 } else if (data.type === 'invitation_received') {
                     // Handle invitation notifications - just log for now, could add toast notification
                     console.log('📩 Invitation received:', data);
+                    if (onMessageReceivedRef.current) {
+                        onMessageReceivedRef.current(data);
+                    }
                 } else if (data.type === 'invitation_status_changed' && onMessageReceivedRef.current) {
                     // Handle invitation status changes through the message received callback
                     onMessageReceivedRef.current(data);

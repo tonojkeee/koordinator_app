@@ -29,7 +29,7 @@ const SettingsPage: React.FC = () => {
             } catch (error) {
                 console.error('Failed to fetch timezones:', error);
                 // Fallback to common timezones
-                setAvailableTimezones(COMMON_TIMEZONES);
+                setAvailableTimezones(COMMON_TIMEZONES.map(tz => tz.value));
             } finally {
                 setTimezonesLoading(false);
             }

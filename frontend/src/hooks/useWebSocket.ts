@@ -21,7 +21,7 @@ export const useWebSocket = (channelId: number | undefined, token: string | null
     // Update ref when callback changes
     useEffect(() => {
         onMessageRef.current = options.onMessage;
-    }, [options.onMessage]);
+    }, [options]);
 
     useEffect(() => {
         if (!channelId || !token) {

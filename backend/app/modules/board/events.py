@@ -7,10 +7,11 @@ enabling cross-module communication without direct dependencies.
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from app.core.events import Event
 
 
 @dataclass(frozen=True)
-class DocumentSharedEvent:
+class DocumentSharedEvent(Event):
     """
     Event published when a document is shared with another user.
 

@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useUnreadStore } from '../../store/useUnreadStore';
 import { abbreviateRank } from '../../utils/formatters';
-import { Modal, Input, TextArea, Button, Avatar, ContextMenu, type ContextMenuOption, Tooltip } from '../../design-system';
+import { Modal, Input, Button, Avatar, ContextMenu, type ContextMenuOption } from '../../design-system';
 import MuteModal from './MuteModal';
 
 interface ChannelSidebarProps {
@@ -146,10 +146,11 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
   const navigate = useNavigate();
   
   // Универсальная функция навигации с fallback
-  const navigateToChannel = useCallback((targetChannelId: number, channelName?: string) => {
+  const navigateToChannel = useCallback((targetChannelId: number) => {
     try {
       navigate(`/chat/${targetChannelId}`);
     } catch (error) {
+      console.error('Navigation error:', error);
       // Fallback в случае ошибки навигации
       window.location.href = `/chat/${targetChannelId}`;
     }
@@ -199,7 +200,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
     onSuccess: (newChannel) => {
       queryClient.invalidateQueries({ queryKey: ['channels'] });
       setIsCreating(false);
-      navigateToChannel(newChannel.id, newChannel.name);
+      navigateToChannel(newChannel.id);
     },
   });
 
@@ -393,12 +394,12 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
 
                   return (
                     <ContextMenu key={channel.id} options={contextOptions}>
-                      <ChannelItem 
-                        channel={channel} 
+                      <ChannelItem
+                        channel={channel}
                         isActive={Number(channelId) === channel.id}
                         unread={getUnreadDisplay(channel)}
                         onClick={() => {
-                          navigateToChannel(channel.id, channel.name);
+                          navigateToChannel(channel.id);
                           if (onCloseMobile) onCloseMobile();
                         }}
                         onPin={handlePin}
@@ -448,12 +449,12 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
 
                   return (
                     <ContextMenu key={channel.id} options={contextOptions}>
-                      <ChannelItem 
-                        channel={channel} 
+                      <ChannelItem
+                        channel={channel}
                         isActive={Number(channelId) === channel.id}
                         unread={getUnreadDisplay(channel)}
                         onClick={() => {
-                          navigateToChannel(channel.id, channel.name);
+                          navigateToChannel(channel.id);
                           if (onCloseMobile) onCloseMobile();
                         }}
                         onPin={handlePin}
@@ -502,12 +503,12 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
 
                   return (
                     <ContextMenu key={channel.id} options={contextOptions}>
-                      <ChannelItem 
-                        channel={channel} 
+                      <ChannelItem
+                        channel={channel}
                         isActive={Number(channelId) === channel.id}
                         unread={getUnreadDisplay(channel)}
                         onClick={() => {
-                          navigateToChannel(channel.id, channel.name);
+                          navigateToChannel(channel.id);
                           if (onCloseMobile) onCloseMobile();
                         }}
                         onPin={handlePin}
@@ -556,12 +557,12 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
 
                   return (
                     <ContextMenu key={channel.id} options={contextOptions}>
-                      <ChannelItem 
-                        channel={channel} 
+                      <ChannelItem
+                        channel={channel}
                         isActive={Number(channelId) === channel.id}
                         unread={getUnreadDisplay(channel)}
                         onClick={() => {
-                          navigateToChannel(channel.id, channel.name);
+                          navigateToChannel(channel.id);
                           if (onCloseMobile) onCloseMobile();
                         }}
                         onPin={handlePin}
@@ -610,12 +611,12 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
 
                   return (
                     <ContextMenu key={channel.id} options={contextOptions}>
-                      <ChannelItem 
-                        channel={channel} 
+                      <ChannelItem
+                        channel={channel}
                         isActive={Number(channelId) === channel.id}
                         unread={getUnreadDisplay(channel)}
                         onClick={() => {
-                          navigateToChannel(channel.id, channel.name);
+                          navigateToChannel(channel.id);
                           if (onCloseMobile) onCloseMobile();
                         }}
                         onPin={handlePin}
@@ -661,9 +662,9 @@ const ChannelItem = ({
   currentUser: { id: number; role: string } | null,
   t: (key: string) => string,
   isSystem?: boolean
-}) => { 
+}) => {
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = () => {
     try {
       onClick();
     } catch (error) {

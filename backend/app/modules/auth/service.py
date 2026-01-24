@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload, defer
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -133,80 +133,28 @@ class UserService:
 
     @staticmethod
     async def delete_user(db: AsyncSession, user_id: int) -> bool:
-        """Delete a user and all associated data (cascading cleanup)"""
-        from sqlalchemy import delete
-        from app.modules.chat.models import Message, ChannelMember, Channel
-        from app.modules.board.models import Document, DocumentShare
-        from app.modules.email.models import EmailAccount
-        import os
-        import shutil
+        """
+        Delete a user and all associated data.
+        Relies on DB-level ON DELETE CASCADE for data integrity.
+        Publishes UserDeleted event for external cleanup (files, etc).
+        """
+        from app.core.events import event_bus
+        from app.modules.auth.events import UserDeleted
 
+        # Get user with all needed data before deletion
         user = await UserService.get_user_by_id(db, user_id)
         if not user:
             return False
 
-        # 1. Cleanup Board Module
-        # Delete shares where user is recipient
-        await db.execute(delete(DocumentShare).where(DocumentShare.recipient_id == user_id))
-        
-        # Find documents owned by user to delete files
-        doc_stmt = select(Document).where(Document.owner_id == user_id)
-        doc_result = await db.execute(doc_stmt)
-        owned_docs = doc_result.scalars().all()
-        
-        for doc in owned_docs:
-            # File cleanup
-            file_path = doc.file_path.lstrip("/")
-            if os.path.exists(file_path):
-                try:
-                    os.remove(file_path)
-                except OSError:
-                    pass
-            # Shares will be deleted by cascade in DB if we delete the document
-            await db.delete(doc)
+        # Publish event for cleanup (physical files, etc.)
+        await event_bus.publish(UserDeleted(
+            user_id=user.id,
+            username=user.username,
+            email=user.email,
+            avatar_url=user.avatar_url
+        ))
 
-        # 2. Cleanup Chat Module
-        # Delete messages sent by user (in all channels)
-        await db.execute(delete(Message).where(Message.user_id == user_id))
-        
-        # Delete channel memberships
-        await db.execute(delete(ChannelMember).where(ChannelMember.user_id == user_id))
-        
-        # Handle channels created by user
-        # For groups, we delete the entire channel. For DMs, it's also deleted for both.
-        chan_stmt = select(Channel).where(Channel.created_by == user_id)
-        chan_result = await db.execute(chan_stmt)
-        created_channels = chan_result.scalars().all()
-        
-        for chan in created_channels:
-            # Delete messages and members in these channels first
-            await db.execute(delete(Message).where(Message.channel_id == chan.id))
-            await db.execute(delete(ChannelMember).where(ChannelMember.channel_id == chan.id))
-            await db.delete(chan)
-
-        # 3. Cleanup Email Module
-        # Find email account to delete attachments
-        email_stmt = select(EmailAccount).where(EmailAccount.user_id == user_id)
-        email_result = await db.execute(email_stmt)
-        email_account = email_result.scalar_one_or_none()
-        
-        if email_account:
-            # Delete attachments is handled by cascade delete of messages in some ways,
-            # but we need to delete physical files.
-            # In a full implementation, we'd walk through all messages and delete files.
-            # For now, we'll just delete the account from DB (cascades to messages).
-            await db.delete(email_account)
-
-        # 4. Delete user avatar file if exists
-        if user.avatar_url:
-            avatar_path = user.avatar_url.lstrip("/")
-            if os.path.exists(avatar_path):
-                try:
-                    os.remove(avatar_path)
-                except OSError:
-                    pass
-
-        # 5. Finally delete the user
+        # Delete user - DB cascades will handle Message, Document, EmailAccount etc.
         await db.delete(user)
         await db.commit()
         return True
@@ -276,7 +224,7 @@ class UserService:
         return user
 
     @staticmethod
-    async def update_user_profile(db: AsyncSession, user_id: int, update_data: 'UserUpdate') -> Optional[User]:
+    async def update_user_profile(db: AsyncSession, user_id: int, update_data: Any) -> Optional[User]:
         """Update user profile information"""
         user = await UserService.get_user_by_id(db, user_id)
         if not user:
@@ -294,7 +242,7 @@ class UserService:
         return user
 
     @staticmethod
-    async def change_password(db: AsyncSession, user_id: int, password_data: "UserChangePassword") -> bool:
+    async def change_password(db: AsyncSession, user_id: int, password_data: Any) -> bool:
         from app.core.security import verify_password, get_password_hash
         
         result = await db.execute(select(User).where(User.id == user_id))
@@ -410,7 +358,7 @@ class UnitService:
         return unit
 
     @staticmethod
-    async def update_unit(db: AsyncSession, unit_id: int, update_data: 'UnitUpdate') -> Optional[Unit]:
+    async def update_unit(db: AsyncSession, unit_id: int, update_data: Any) -> Optional[Unit]:
         """Update a unit's details"""
         result = await db.execute(select(Unit).where(Unit.id == unit_id))
         unit = result.scalar_one_or_none()

@@ -1,12 +1,11 @@
-import { 
-    Paperclip, Star, Trash2, Mail, ArrowDownLeft, ArrowUpRight, 
+import {
+    Paperclip, Star, Trash2, Mail, ArrowDownLeft, ArrowUpRight,
     FolderInput, Archive, MailOpen, AlertCircle, ShieldAlert,
     Reply, Forward, Printer, Users
 } from 'lucide-react';
 import type { EmailMessageList, EmailFolder } from '../emailService';
 import { useTranslation } from 'react-i18next';
 import { Avatar, ContextMenu } from '../../../design-system';
-import { parseUTCDate } from '../../../utils/date';
 
 interface EmailListProps {
     emails: EmailMessageList[];

@@ -32,6 +32,7 @@ const getTokens = (): TokenData => {
 };
 
 // Internal memory storage for CSRF token (fallback if cookies fail)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let memoryCsrfToken: string | null = null;
 
 export const setCsrfToken = (token: string) => {

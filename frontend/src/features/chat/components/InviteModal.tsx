@@ -11,7 +11,7 @@ interface InviteModalProps {
   onInvite: (userIds: number[], message?: string) => void;
 }
 
-function InviteModal({ isOpen, onClose, channelId, channelName, onInvite }: InviteModalProps) {
+function InviteModal({ isOpen, onClose, channelName, onInvite }: InviteModalProps) {
   const { t } = useTranslation();
   const [selectedUsers, setSelectedUsers] = useState<AutocompleteUser[]>([]);
   const [inviteMessage, setInviteMessage] = useState('');

@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Hash, Users, Bell, BellOff, Info, LogOut, Search, Download, UserPlus, UserCheck, Settings } from 'lucide-react';
+import { Hash, Users, Bell, BellOff, Info, LogOut, Download, UserPlus, Settings } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatName } from '../../utils/formatters';
 import OwnerIndicator from './components/OwnerIndicator';
@@ -46,17 +45,12 @@ const ChannelHeader: React.FC<ChannelHeaderProps> = ({
   setIsMuteModalOpen,
   handleExportChat,
   onLeaveChannel,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onInvite,
   onOpenInviteModal,
   formatLastSeen
 }) => {
   const { t } = useTranslation();
-
-  const handleInvite = async (userIds: string[], message?: string) => {
-    if (onInvite) {
-      await onInvite(userIds, message);
-    }
-  };
 
   return (
     <>

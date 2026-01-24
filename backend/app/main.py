@@ -77,15 +77,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     import asyncio
     asyncio.create_task(manager.start_heartbeat())
 
-    # Start SMTP Server in background thread
-    from app.modules.email.smtp_server import SMTPServerManager
-    import threading
-
-    smtp_server = SMTPServerManager(hostname="0.0.0.0", port=2525)
-    smtp_thread = threading.Thread(target=smtp_server.start, daemon=True)
-    smtp_thread.start()
-    logger.info("SMTP Server started in background thread on 0.0.0.0:2525")
-
     # Register event handlers
     from app.modules.chat.handlers import register_event_handlers
     await register_event_handlers(event_bus)
@@ -136,9 +127,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     
     # Graceful WebSocket shutdown
     await manager.graceful_shutdown()
-    
-    # Stop SMTP server
-    smtp_server.stop()
     
     # Close Redis connection
     from app.core.redis_manager import redis_manager

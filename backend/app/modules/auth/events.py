@@ -1,10 +1,6 @@
+from typing import Optional, Any
 from app.core.events import Event
 from dataclasses import dataclass
-
-
-@dataclass(frozen=True)
-class Event:
-    pass
 
 
 @dataclass(frozen=True)
@@ -19,8 +15,10 @@ class UserDeleted(Event):
     user_id: int
     username: str
     email: str
+    avatar_url: Optional[str] = None
+
 
 @dataclass(frozen=True)
 class UserUpdated(Event):
     user_id: int
-    changes: dict
+    changes: dict[str, Any]

@@ -227,6 +227,12 @@ async def share_document(
         sender_user=current_user
     )
 
+    # Note: In a real implementation, BoardService.share_document should return the created message 
+    # if it creates one in the chat, or we should fetch it.
+    # Accessing 'msg' here directly will fail as it's not defined in this scope.
+    # Looking at the code, share_document probably triggers an event or returns a share record.
+    # The redundant broadcast block with 'msg' is likely a copy-paste error.
+    
     # Broadcast "new_message" notification to recipient (for UI feedback)
     from app.core.websocket_manager import websocket_manager as manager
     await manager.broadcast_to_user(share_data.recipient_id, {
@@ -234,24 +240,6 @@ async def share_document(
         "channel_id": channel.id,
         "channel_name": current_user.full_name or current_user.username,
         "is_direct": True,
-    })
-    
-    # Broadcast "new_message" notification to the recipient
-    await manager.broadcast_to_user(share_data.recipient_id, {
-        "type": "new_message",
-        "channel_id": channel.id,
-        "channel_name": current_user.full_name or current_user.username,
-        "is_direct": True,
-        "message": {
-            "id": msg.id,
-            "content": msg.content,
-            "sender_id": current_user.id,
-            "sender_name": current_user.full_name or current_user.username,
-            "created_at": msg.created_at.isoformat(),
-            "document_id": document.id,
-            "document_title": document.title,
-            "file_path": document.file_path
-        }
     })
 
     # Broadcast "document_shared" for board indicator
@@ -326,7 +314,8 @@ async def _save_uploaded_file(file: UploadFile, extension: str, db: AsyncSession
                 size += len(chunk)
                 if size > max_size:
                     buffer.close()
-                    os.remove(file_path)
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
                     raise HTTPException(status_code=413, detail=f"File too large (max {max_size_mb_str}MB)")
                 buffer.write(chunk)
     except HTTPException:

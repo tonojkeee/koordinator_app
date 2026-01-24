@@ -1,33 +1,32 @@
-from typing import Any, Dict
-from app.core.events import event_bus
-from app.modules.auth.events import UserCreated, UserDeleted, UserUpdated
+import os
 import logging
+from typing import Any
+from app.core.events import Event, event_bus
+from app.modules.auth.events import UserDeleted
 
 logger = logging.getLogger(__name__)
 
-class UserEventHandlers:
-    """Handlers for user events using Event Bus (Task 2.1)"""
+async def handle_user_deleted_cleanup(event: Any):
+    """
+    Listener for UserDeleted event.
+    Cleans up physical files associated with the user.
+    """
+    if not isinstance(event, UserDeleted):
+        return
 
-    @staticmethod
-    def on_user_created(user_id: int, email: str, username: str):
-        logger.info(f"User created: {user_id}, email: {email}, username: {username}")
-        # TODO: Emit UserCreated event to bus when user is created
-        # event_bus.publish(UserCreated(user_id=user_id, email=email, username=username))
-        # TODO: Notify via WebSocket Manager
-        # await websocket_manager.broadcast_to_user(user_id, {"type": "user.created", "user_id": user_id})
+    logger.info(f"Cleaning up files for deleted user {event.username} (ID: {event.user_id})")
+    
+    # 1. Delete user avatar
+    if event.avatar_url:
+        # Assuming avatar_url is like "/uploads/avatars/..."
+        avatar_path = event.avatar_url.lstrip("/")
+        if os.path.exists(avatar_path):
+            try:
+                os.remove(avatar_path)
+                logger.info(f"Deleted avatar: {avatar_path}")
+            except OSError as e:
+                logger.error(f"Failed to delete avatar {avatar_path}: {e}")
 
-    @staticmethod
-    def on_user_updated(user_id: int, changes: Dict[str, Any]):
-        logger.info(f"User updated: {user_id}, changes: {changes}")
-        # TODO: Emit UserUpdated event to bus
-        # event_bus.publish(UserUpdated(user_id=user_id, changes=changes))
-        # TODO: Notify via WebSocket Manager
-        # await websocket_manager.broadcast_to_user(user_id, {"type": "user.updated", "user_id": user_id, "changes": changes})
-
-    @staticmethod
-    def on_user_deleted(user_id: int):
-        logger.warning(f"User deleted: {user_id}")
-        # TODO: Emit UserDeleted event to bus
-        # event_bus.publish(UserDeleted(user_id=user_id))
-        # TODO: Notify via WebSocket Manager
-        # await websocket_manager.broadcast_to_user(user_id, {"type": "user.deleted", "user_id": user_id})
+async def register_auth_handlers(bus: Any = None):
+    bus = bus or event_bus
+    await bus.subscribe(UserDeleted, handle_user_deleted_cleanup)

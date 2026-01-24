@@ -45,6 +45,7 @@ export const useAuthStore = create<AuthState>()(
                         try {
                             await api.post('/auth/logout');
                             console.log('✅ Logout API call successful');
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         } catch (csrfError: any) {
                             console.error('❌ Logout API call failed:', csrfError);
                             // Если ошибка 403 из-за CSRF, попробуем получить новый токен

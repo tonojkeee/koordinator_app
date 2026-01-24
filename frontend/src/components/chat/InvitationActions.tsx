@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Check, X } from 'lucide-react';
 import { channelInvitationsApi } from '../../api/channelInvitations';

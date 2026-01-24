@@ -142,7 +142,8 @@ const ParticipantsList: React.FC<ParticipantsListProps> = ({ channelId, onMentio
                                                     return lastSeenDate.toLocaleDateString() === today.toLocaleDateString()
                                                         ? lastSeenDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                                                         : lastSeenDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
-                                                } catch {
+                                                } catch (error) {
+                                                    console.error('Error parsing date:', error);
                                                     return member.last_seen;
                                                 }
                                             })()}

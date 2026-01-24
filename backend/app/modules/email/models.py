@@ -8,7 +8,7 @@ class EmailAccount(Base):
     __tablename__ = "email_accounts"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, unique=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
     email_address: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     
     # Optional: for sending credentials if we decide to relay through external SMTP later
@@ -28,7 +28,7 @@ class EmailFolder(Base):
     __tablename__ = "email_folders"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    account_id: Mapped[int] = mapped_column(ForeignKey("email_accounts.id"), nullable=False, index=True)
+    account_id: Mapped[int] = mapped_column(ForeignKey("email_accounts.id", ondelete="CASCADE"), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     slug: Mapped[str] = mapped_column(String(100), nullable=False)
     is_system: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
@@ -43,7 +43,7 @@ class EmailMessage(Base):
     __tablename__ = "email_messages"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    account_id: Mapped[int] = mapped_column(ForeignKey("email_accounts.id"), nullable=False, index=True)
+    account_id: Mapped[int] = mapped_column(ForeignKey("email_accounts.id", ondelete="CASCADE"), nullable=False, index=True)
     
     # Metadata
     subject: Mapped[Optional[str]] = mapped_column(String(998), nullable=True) # RFC 5322 limit
@@ -66,7 +66,7 @@ class EmailMessage(Base):
     is_important: Mapped[bool] = mapped_column(default=False, nullable=False)
     is_spam: Mapped[bool] = mapped_column(default=False, nullable=False, index=True)
     
-    folder_id: Mapped[Optional[int]] = mapped_column(ForeignKey("email_folders.id"), nullable=True, index=True)
+    folder_id: Mapped[Optional[int]] = mapped_column(ForeignKey("email_folders.id", ondelete="SET NULL"), nullable=True, index=True)
     
     message_id_header: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True) # Message-ID header
     
@@ -85,7 +85,7 @@ class EmailAttachment(Base):
     __tablename__ = "email_attachments"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    message_id: Mapped[int] = mapped_column(ForeignKey("email_messages.id"), nullable=False, index=True)
+    message_id: Mapped[int] = mapped_column(ForeignKey("email_messages.id", ondelete="CASCADE"), nullable=False, index=True)
     
     filename: Mapped[str] = mapped_column(String(255), nullable=False)
     content_type: Mapped[str] = mapped_column(String(100), nullable=True)

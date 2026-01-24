@@ -181,6 +181,25 @@ const MessageInput = React.forwardRef<MessageInputHandle, MessageInputProps>((
         };
     }, [showEmojiPicker]);
 
+    // Expose methods to parent
+    React.useImperativeHandle(ref, () => ({
+        handleMention: (username: string) => {
+            setInputMessage(prev => {
+                // If message ends with space or is empty, just append @username
+                if (prev.length === 0 || prev.endsWith(' ')) {
+                    return `${prev}@${username} `;
+                }
+                // Otherwise add a space first
+                return `${prev} @${username} `;
+            });
+            inputRef.current?.focus();
+        },
+        openForReaction: (msgId: number) => {
+            setReactionTargetId(msgId);
+            setShowEmojiPicker(true);
+        }
+    }));
+
     return (
         <div className="px-4 md:px-8 pb-4 md:pb-6 pt-2 z-30 shrink-0">
             <div className={`relative max-w-4xl mx-auto transition-all`}>
@@ -477,6 +496,7 @@ const ChatPage: React.FC = () => {
             link.click();
             link.remove();
         } catch (error) {
+            console.error('Error exporting chat:', error);
             // Ошибка при экспорте чата
         }
     };
@@ -590,7 +610,9 @@ const ChatPage: React.FC = () => {
     // where a message from the previous channel might be processed by a stale closure
     // before the effect updates the callback ref
     const channelIdRef = useRef(channelId);
-    channelIdRef.current = channelId;
+    useEffect(() => {
+        channelIdRef.current = channelId;
+    }, [channelId]);
 
     useEffect(() => {
         if (channel && channel.id === Number(channelId)) {
@@ -828,6 +850,7 @@ const ChatPage: React.FC = () => {
 
         // Use ref to check for active channel
         const currentChannelId = channelIdRef.current;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const msgChannelId = (data as any).channel_id;
 
         // Verify this message belongs to the currently active channel context
@@ -1212,10 +1235,12 @@ const ChatPage: React.FC = () => {
                 {channelId ? (
                     <div className="flex-1 flex flex-col h-full transition-opacity duration-300" style={{ opacity: isHistoryLoading && messages.length === 0 ? 0.5 : 1 }}>
                         <ChannelHeader
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             channel={channel as any}
                             isConnected={isConnected}
                             isMuted={isMuted}
                             isDmPartnerOnline={isDmPartnerOnline}
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             dmPartner={dmPartner as any}
                             showParticipants={showParticipants}
                             setShowParticipants={setShowParticipants}
@@ -1289,10 +1314,11 @@ const ChatPage: React.FC = () => {
                                     const allUsers = usersResponse.data;
 
                                     let successCount = 0;
-                                    let errors: string[] = [];
+                                    const errors: string[] = [];
 
                                     // Создаем приглашения для каждого пользователя
                                     for (const userId of userIds) {
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                         const user = allUsers.find((u: any) => u.id === userId);
                                         if (user && user.email) {
                                             try {
@@ -1304,6 +1330,7 @@ const ChatPage: React.FC = () => {
                                                     expires_hours: 24
                                                 });
                                                 successCount++;
+                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                             } catch (error: any) {
                                                 const errorMsg = error?.response?.data?.detail || `Failed to invite ${user.full_name || user.username}`;
                                                 errors.push(errorMsg);

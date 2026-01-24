@@ -59,7 +59,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onGoToMessag
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder={t('chat.search_placeholder')}
-                    icon={<Search size={18} />}
+                    leftIcon={<Search size={18} />}
                     autoFocus
                     fullWidth
                 />

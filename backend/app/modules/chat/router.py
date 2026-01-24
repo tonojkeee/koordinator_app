@@ -188,10 +188,6 @@ async def transfer_channel_owner(
         "channel_owner_id": new_owner_id,
         "old_owner_username": current_user.username
     })
-    
-    return {"status": "success"}
-
-
     return {"status": "success", "new_owner_id": new_owner_id}
 
 
@@ -610,7 +606,6 @@ async def get_channel_members(
     return result
 
 
-@router.websocket("/ws/user")
 @router.websocket("/ws/user")
 async def user_websocket_endpoint(
     websocket: WebSocket,

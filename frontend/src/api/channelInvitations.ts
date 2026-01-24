@@ -8,6 +8,7 @@ export interface ChannelInvitation {
   inviter_id: number;
   inviter_name: string;
   invitee_email: string;
+  message?: string;
   status: 'pending' | 'accepted' | 'declined' | 'cancelled' | 'expired';
   role: string;
   token: string;

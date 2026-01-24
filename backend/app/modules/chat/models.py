@@ -18,7 +18,7 @@ class Channel(Base):
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     display_name: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
     description: Mapped[str] = mapped_column(Text, nullable=True)
-    created_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    created_by: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     is_direct: Mapped[bool] = mapped_column(default=False, nullable=False, index=True)
     is_system: Mapped[bool] = mapped_column(default=False, nullable=False, index=True)
     visibility: Mapped[str] = mapped_column(String(20), nullable=False, default="public")
@@ -37,10 +37,10 @@ class Message(Base):
     __tablename__ = "messages"
     
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    channel_id: Mapped[int] = mapped_column(ForeignKey("channels.id"), nullable=False, index=True)
-    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)  # Allow None for system messages
-    document_id: Mapped[Optional[int]] = mapped_column(ForeignKey("documents.id"), nullable=True, index=True)
-    parent_id: Mapped[Optional[int]] = mapped_column(ForeignKey("messages.id"), nullable=True, index=True)
+    channel_id: Mapped[int] = mapped_column(ForeignKey("channels.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True)  # Allow None for system messages
+    document_id: Mapped[Optional[int]] = mapped_column(ForeignKey("documents.id", ondelete="SET NULL"), nullable=True, index=True)
+    parent_id: Mapped[Optional[int]] = mapped_column(ForeignKey("messages.id", ondelete="CASCADE"), nullable=True, index=True)
     invitation_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, index=True)  # For system messages with invitations
     content: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
@@ -55,8 +55,8 @@ class ChannelMember(Base):
     __tablename__ = "channel_members"
     
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    channel_id: Mapped[int] = mapped_column(ForeignKey("channels.id"), nullable=False, index=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    channel_id: Mapped[int] = mapped_column(ForeignKey("channels.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     role: Mapped[str] = mapped_column(String(20), nullable=False, default="member")
     joined_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     last_read_message_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
@@ -72,8 +72,8 @@ class MessageReaction(Base):
     __tablename__ = "message_reactions"
     
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    message_id: Mapped[int] = mapped_column(ForeignKey("messages.id"), nullable=False, index=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    message_id: Mapped[int] = mapped_column(ForeignKey("messages.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     emoji: Mapped[str] = mapped_column(String(20), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
@@ -88,10 +88,10 @@ class ChannelInvitation(Base):
     __tablename__ = "channel_invitations"
     
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    channel_id: Mapped[int] = mapped_column(ForeignKey("channels.id"), nullable=False, index=True)
-    inviter_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    channel_id: Mapped[int] = mapped_column(ForeignKey("channels.id", ondelete="CASCADE"), nullable=False, index=True)
+    inviter_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     invitee_email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
-    invitee_user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    invitee_user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
     role: Mapped[str] = mapped_column(String(20), nullable=False, default="member")
     message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
