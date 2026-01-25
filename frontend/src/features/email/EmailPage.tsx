@@ -5,7 +5,7 @@ import EmailDetails from './components/EmailDetails';
 import EmailComposer from './components/EmailComposer';
 import AddressBookModal from './components/AddressBookModal';
 import CreateFolderModal from './components/CreateFolderModal';
-import { 
+import {
     Inbox, Send, Archive, Trash2, Plus, Mail, RefreshCw,
     Book, Folder, Star, AlertCircle, Search, Filter,
     CheckSquare, ChevronDown, ShieldAlert, MailOpen, Pencil
@@ -131,7 +131,7 @@ const EmailPage: React.FC = () => {
         const replySubject = email.subject.toLowerCase().startsWith('re:') ? email.subject : `Re: ${email.subject}`;
         const locale = i18n.language === 'ru' ? 'ru-RU' : 'en-US';
         const isoStr = email.received_at.includes('Z') ? email.received_at : `${email.received_at}Z`;
-        const replyBody = `\n\n${t('email.forwarded_message_divider')}\nОт: ${email.from_address}\nКому: ${email.to_address}\nДата: ${new Date(isoStr).toLocaleString(locale)}\nТема: ${email.subject}\n\n`;
+        const replyBody = `\n\n${t('email.forwarded_message_divider')}\n${t('email.header_from')}: ${email.from_address}\n${t('email.header_to')}: ${email.to_address}\n${t('email.header_date')}: ${new Date(isoStr).toLocaleString(locale)}\n${t('email.header_subject')}: ${email.subject}\n\n`;
         setComposerData({ to: email.from_address, subject: replySubject, body: replyBody });
         setIsComposerOpen(true);
     };
@@ -140,7 +140,7 @@ const EmailPage: React.FC = () => {
         const fwdSubject = email.subject.toLowerCase().startsWith('fwd:') ? email.subject : `Fwd: ${email.subject}`;
         const locale = i18n.language === 'ru' ? 'ru-RU' : 'en-US';
         const isoStr2 = email.received_at.includes('Z') ? email.received_at : `${email.received_at}Z`;
-        const fwdBody = `\n\n${t('email.forwarded_message_divider')}\nОт: ${email.from_address}\nКому: ${email.to_address}\nДата: ${new Date(isoStr2).toLocaleString(locale)}\nТема: ${email.subject}\n\n`;
+        const fwdBody = `\n\n${t('email.forwarded_message_divider')}\n${t('email.header_from')}: ${email.from_address}\n${t('email.header_to')}: ${email.to_address}\n${t('email.header_date')}: ${new Date(isoStr2).toLocaleString(locale)}\n${t('email.header_subject')}: ${email.subject}\n\n`;
         setComposerData({ subject: fwdSubject, body: fwdBody });
         setIsComposerOpen(true);
     };
@@ -167,9 +167,9 @@ const EmailPage: React.FC = () => {
 
     const toggleFavorite = (e: React.MouseEvent, folderId: string) => {
         e.stopPropagation();
-        setFavorites(prev => 
-            prev.includes(folderId) 
-                ? prev.filter(id => id !== folderId) 
+        setFavorites(prev =>
+            prev.includes(folderId)
+                ? prev.filter(id => id !== folderId)
                 : [...prev, folderId]
         );
     };
@@ -205,7 +205,7 @@ const EmailPage: React.FC = () => {
             </header>
 
             <header className="h-12 border-b border-slate-200 flex items-center px-4 bg-[#F5F5F7] shrink-0 gap-4">
-                <button 
+                <button
                     onClick={() => { setComposerData({}); setIsComposerOpen(true); }}
                     className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-200/50 rounded text-sm font-bold text-indigo-600 transition-colors"
                 >
@@ -213,7 +213,7 @@ const EmailPage: React.FC = () => {
                     <span>{t('email.new_message')}</span>
                 </button>
                 <div className="w-px h-4 bg-slate-300 mx-1" />
-                <button 
+                <button
                     onClick={async () => {
                         try {
                             await emailService.markAllAsRead();
@@ -229,7 +229,7 @@ const EmailPage: React.FC = () => {
                     <Mail size={16} />
                     <span>{t('email.mark_all_read')}</span>
                 </button>
-                <button 
+                <button
                     onClick={handleUndo}
                     disabled={!lastAction}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm font-medium transition-colors ${lastAction ? 'hover:bg-slate-200/50 text-slate-600' : 'text-slate-300 cursor-not-allowed'}`}
@@ -242,482 +242,482 @@ const EmailPage: React.FC = () => {
             <div className="flex-1 flex overflow-hidden min-h-0">
                 <aside className="w-64 flex-shrink-0 border-r border-slate-200 bg-[#F5F5F7] flex flex-col">
                     <div className="flex-1 overflow-y-auto px-2 space-y-6 pt-4">
-                    <section>
-                        <div className="px-3 mb-1 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('email.favorites')}</div>
-                        <div className="space-y-0.5">
-                            {systemFolders.filter(f => favorites.includes(f.id)).map((folder) => {
-                                const isActive = selectedFolder === folder.id;
-                                const isFav = favorites.includes(folder.id);
-                                const contextOptions: ContextMenuOption[] = [
-                                    {
-                                        label: t('email.mark_all_read'),
-                                        icon: MailOpen,
-                                        onClick: async () => {
-                                            try {
-                                                await emailService.markAllAsRead();
-                                                fetchStats();
-                                                if (selectedFolder === folder.id) fetchEmails();
-                                            } catch { console.error("Failed to mark folder as read"); }
-                                        }
-                                    },
-                                    {
-                                        label: isFav ? t('email.remove_from_favorites') : t('email.add_to_favorites'),
-                                        icon: Star,
-                                        onClick: () => {
-                                            setFavorites(prev => 
-                                                prev.includes(folder.id) 
-                                                    ? prev.filter(id => id !== folder.id) 
-                                                    : [...prev, folder.id]
-                                            );
-                                        }
-                                    }
-                                ];
-                                if (folder.id === 'trash' || folder.id === 'spam') {
-                                    contextOptions.push({
-                                        label: t('email.empty_folder'),
-                                        icon: Trash2,
-                                        variant: 'danger',
-                                        onClick: async () => {
-                                            if (confirm(t('email.confirm_empty_folder'))) {
+                        <section>
+                            <div className="px-3 mb-1 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('email.favorites')}</div>
+                            <div className="space-y-0.5">
+                                {systemFolders.filter(f => favorites.includes(f.id)).map((folder) => {
+                                    const isActive = selectedFolder === folder.id;
+                                    const isFav = favorites.includes(folder.id);
+                                    const contextOptions: ContextMenuOption[] = [
+                                        {
+                                            label: t('email.mark_all_read'),
+                                            icon: MailOpen,
+                                            onClick: async () => {
                                                 try {
-                                                    await emailService.emptyFolder(folder.id as 'trash' | 'spam');
+                                                    await emailService.markAllAsRead();
                                                     fetchStats();
                                                     if (selectedFolder === folder.id) fetchEmails();
-                                                    addToast({ type: 'success', title: t('common.success'), message: t('common.deleted') });
-                                                } catch { 
-                                                    addToast({ type: 'error', title: t('common.error'), message: t('email.toast_error_title') });
-                                                }
+                                                } catch { console.error("Failed to mark folder as read"); }
+                                            }
+                                        },
+                                        {
+                                            label: isFav ? t('email.remove_from_favorites') : t('email.add_to_favorites'),
+                                            icon: Star,
+                                            onClick: () => {
+                                                setFavorites(prev =>
+                                                    prev.includes(folder.id)
+                                                        ? prev.filter(id => id !== folder.id)
+                                                        : [...prev, folder.id]
+                                                );
                                             }
                                         }
-                                    });
-                                }
-
-                                return (
-                                    <ContextMenu key={`fav-${folder.id}`} options={contextOptions}>
-                                        <button
-                                            onClick={() => setSelectedFolder(folder.id)}
-                                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group relative ${isActive
-                                                ? 'bg-white shadow-sm text-indigo-700 font-bold ring-1 ring-slate-200'
-                                                : 'text-slate-600 hover:bg-slate-200/50'
-                                                }`}
-                                        >
-                                            <folder.icon size={18} className={isActive ? 'text-indigo-600' : 'text-slate-500'} />
-                                            <span className="flex-1 text-left truncate">{folder.name}</span>
-                                            {folder.unread_count > 0 && (
-                                                <span className="text-[10px] font-black text-slate-500">{folder.unread_count}</span>
-                                            )}
-                                            <div 
-                                                onClick={(e) => toggleFavorite(e, folder.id)}
-                                                className="absolute right-2 opacity-0 group-hover:opacity-100 text-amber-400 hover:text-amber-500 transition-all p-1"
-                                                title={t('email.remove_from_favorites')}
-                                            >
-                                                <Star size={12} fill="currentColor" />
-                                            </div>
-                                        </button>
-                                    </ContextMenu>
-                                );
-                            })}
-                            {customFolders.filter(f => favorites.includes(f.id.toString())).map((folder) => {
-                                const isActive = selectedFolder === folder.id.toString();
-                                const contextOptions: ContextMenuOption[] = [
-                                    {
-                                        label: t('email.mark_all_read'),
-                                        icon: MailOpen,
-                                        onClick: () => {}
-                                    },
-                                    {
-                                        label: t('email.remove_from_favorites'),
-                                        icon: Star,
-                                        onClick: () => setFavorites(prev => prev.filter(id => id !== folder.id.toString()))
-                                    },
-                                    {
-                                        label: t('common.delete'),
-                                        icon: Trash2,
-                                        variant: 'danger',
-                                        onClick: () => {
-                                            const e = { stopPropagation: () => {} } as React.MouseEvent;
-                                            handleDeleteFolder(e, folder.id);
-                                        }
-                                    }
-                                ];
-
-                                return (
-                                    <ContextMenu key={`fav-custom-${folder.id}`} options={contextOptions}>
-                                        <button
-                                            onClick={() => setSelectedFolder(folder.id.toString())}
-                                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group relative ${isActive
-                                                ? 'bg-white shadow-sm text-amber-700 font-bold ring-1 ring-slate-200'
-                                                : 'text-slate-600 hover:bg-slate-200/50'
-                                                }`}
-                                        >
-                                            <Folder size={18} className={isActive ? 'text-amber-500' : 'text-slate-500'} />
-                                            <span className="flex-1 text-left truncate">{folder.name}</span>
-                                            <div 
-                                                onClick={(e) => toggleFavorite(e, folder.id.toString())}
-                                                className="absolute right-2 opacity-0 group-hover:opacity-100 text-amber-400 hover:text-amber-500 transition-all p-1"
-                                                title={t('email.remove_from_favorites')}
-                                            >
-                                                <Star size={12} fill="currentColor" />
-                                            </div>
-                                        </button>
-                                    </ContextMenu>
-                                );
-                            })}
-                        </div>
-                    </section>
-
-                    <section>
-                        <div className="px-3 mb-1 flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                            <span>{t('email.folders')}</span>
-                            <button 
-                                onClick={() => setIsCreateFolderOpen(true)} 
-                                className="text-slate-400 hover:text-indigo-600 transition-colors"
-                                title={t('email.create_folder')}
-                            >
-                                <Plus size={14} />
-                            </button>
-                        </div>
-                        <div className="space-y-0.5">
-                            {systemFolders.map((folder) => {
-                                const isActive = selectedFolder === folder.id;
-                                const isFav = favorites.includes(folder.id);
-                                const contextOptions: ContextMenuOption[] = [
-                                    {
-                                        label: t('email.mark_all_read'),
-                                        icon: MailOpen,
-                                        onClick: async () => {
-                                            try {
-                                                await emailService.markAllAsRead();
-                                                fetchStats();
-                                                if (selectedFolder === folder.id) fetchEmails();
-                                            } catch { console.error("Failed to mark folder as read"); }
-                                        }
-                                    },
-                                    {
-                                        label: isFav ? t('email.remove_from_favorites') : t('email.add_to_favorites'),
-                                        icon: Star,
-                                        onClick: () => {
-                                            setFavorites(prev => 
-                                                prev.includes(folder.id) 
-                                                    ? prev.filter(id => id !== folder.id) 
-                                                    : [...prev, folder.id]
-                                            );
-                                        }
-                                    }
-                                ];
-                                if (folder.id === 'trash' || folder.id === 'spam') {
-                                    contextOptions.push({
-                                        label: t('email.empty_folder'),
-                                        icon: Trash2,
-                                        variant: 'danger',
-                                        onClick: async () => {
-                                            if (confirm(t('email.confirm_empty_folder'))) {
-                                                try {
-                                                    await emailService.emptyFolder(folder.id as 'trash' | 'spam');
-                                                    fetchStats();
-                                                    if (selectedFolder === folder.id) fetchEmails();
-                                                    addToast({ type: 'success', title: t('common.success'), message: t('common.deleted') });
-                                                } catch { 
-                                                    addToast({ type: 'error', title: t('common.error'), message: t('email.toast_error_title') });
+                                    ];
+                                    if (folder.id === 'trash' || folder.id === 'spam') {
+                                        contextOptions.push({
+                                            label: t('email.empty_folder'),
+                                            icon: Trash2,
+                                            variant: 'danger',
+                                            onClick: async () => {
+                                                if (confirm(t('email.confirm_empty_folder'))) {
+                                                    try {
+                                                        await emailService.emptyFolder(folder.id as 'trash' | 'spam');
+                                                        fetchStats();
+                                                        if (selectedFolder === folder.id) fetchEmails();
+                                                        addToast({ type: 'success', title: t('common.success'), message: t('common.deleted') });
+                                                    } catch {
+                                                        addToast({ type: 'error', title: t('common.error'), message: t('email.toast_error_title') });
+                                                    }
                                                 }
                                             }
-                                        }
-                                    });
-                                }
-
-                                return (
-                                    <ContextMenu key={folder.id} options={contextOptions}>
-
-                                        <button
-                                            onClick={() => setSelectedFolder(folder.id)}
-                                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group relative ${isActive
-                                                ? 'bg-white shadow-sm text-indigo-700 font-bold ring-1 ring-slate-200'
-                                                : 'text-slate-600 hover:bg-slate-200/50'
-                                                }`}
-                                        >
-                                            <folder.icon size={18} className={isActive ? 'text-indigo-600' : 'text-slate-500'} />
-                                            <span className="flex-1 text-left truncate">{folder.name}</span>
-                                            <div 
-                                                onClick={(e) => toggleFavorite(e, folder.id)}
-                                                className={`absolute right-2 transition-all p-1 ${isFav ? 'text-amber-400 opacity-100' : 'text-slate-300 opacity-0 group-hover:opacity-100 hover:text-slate-400'}`}
-                                                title={isFav ? t('email.remove_from_favorites') : t('email.add_to_favorites')}
-                                            >
-                                                <Star size={12} fill={isFav ? "currentColor" : "none"} />
-                                            </div>
-                                        </button>
-                                    </ContextMenu>
-                                );
-                            })}
-                            {customFolders.map((folder) => {
-                                const isActive = selectedFolder === folder.id.toString();
-                                const isFav = favorites.includes(folder.id.toString());
-                                const contextOptions: ContextMenuOption[] = [
-                                    {
-                                        label: t('email.mark_all_read'),
-                                        icon: MailOpen,
-                                        onClick: () => {}
-                                    },
-                                    {
-                                        label: isFav ? t('email.remove_from_favorites') : t('email.add_to_favorites'),
-                                        icon: Star,
-                                        onClick: () => {
-                                            setFavorites(prev => 
-                                                prev.includes(folder.id.toString()) 
-                                                    ? prev.filter(id => id !== folder.id.toString()) 
-                                                    : [...prev, folder.id.toString()]
-                                            );
-                                        }
-                                    },
-                                    {
-                                        label: t('email.rename_folder'),
-                                        icon: Pencil,
-                                        onClick: () => {
-                                            addToast({ type: 'info', title: t('common.itDepartment'), message: t('common.unavailable') });
-                                        }
-                                    },
-                                    {
-                                        label: t('common.delete'),
-                                        icon: Trash2,
-                                        variant: 'danger',
-                                        onClick: () => {
-                                            const e = { stopPropagation: () => {} } as React.MouseEvent;
-                                            handleDeleteFolder(e, folder.id);
-                                        }
+                                        });
                                     }
-                                ];
 
-                                return (
-                                    <ContextMenu key={folder.id} options={contextOptions}>
+                                    return (
+                                        <ContextMenu key={`fav-${folder.id}`} options={contextOptions}>
+                                            <button
+                                                onClick={() => setSelectedFolder(folder.id)}
+                                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group relative ${isActive
+                                                    ? 'bg-white shadow-sm text-indigo-700 font-bold ring-1 ring-slate-200'
+                                                    : 'text-slate-600 hover:bg-slate-200/50'
+                                                    }`}
+                                            >
+                                                <folder.icon size={18} className={isActive ? 'text-indigo-600' : 'text-slate-500'} />
+                                                <span className="flex-1 text-left truncate">{folder.name}</span>
+                                                {folder.unread_count > 0 && (
+                                                    <span className="text-[10px] font-black text-slate-500">{folder.unread_count}</span>
+                                                )}
+                                                <div
+                                                    onClick={(e) => toggleFavorite(e, folder.id)}
+                                                    className="absolute right-2 opacity-0 group-hover:opacity-100 text-amber-400 hover:text-amber-500 transition-all p-1"
+                                                    title={t('email.remove_from_favorites')}
+                                                >
+                                                    <Star size={12} fill="currentColor" />
+                                                </div>
+                                            </button>
+                                        </ContextMenu>
+                                    );
+                                })}
+                                {customFolders.filter(f => favorites.includes(f.id.toString())).map((folder) => {
+                                    const isActive = selectedFolder === folder.id.toString();
+                                    const contextOptions: ContextMenuOption[] = [
+                                        {
+                                            label: t('email.mark_all_read'),
+                                            icon: MailOpen,
+                                            onClick: () => { }
+                                        },
+                                        {
+                                            label: t('email.remove_from_favorites'),
+                                            icon: Star,
+                                            onClick: () => setFavorites(prev => prev.filter(id => id !== folder.id.toString()))
+                                        },
+                                        {
+                                            label: t('common.delete'),
+                                            icon: Trash2,
+                                            variant: 'danger',
+                                            onClick: () => {
+                                                const e = { stopPropagation: () => { } } as React.MouseEvent;
+                                                handleDeleteFolder(e, folder.id);
+                                            }
+                                        }
+                                    ];
 
-                                        <div className="relative group">
+                                    return (
+                                        <ContextMenu key={`fav-custom-${folder.id}`} options={contextOptions}>
                                             <button
                                                 onClick={() => setSelectedFolder(folder.id.toString())}
                                                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group relative ${isActive
                                                     ? 'bg-white shadow-sm text-amber-700 font-bold ring-1 ring-slate-200'
                                                     : 'text-slate-600 hover:bg-slate-200/50'
-                                                }`}
+                                                    }`}
                                             >
                                                 <Folder size={18} className={isActive ? 'text-amber-500' : 'text-slate-500'} />
                                                 <span className="flex-1 text-left truncate">{folder.name}</span>
-                                                <div 
+                                                <div
                                                     onClick={(e) => toggleFavorite(e, folder.id.toString())}
-                                                    className={`absolute right-8 transition-all p-1 ${isFav ? 'text-amber-400 opacity-100' : 'text-slate-300 opacity-0 group-hover:opacity-100 hover:text-slate-400'}`}
+                                                    className="absolute right-2 opacity-0 group-hover:opacity-100 text-amber-400 hover:text-amber-500 transition-all p-1"
+                                                    title={t('email.remove_from_favorites')}
+                                                >
+                                                    <Star size={12} fill="currentColor" />
+                                                </div>
+                                            </button>
+                                        </ContextMenu>
+                                    );
+                                })}
+                            </div>
+                        </section>
+
+                        <section>
+                            <div className="px-3 mb-1 flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                <span>{t('email.folders')}</span>
+                                <button
+                                    onClick={() => setIsCreateFolderOpen(true)}
+                                    className="text-slate-400 hover:text-indigo-600 transition-colors"
+                                    title={t('email.create_folder')}
+                                >
+                                    <Plus size={14} />
+                                </button>
+                            </div>
+                            <div className="space-y-0.5">
+                                {systemFolders.map((folder) => {
+                                    const isActive = selectedFolder === folder.id;
+                                    const isFav = favorites.includes(folder.id);
+                                    const contextOptions: ContextMenuOption[] = [
+                                        {
+                                            label: t('email.mark_all_read'),
+                                            icon: MailOpen,
+                                            onClick: async () => {
+                                                try {
+                                                    await emailService.markAllAsRead();
+                                                    fetchStats();
+                                                    if (selectedFolder === folder.id) fetchEmails();
+                                                } catch { console.error("Failed to mark folder as read"); }
+                                            }
+                                        },
+                                        {
+                                            label: isFav ? t('email.remove_from_favorites') : t('email.add_to_favorites'),
+                                            icon: Star,
+                                            onClick: () => {
+                                                setFavorites(prev =>
+                                                    prev.includes(folder.id)
+                                                        ? prev.filter(id => id !== folder.id)
+                                                        : [...prev, folder.id]
+                                                );
+                                            }
+                                        }
+                                    ];
+                                    if (folder.id === 'trash' || folder.id === 'spam') {
+                                        contextOptions.push({
+                                            label: t('email.empty_folder'),
+                                            icon: Trash2,
+                                            variant: 'danger',
+                                            onClick: async () => {
+                                                if (confirm(t('email.confirm_empty_folder'))) {
+                                                    try {
+                                                        await emailService.emptyFolder(folder.id as 'trash' | 'spam');
+                                                        fetchStats();
+                                                        if (selectedFolder === folder.id) fetchEmails();
+                                                        addToast({ type: 'success', title: t('common.success'), message: t('common.deleted') });
+                                                    } catch {
+                                                        addToast({ type: 'error', title: t('common.error'), message: t('email.toast_error_title') });
+                                                    }
+                                                }
+                                            }
+                                        });
+                                    }
+
+                                    return (
+                                        <ContextMenu key={folder.id} options={contextOptions}>
+
+                                            <button
+                                                onClick={() => setSelectedFolder(folder.id)}
+                                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group relative ${isActive
+                                                    ? 'bg-white shadow-sm text-indigo-700 font-bold ring-1 ring-slate-200'
+                                                    : 'text-slate-600 hover:bg-slate-200/50'
+                                                    }`}
+                                            >
+                                                <folder.icon size={18} className={isActive ? 'text-indigo-600' : 'text-slate-500'} />
+                                                <span className="flex-1 text-left truncate">{folder.name}</span>
+                                                <div
+                                                    onClick={(e) => toggleFavorite(e, folder.id)}
+                                                    className={`absolute right-2 transition-all p-1 ${isFav ? 'text-amber-400 opacity-100' : 'text-slate-300 opacity-0 group-hover:opacity-100 hover:text-slate-400'}`}
                                                     title={isFav ? t('email.remove_from_favorites') : t('email.add_to_favorites')}
                                                 >
                                                     <Star size={12} fill={isFav ? "currentColor" : "none"} />
                                                 </div>
                                             </button>
-                                            <button
-                                                onClick={(e) => handleDeleteFolder(e, folder.id)}
-                                                className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-500 transition-all p-1"
-                                                title={t('common.delete')}
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
-                                        </div>
-                                    </ContextMenu>
-                                );
-                            })}
+                                        </ContextMenu>
+                                    );
+                                })}
+                                {customFolders.map((folder) => {
+                                    const isActive = selectedFolder === folder.id.toString();
+                                    const isFav = favorites.includes(folder.id.toString());
+                                    const contextOptions: ContextMenuOption[] = [
+                                        {
+                                            label: t('email.mark_all_read'),
+                                            icon: MailOpen,
+                                            onClick: () => { }
+                                        },
+                                        {
+                                            label: isFav ? t('email.remove_from_favorites') : t('email.add_to_favorites'),
+                                            icon: Star,
+                                            onClick: () => {
+                                                setFavorites(prev =>
+                                                    prev.includes(folder.id.toString())
+                                                        ? prev.filter(id => id !== folder.id.toString())
+                                                        : [...prev, folder.id.toString()]
+                                                );
+                                            }
+                                        },
+                                        {
+                                            label: t('email.rename_folder'),
+                                            icon: Pencil,
+                                            onClick: () => {
+                                                addToast({ type: 'info', title: t('common.itDepartment'), message: t('common.unavailable') });
+                                            }
+                                        },
+                                        {
+                                            label: t('common.delete'),
+                                            icon: Trash2,
+                                            variant: 'danger',
+                                            onClick: () => {
+                                                const e = { stopPropagation: () => { } } as React.MouseEvent;
+                                                handleDeleteFolder(e, folder.id);
+                                            }
+                                        }
+                                    ];
+
+                                    return (
+                                        <ContextMenu key={folder.id} options={contextOptions}>
+
+                                            <div className="relative group">
+                                                <button
+                                                    onClick={() => setSelectedFolder(folder.id.toString())}
+                                                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group relative ${isActive
+                                                        ? 'bg-white shadow-sm text-amber-700 font-bold ring-1 ring-slate-200'
+                                                        : 'text-slate-600 hover:bg-slate-200/50'
+                                                        }`}
+                                                >
+                                                    <Folder size={18} className={isActive ? 'text-amber-500' : 'text-slate-500'} />
+                                                    <span className="flex-1 text-left truncate">{folder.name}</span>
+                                                    <div
+                                                        onClick={(e) => toggleFavorite(e, folder.id.toString())}
+                                                        className={`absolute right-8 transition-all p-1 ${isFav ? 'text-amber-400 opacity-100' : 'text-slate-300 opacity-0 group-hover:opacity-100 hover:text-slate-400'}`}
+                                                        title={isFav ? t('email.remove_from_favorites') : t('email.add_to_favorites')}
+                                                    >
+                                                        <Star size={12} fill={isFav ? "currentColor" : "none"} />
+                                                    </div>
+                                                </button>
+                                                <button
+                                                    onClick={(e) => handleDeleteFolder(e, folder.id)}
+                                                    className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-500 transition-all p-1"
+                                                    title={t('common.delete')}
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
+                                        </ContextMenu>
+                                    );
+                                })}
+                            </div>
+                        </section>
+                    </div>
+
+                    <div className="p-4 border-t border-slate-200">
+                        <div className="flex items-center gap-3">
+                            <Avatar name={account?.email_address || t('common.unknown')} size="sm" />
+                            <div className="min-w-0 flex-1">
+                                <p className="text-xs font-bold text-slate-900 truncate">{account?.email_address}</p>
+                                <p className="text-[10px] text-slate-500 uppercase tracking-wider">{t('email.account')}</p>
+                            </div>
+                            <button onClick={() => setIsAddressBookOpen(true)} className="text-slate-400 hover:text-indigo-600 transition-colors">
+                                <Book size={16} />
+                            </button>
                         </div>
-                    </section>
-                </div>
+                    </div>
+                </aside>
 
-                <div className="p-4 border-t border-slate-200">
-                    <div className="flex items-center gap-3">
-                        <Avatar name={account?.email_address || t('common.unknown')} size="sm" />
-                        <div className="min-w-0 flex-1">
-                            <p className="text-xs font-bold text-slate-900 truncate">{account?.email_address}</p>
-                            <p className="text-[10px] text-slate-500 uppercase tracking-wider">{t('email.account')}</p>
+                {/* Column 2: Message List */}
+                <section className="w-[400px] flex-shrink-0 border-r border-slate-200 flex flex-col bg-white overflow-hidden">
+                    <header className="h-14 border-b border-slate-200 flex items-center justify-between px-4 shrink-0 bg-white sticky top-0 z-10">
+                        <div className="flex items-center gap-2">
+                            <CheckSquare size={18} className="text-slate-400" />
+                            <ChevronDown size={14} className="text-slate-400" />
                         </div>
-                        <button onClick={() => setIsAddressBookOpen(true)} className="text-slate-400 hover:text-indigo-600 transition-colors">
-                            <Book size={16} />
-                        </button>
-                    </div>
-                </div>
-            </aside>
+                        <div className="flex items-center gap-4 text-sm font-bold">
+                            <button
+                                onClick={() => setActiveTab('focused')}
+                                className={`pb-4 pt-4 border-b-2 transition-colors relative ${activeTab === 'focused' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                            >
+                                {t('email.tabs.focused')}
+                                {emails.some(e => e.is_important && !e.is_read) && (
+                                    <span className="absolute top-3 -right-2 w-2 h-2 bg-indigo-600 rounded-full border-2 border-white" />
+                                )}
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('other')}
+                                className={`pb-4 pt-4 border-b-2 transition-colors relative ${activeTab === 'other' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                            >
+                                {t('email.tabs.other')}
+                                {emails.some(e => !e.is_important && !e.is_read) && (
+                                    <span className="absolute top-3 -right-2 w-2 h-2 bg-indigo-600 rounded-full border-2 border-white" />
+                                )}
+                            </button>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-md">
+                                <Filter size={18} />
+                            </button>
+                        </div>
+                    </header>
 
-            {/* Column 2: Message List */}
-            <section className="w-[400px] flex-shrink-0 border-r border-slate-200 flex flex-col bg-white overflow-hidden">
-                <header className="h-14 border-b border-slate-200 flex items-center justify-between px-4 shrink-0 bg-white sticky top-0 z-10">
-                    <div className="flex items-center gap-2">
-                        <CheckSquare size={18} className="text-slate-400" />
-                        <ChevronDown size={14} className="text-slate-400" />
+                    <div className="px-3 py-3 border-b border-slate-100 shrink-0">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                            <input
+                                type="text"
+                                placeholder={t('email.search_placeholder')}
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full bg-slate-100 border-none rounded-md pl-9 pr-4 py-1.5 text-sm focus:ring-1 focus:ring-indigo-500 placeholder:text-slate-400 transition-all"
+                            />
+                        </div>
                     </div>
-                    <div className="flex items-center gap-4 text-sm font-bold">
-                        <button 
-                            onClick={() => setActiveTab('focused')}
-                            className={`pb-4 pt-4 border-b-2 transition-colors relative ${activeTab === 'focused' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
-                        >
-                            {t('email.tabs.focused')}
-                            {emails.some(e => e.is_important && !e.is_read) && (
-                                <span className="absolute top-3 -right-2 w-2 h-2 bg-indigo-600 rounded-full border-2 border-white" />
-                            )}
-                        </button>
-                        <button 
-                            onClick={() => setActiveTab('other')}
-                            className={`pb-4 pt-4 border-b-2 transition-colors relative ${activeTab === 'other' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
-                        >
-                            {t('email.tabs.other')}
-                            {emails.some(e => !e.is_important && !e.is_read) && (
-                                <span className="absolute top-3 -right-2 w-2 h-2 bg-indigo-600 rounded-full border-2 border-white" />
-                            )}
-                        </button>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <button className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-md">
-                            <Filter size={18} />
-                        </button>
-                    </div>
-                </header>
 
-                <div className="px-3 py-3 border-b border-slate-100 shrink-0">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                        <input 
-                            type="text" 
-                            placeholder={t('email.search_placeholder')}
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-slate-100 border-none rounded-md pl-9 pr-4 py-1.5 text-sm focus:ring-1 focus:ring-indigo-500 placeholder:text-slate-400 transition-all"
+                    <div className="flex-1 overflow-y-auto custom-scrollbar relative">
+                        {loading && (
+                            <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-20 flex items-center justify-center">
+                                <RefreshCw size={24} className="text-indigo-600 animate-spin" />
+                            </div>
+                        )}
+                        <EmailList
+                            emails={emails
+                                .filter(e =>
+                                    (e.subject || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                    (e.from_address || '').toLowerCase().includes(searchQuery.toLowerCase())
+                                )
+                                .filter(e => {
+                                    if (activeTab === 'focused') return e.is_important;
+                                    return !e.is_important;
+                                })
+                                .sort((a, b) => {
+                                    const dateA = new Date(a.received_at.includes('Z') ? a.received_at : `${a.received_at}Z`);
+                                    const dateB = new Date(b.received_at.includes('Z') ? b.received_at : `${b.received_at}Z`);
+                                    return dateB.getTime() - dateA.getTime();
+                                })
+                            }
+                            customFolders={customFolders}
+                            onSelectEmail={setSelectedEmailId}
+                            selectedEmailId={selectedEmailId}
+                            onToggleStar={async (id, current) => {
+                                try {
+                                    const msg = emails.find(em => em.id === id);
+                                    if (msg) setLastAction({ type: 'star', messageId: id, previousData: { is_starred: current } });
+                                    await emailService.updateMessage(id, { is_starred: !current });
+                                    fetchEmails();
+                                    fetchStats();
+                                } catch {
+                                    addToast({ type: 'error', title: t('common.error'), message: t('email.toast_error_title') });
+                                }
+                            }}
+                            onToggleRead={async (id, current) => {
+                                try {
+                                    const msg = emails.find(em => em.id === id);
+                                    if (msg) setLastAction({ type: 'read', messageId: id, previousData: { is_read: current } });
+                                    await emailService.updateMessage(id, { is_read: !current });
+                                    fetchEmails();
+                                    fetchStats();
+                                } catch {
+                                    addToast({ type: 'error', title: t('common.error'), message: t('email.toast_error_title') });
+                                }
+                            }}
+                            onToggleImportant={async (id, current) => {
+                                try {
+                                    await emailService.updateMessage(id, { is_important: !current });
+                                    fetchEmails();
+                                    fetchStats();
+                                } catch {
+                                    addToast({ type: 'error', title: t('common.error'), message: t('email.toast_error_title') });
+                                }
+                            }}
+                            onMoveToFolder={async (id, folderId) => {
+                                try {
+                                    await emailService.updateMessage(id, { folder_id: folderId });
+                                    fetchEmails();
+                                    fetchStats();
+                                    addToast({ type: 'success', title: t('common.success'), message: t('common.saved') });
+                                } catch {
+                                    addToast({ type: 'error', title: t('common.error'), message: t('email.toast_error_title') });
+                                }
+                            }}
+                            onArchive={async (id) => {
+                                try {
+                                    await emailService.updateMessage(id, { is_archived: true });
+                                    fetchEmails();
+                                    fetchStats();
+                                    addToast({ type: 'success', title: t('common.success'), message: t('email.archived') });
+                                } catch {
+                                    addToast({ type: 'error', title: t('common.error'), message: t('email.toast_error_title') });
+                                }
+                            }}
+                            onSpam={async (id) => {
+                                try {
+                                    const msg = emails.find(em => em.id === id);
+                                    if (!msg) return;
+                                    const newState = !msg.is_spam;
+                                    await emailService.updateMessage(id, { is_spam: newState });
+                                    fetchEmails();
+                                    fetchStats();
+                                    addToast({ type: 'success', title: t('common.success'), message: newState ? t('email.spam') : t('common.saved') });
+                                } catch {
+                                    addToast({ type: 'error', title: t('common.error'), message: t('email.toast_error_title') });
+                                }
+                            }}
+                            onDelete={async (id) => {
+                                const msg = emails.find(em => em.id === id);
+                                if (msg) setLastAction({ type: 'delete', messageId: id, previousData: msg });
+                                handleDeleteMessage(id);
+                            }}
+                            onReply={(id) => {
+                                const msg = emails.find(em => em.id === id);
+                                if (msg) handleReply(msg);
+                            }}
+                            onReplyAll={(id) => {
+                                const msg = emails.find(em => em.id === id);
+                                if (msg) handleReply(msg);
+                            }}
+                            onForward={(id) => {
+                                const msg = emails.find(em => em.id === id);
+                                if (msg) handleForward(msg);
+                            }}
+                            onPrint={(id) => {
+                                window.open(`/api/email/messages/${id}/print`, '_blank');
+                            }}
                         />
                     </div>
-                </div>
+                </section>
 
-                <div className="flex-1 overflow-y-auto custom-scrollbar relative">
-                    {loading && (
-                        <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-20 flex items-center justify-center">
-                            <RefreshCw size={24} className="text-indigo-600 animate-spin" />
+                {/* Column 3: Message Detail */}
+                <main className="flex-1 flex flex-col min-w-0 bg-white relative overflow-hidden">
+                    {selectedEmailId ? (
+                        <EmailDetails
+                            emailId={selectedEmailId}
+                            customFolders={customFolders}
+                            onEmailUpdate={fetchEmails}
+                            onStatsUpdate={fetchStats}
+                            onReply={handleReply}
+                            onForward={handleForward}
+                            onDelete={handleDeleteMessage}
+                        />
+                    ) : (
+                        <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-slate-50/30">
+                            <div className="w-24 h-24 bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 flex items-center justify-center mb-6">
+                                <Mail size={40} className="text-slate-200" />
+                            </div>
+                            <h3 className="text-xl font-bold text-slate-800 mb-2">{t('email.select_message')}</h3>
+                            <p className="text-slate-500 max-w-xs">{t('email.select_message_description')}</p>
                         </div>
                     )}
-                    <EmailList
-                        emails={emails
-                            .filter(e =>
-                                (e.subject || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                (e.from_address || '').toLowerCase().includes(searchQuery.toLowerCase())
-                            )
-                            .filter(e => {
-                                if (activeTab === 'focused') return e.is_important;
-                                return !e.is_important;
-                            })
-                            .sort((a, b) => {
-                                const dateA = new Date(a.received_at.includes('Z') ? a.received_at : `${a.received_at}Z`);
-                                const dateB = new Date(b.received_at.includes('Z') ? b.received_at : `${b.received_at}Z`);
-                                return dateB.getTime() - dateA.getTime();
-                            })
-                        }
-                        customFolders={customFolders}
-                        onSelectEmail={setSelectedEmailId}
-                        selectedEmailId={selectedEmailId}
-                        onToggleStar={async (id, current) => {
-                            try {
-                                const msg = emails.find(em => em.id === id);
-                                if (msg) setLastAction({ type: 'star', messageId: id, previousData: { is_starred: current } });
-                                await emailService.updateMessage(id, { is_starred: !current });
-                                fetchEmails();
-                                fetchStats();
-                            } catch {
-                                addToast({ type: 'error', title: t('common.error'), message: t('email.toast_error_title') });
-                            }
-                        }}
-                        onToggleRead={async (id, current) => {
-                            try {
-                                const msg = emails.find(em => em.id === id);
-                                if (msg) setLastAction({ type: 'read', messageId: id, previousData: { is_read: current } });
-                                await emailService.updateMessage(id, { is_read: !current });
-                                fetchEmails();
-                                fetchStats();
-                            } catch {
-                                addToast({ type: 'error', title: t('common.error'), message: t('email.toast_error_title') });
-                            }
-                        }}
-                        onToggleImportant={async (id, current) => {
-                            try {
-                                await emailService.updateMessage(id, { is_important: !current });
-                                fetchEmails();
-                                fetchStats();
-                            } catch {
-                                addToast({ type: 'error', title: t('common.error'), message: t('email.toast_error_title') });
-                            }
-                        }}
-                        onMoveToFolder={async (id, folderId) => {
-                            try {
-                                await emailService.updateMessage(id, { folder_id: folderId });
-                                fetchEmails();
-                                fetchStats();
-                                addToast({ type: 'success', title: t('common.success'), message: t('common.saved') });
-                            } catch {
-                                addToast({ type: 'error', title: t('common.error'), message: t('email.toast_error_title') });
-                            }
-                        }}
-                        onArchive={async (id) => {
-                            try {
-                                await emailService.updateMessage(id, { is_archived: true });
-                                fetchEmails();
-                                fetchStats();
-                                addToast({ type: 'success', title: t('common.success'), message: t('email.archived') });
-                            } catch {
-                                addToast({ type: 'error', title: t('common.error'), message: t('email.toast_error_title') });
-                            }
-                        }}
-                        onSpam={async (id) => {
-                            try {
-                                const msg = emails.find(em => em.id === id);
-                                if (!msg) return;
-                                const newState = !msg.is_spam;
-                                await emailService.updateMessage(id, { is_spam: newState });
-                                fetchEmails();
-                                fetchStats();
-                                addToast({ type: 'success', title: t('common.success'), message: newState ? t('email.spam') : t('common.saved') });
-                            } catch {
-                                addToast({ type: 'error', title: t('common.error'), message: t('email.toast_error_title') });
-                            }
-                        }}
-                        onDelete={async (id) => {
-                            const msg = emails.find(em => em.id === id);
-                            if (msg) setLastAction({ type: 'delete', messageId: id, previousData: msg });
-                            handleDeleteMessage(id);
-                        }}
-                        onReply={(id) => {
-                            const msg = emails.find(em => em.id === id);
-                            if (msg) handleReply(msg);
-                        }}
-                        onReplyAll={(id) => {
-                            const msg = emails.find(em => em.id === id);
-                            if (msg) handleReply(msg);
-                        }}
-                        onForward={(id) => {
-                            const msg = emails.find(em => em.id === id);
-                            if (msg) handleForward(msg);
-                        }}
-                        onPrint={(id) => {
-                            window.open(`/api/email/messages/${id}/print`, '_blank');
-                        }}
-                    />
-                </div>
-            </section>
-
-            {/* Column 3: Message Detail */}
-            <main className="flex-1 flex flex-col min-w-0 bg-white relative overflow-hidden">
-                {selectedEmailId ? (
-                    <EmailDetails
-                        emailId={selectedEmailId}
-                        customFolders={customFolders}
-                        onEmailUpdate={fetchEmails}
-                        onStatsUpdate={fetchStats}
-                        onReply={handleReply}
-                        onForward={handleForward}
-                        onDelete={handleDeleteMessage}
-                    />
-                ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-slate-50/30">
-                        <div className="w-24 h-24 bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 flex items-center justify-center mb-6">
-                            <Mail size={40} className="text-slate-200" />
-                        </div>
-                        <h3 className="text-xl font-bold text-slate-800 mb-2">{t('email.select_message')}</h3>
-                        <p className="text-slate-500 max-w-xs">{t('email.select_message_description')}</p>
-                    </div>
-                )}
-            </main>
+                </main>
 
             </div>
 

@@ -333,7 +333,7 @@ const SettingsPage: React.FC = () => {
                                     label={t('common.phoneNumber')}
                                     value={formData.phone_number}
                                     onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
-                                    placeholder="+7..."
+                                    placeholder={t('common.phoneNumberPlaceholder')}
                                     fullWidth
                                 />
                             </div>
@@ -358,17 +358,17 @@ const SettingsPage: React.FC = () => {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <Input
-                                    label={t('common.rank') || 'Rank'}
+                                    label={t('common.rank')}
                                     value={formData.rank}
                                     onChange={(e) => setFormData({ ...formData, rank: e.target.value })}
-                                    placeholder={t('settings.rank_placeholder') || 'Lieutenant'}
+                                    placeholder={t('settings.rank_placeholder')}
                                     fullWidth
                                 />
                                 <Input
                                     label={t('common.cabinet')}
                                     value={formData.cabinet}
                                     onChange={(e) => setFormData({ ...formData, cabinet: e.target.value })}
-                                    placeholder="301"
+                                    placeholder={t('common.cabinetPlaceholder')}
                                     fullWidth
                                 />
                             </div>
@@ -570,7 +570,7 @@ const SettingsPage: React.FC = () => {
                                     className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none appearance-none cursor-pointer"
                                 >
                                     {timezonesLoading ? (
-                                        <option value="">Loading...</option>
+                                        <option value="">{t('common.loading')}</option>
                                     ) : (
                                         availableTimezones.map((tz) => (
                                             <option key={tz} value={tz}>
@@ -679,7 +679,7 @@ const SettingsPage: React.FC = () => {
                                                                         : '14px'
                                                         }}
                                                     >
-                                                        Пример текста сообщения с выбранным размером шрифта.
+                                                        {t('settings.preview_text')}
                                                     </p>
                                                 </div>
                                             </div>
@@ -837,7 +837,7 @@ const ChangePasswordModal: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                     label={t('password.current')}
                     value={passwordData.current_password}
                     onChange={(e) => setPasswordData({ ...passwordData, current_password: e.target.value })}
-                    placeholder="••••••••"
+                    placeholder={t('settings.passwordPlaceholder')}
                     required
                     fullWidth
                 />
@@ -846,7 +846,7 @@ const ChangePasswordModal: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                     label={t('password.new')}
                     value={passwordData.new_password}
                     onChange={(e) => setPasswordData({ ...passwordData, new_password: e.target.value })}
-                    placeholder="••••••••"
+                    placeholder={t('settings.passwordPlaceholder')}
                     required
                     fullWidth
                 />
@@ -855,7 +855,7 @@ const ChangePasswordModal: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                     label={t('password.confirm')}
                     value={passwordData.confirm_password}
                     onChange={(e) => setPasswordData({ ...passwordData, confirm_password: e.target.value })}
-                    placeholder="••••••••"
+                    placeholder={t('settings.passwordPlaceholder')}
                     required
                     fullWidth
                 />

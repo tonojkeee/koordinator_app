@@ -110,8 +110,8 @@ export const DatabaseSettingsTab = ({ t }: { t: TFunction }) => {
                         <button
                             onClick={() => setConfig({ ...config, type: 'sqlite' })}
                             className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${config.type === 'sqlite'
-                                    ? 'border-indigo-500 bg-indigo-50/50 text-indigo-700'
-                                    : 'border-slate-100 bg-white text-slate-400 hover:border-slate-200'
+                                ? 'border-indigo-500 bg-indigo-50/50 text-indigo-700'
+                                : 'border-slate-100 bg-white text-slate-400 hover:border-slate-200'
                                 }`}
                         >
                             <span className="font-black text-lg">SQLite</span>
@@ -120,8 +120,8 @@ export const DatabaseSettingsTab = ({ t }: { t: TFunction }) => {
                         <button
                             onClick={() => setConfig({ ...config, type: 'mysql' })}
                             className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${config.type === 'mysql'
-                                    ? 'border-indigo-500 bg-indigo-50/50 text-indigo-700'
-                                    : 'border-slate-100 bg-white text-slate-400 hover:border-slate-200'
+                                ? 'border-indigo-500 bg-indigo-50/50 text-indigo-700'
+                                : 'border-slate-100 bg-white text-slate-400 hover:border-slate-200'
                                 }`}
                         >
                             <span className="font-black text-lg">MySQL</span>
@@ -259,7 +259,7 @@ const SettingField = ({ setting, onUpdate, t }: { setting: SystemSetting, onUpda
                     {setting.description || setting.key}
                 </label>
                 {setting.is_public && (
-                    <span className="text-[9px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100/50 uppercase tracking-wider">Public</span>
+                    <span className="text-[9px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100/50 uppercase tracking-wider">{t('common.public')}</span>
                 )}
             </div>
 
@@ -267,8 +267,8 @@ const SettingField = ({ setting, onUpdate, t }: { setting: SystemSetting, onUpda
                 <button
                     onClick={() => handleChange(!val)}
                     className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 ${val
-                            ? 'bg-indigo-50/50 border-indigo-200 text-indigo-700 shadow-sm'
-                            : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'
+                        ? 'bg-indigo-50/50 border-indigo-200 text-indigo-700 shadow-sm'
+                        : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'
                         }`}
                 >
                     <span className="text-sm font-bold">{val ? t('common.enabled') : t('common.disabled')}</span>
@@ -361,10 +361,10 @@ export const AppSettingsTab = ({ t, visibleGroup }: { t: TFunction, visibleGroup
                 <div key={group} className="bg-white/70 backdrop-blur-md p-8 rounded-[2rem] border border-white shadow-[0_25px_60px_rgba(0,0,0,0.02)]">
                     <div className="flex items-center gap-4 mb-8">
                         <div className={`p-3 rounded-2xl ${group === 'general' ? 'bg-indigo-50 text-indigo-600' :
-                                group === 'security' ? 'bg-rose-50 text-rose-600' :
-                                    group === 'chat' ? 'bg-teal-50 text-teal-600' :
-                                        group === 'email' ? 'bg-violet-50 text-violet-600' :
-                                            'bg-slate-100 text-slate-600'
+                            group === 'security' ? 'bg-rose-50 text-rose-600' :
+                                group === 'chat' ? 'bg-teal-50 text-teal-600' :
+                                    group === 'email' ? 'bg-violet-50 text-violet-600' :
+                                        'bg-slate-100 text-slate-600'
                             }`}>
                             {group === 'general' ? <Sliders size={20} /> :
                                 group === 'security' ? <Shield size={20} /> :

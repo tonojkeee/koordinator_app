@@ -242,7 +242,7 @@ const ConnectionSetup: React.FC<ConnectionSetupProps> = ({ onConfigured, initial
                         <div className="flex items-center justify-center gap-6 opacity-40 hover:opacity-100 transition-opacity">
                             <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">v1.0.7</div>
                             <div className="w-1 h-1 bg-slate-300 rounded-full" />
-                            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Secure Client</div>
+                            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{t('connection.secure_client')}</div>
                         </div>
                     </div>
                 </form>

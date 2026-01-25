@@ -172,8 +172,8 @@ const MainLayout: React.FC = () => {
                 }
 
                 if (shouldNotify && !isDocumentShare && !isMuted) {
-                    const senderName = msgData.message?.sender_name || 'Someone';
-                    const content = msgData.message?.content || 'New message';
+                    const senderName = msgData.message?.sender_name || t('common.someone');
+                    const content = msgData.message?.content || t('chat.new_message_default');
                     const isMentioned = msgData.is_mentioned;
 
                     const title = isMentioned

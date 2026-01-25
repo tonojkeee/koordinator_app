@@ -709,7 +709,7 @@ const ChatPage: React.FC = () => {
     };
 
     const highlightWords: Record<string, string[]> = {
-        ru: [t('common.appName').toLowerCase().replace(/[«»]/g, ''), 'взаимодействие', 'система', 'гис'],
+        ru: [t('common.appName').toLowerCase().replace(/[«»]/g, ''), t('chat.keywords.interaction'), t('chat.keywords.system'), t('chat.keywords.gis')],
         en: ['coordinator', 'interaction', 'system', 'gis']
     };
 
@@ -1559,7 +1559,7 @@ const ChatPage: React.FC = () => {
                                                                         {isLastInGroup ? (
                                                                             <Avatar
                                                                                 src={isSent ? user?.avatar_url : msg.avatar_url}
-                                                                                name={isSent ? formatName(user?.full_name || '', user?.username || '') : (msg.username ? formatName(msg.full_name, msg.username || '') : 'Система')}
+                                                                                name={isSent ? formatName(user?.full_name || '', user?.username || '') : (msg.username ? formatName(msg.full_name, msg.username || '') : t('common.system'))}
                                                                                 size="md"
                                                                                 className="shadow-sm border border-slate-200/50 relative z-10"
                                                                             />
@@ -1577,7 +1577,7 @@ const ChatPage: React.FC = () => {
                                                                                     </span>
                                                                                 )}
                                                                                 <span className={`font-bold text-[13px] tracking-tight ${isSent ? 'text-indigo-400' : 'text-indigo-600'}`}>
-                                                                                    {isSent ? t('chat.you') : (msg.username ? formatName(msg.full_name, msg.username) : 'Система')}
+                                                                                    {isSent ? t('chat.you') : (msg.username ? formatName(msg.full_name, msg.username) : t('common.system'))}
                                                                                 </span>
                                                                                 {((isSent && user?.role === 'admin') || (!isSent && msg.role === 'admin')) && (
                                                                                     <div className="text-indigo-400" title={t('admin.roleAdmin')}>

@@ -289,7 +289,7 @@ const AdminPage: React.FC = () => {
 
                     {/* Settings tabs - keep in old file for now */}
                     {activeTab.startsWith('settings') && (
-                        <React.Suspense fallback={<div className="text-center py-10">Loading...</div>}>
+                        <React.Suspense fallback={<div className="text-center py-10">{t('common.loading')}</div>}>
                             {activeTab === 'settings_database' ? (
                                 <DatabaseSettingsTab t={t} />
                             ) : activeTab === 'settings_email' ? (

@@ -35,6 +35,7 @@
         "fullName": "ФИО",
         "phoneNumberPlaceholder": "+7 (999) 000-00-00",
         "cabinetPlaceholder": "404",
+        "rank": "Звание",
         "participants_one": "участник",
         "participants_few": "участника",
         "participants_many": "участников",
@@ -64,7 +65,9 @@
         "kb": "КБ",
         "clear": "Очистить",
         "info": "Информация",
-        "system": "Система"
+        "system": "Система",
+        "public": "Публично",
+        "someone": "Кто-то"
     },
     "auth": {
         "signInTitle": "Вход в ГИС «КООРДИНАТОР»",
@@ -92,7 +95,13 @@
         "setup_connection_tooltip": "Настроить подключение"
     },
     "chat": {
+        "keywords": {
+            "interaction": "взаимодействие",
+            "system": "система",
+            "gis": "гис"
+        },
         "title": "Чаты",
+        "new_message_default": "Новое сообщение",
         "noMessages": "Сообщений пока нет",
         "firstMessage": "Будьте первым, кто поприветствует!",
         "typeMessage": "Введите сообщение...",
@@ -837,6 +846,7 @@
         "font_size_small": "Мелкий",
         "font_size_medium": "Средний",
         "font_size_large": "Крупный",
+        "preview_text": "Пример текста сообщения с выбранным размером шрифта.",
         "tasks_settings": "Настройки указаний",
         "tasks_view": "Вид по умолчанию",
         "tasks_view_list": "Список",
@@ -848,6 +858,7 @@
         "personal_info": "Личные данные",
         "organization_info": "Организация",
         "timezone_placeholder": "Поиск пояса...",
+        "passwordPlaceholder": "••••••••",
         "groups": {
             "general": "Основные",
             "security": "Безопасность",
@@ -1051,6 +1062,10 @@
         "title": "Электронная почта",
         "new_message": "Новое письмо",
         "account": "Аккаунт",
+        "header_from": "От",
+        "header_to": "Кому",
+        "header_date": "Дата",
+        "header_subject": "Тема",
         "loading": "Загрузка...",
         "address_book": "Адресная книга",
         "refresh": "Обновить",
@@ -1171,7 +1186,8 @@
         "servers_section": "Доступные серверы",
         "or_manual_url": "Или прямой адрес",
         "button_connecting": "Начинаем...",
-        "button_connect": "Подключиться"
+        "button_connect": "Подключиться",
+        "secure_client": "Защищенный клиент"
     },
     "layout": {
         "notification_new_task": "Новое указание",

@@ -29,7 +29,7 @@ const CompanyEmployees: React.FC<CompanyEmployeesProps> = ({
     pendingDMUserId,
     currentUser
 }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [itemsPerPage] = useState(24);
     const [currentPage, setCurrentPage] = useState(1);
     const [viewingUser, setViewingUser] = useState<User | null>(null);
@@ -92,15 +92,15 @@ const CompanyEmployees: React.FC<CompanyEmployeesProps> = ({
                 {/* List Header Labels */}
                 {users.length > 0 && !isLoading && (
                     <div className="sticky top-0 z-20 bg-slate-50/95 backdrop-blur-md border-b border-slate-200/50">
-                    <div className="max-w-7xl mx-auto hidden lg:grid lg:grid-cols-[40px_2fr_1.2fr_1fr_0.8fr_40px] xl:grid-cols-[40px_2.5fr_1.2fr_1fr_1fr_1fr_40px] gap-4 px-8 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        <div className="flex justify-center shrink-0">#</div>
-                        <div>{t('common.fullName')}</div>
-                        <div>{t('common.email')}</div>
-                        <div>{t('common.phoneNumber')}</div>
-                        <div>{t('common.cabinet')}</div>
-                        <div className="hidden xl:block">{t('common.birthDate')}</div>
-                        <div className="text-center">{t('common.actions')}</div>
-                    </div>
+                        <div className="max-w-7xl mx-auto hidden lg:grid lg:grid-cols-[40px_2fr_1.2fr_1fr_0.8fr_40px] xl:grid-cols-[40px_2.5fr_1.2fr_1fr_1fr_1fr_40px] gap-4 px-8 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                            <div className="flex justify-center shrink-0">#</div>
+                            <div>{t('common.fullName')}</div>
+                            <div>{t('common.email')}</div>
+                            <div>{t('common.phoneNumber')}</div>
+                            <div>{t('common.cabinet')}</div>
+                            <div className="hidden xl:block">{t('common.birthDate')}</div>
+                            <div className="text-center">{t('common.actions')}</div>
+                        </div>
                     </div>
                 )}
 
@@ -212,7 +212,7 @@ const CompanyEmployees: React.FC<CompanyEmployeesProps> = ({
                                                 <div className="hidden xl:flex items-center space-x-2 min-w-0">
                                                     <Calendar size={13} className="text-slate-400 shrink-0" />
                                                     <span className="text-xs text-slate-700 truncate">
-                                                        {user.birth_date ? new Date(user.birth_date).toLocaleDateString('ru-RU') : '—'}
+                                                        {user.birth_date ? new Date(user.birth_date).toLocaleDateString(i18n.language) : '—'}
                                                     </span>
                                                 </div>
 
