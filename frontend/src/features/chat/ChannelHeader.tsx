@@ -53,7 +53,7 @@ const ChannelHeader: React.FC<ChannelHeaderProps> = ({
   return (
     <>
       <div className="shrink-0 border-b border-slate-200/50 bg-white/40 backdrop-blur-xl">
-        <div className="flex items-center justify-between px-6 py-3">
+        <div className="flex items-center justify-between px-6 h-16">
           {/* Left: Icon + Title */}
           <div className="flex items-center gap-4 flex-1 min-w-0">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-lg shadow-indigo-500/30">

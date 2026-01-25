@@ -334,7 +334,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
 
   return (
     <div className="w-full h-full flex flex-col bg-[#F5F5F7] border-r border-slate-200">
-      <div className="h-14 px-4 flex items-center justify-between border-b border-slate-200 bg-white sticky top-0 z-10">
+      <div className="h-16 px-4 flex items-center justify-between border-b border-slate-200 bg-white sticky top-0 z-10">
         <h2 className="text-lg font-bold text-slate-800">{t('chat.title')}</h2>
         <div className="flex items-center space-x-1">
           <button className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-md transition-colors">

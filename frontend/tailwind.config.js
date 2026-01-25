@@ -16,7 +16,7 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif', 'Noto Color Emoji'],
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif', 'Noto Color Emoji'],
       },
       boxShadow: {
         'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',

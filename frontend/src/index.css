@@ -1,10 +1,10 @@
 @import "./assets/fonts/inter.css";
-@import "./assets/fonts/fonts.css";
+
 @import "./assets/fonts/emojis.css";
 @import "tailwindcss";
 
 @theme {
-  --font-inter: "Inter", "Outfit", sans-serif;
+  --font-inter: "Inter", sans-serif;
   --color-teams-bg: #F5F5F5;
   --color-teams-sidebar: #2D2F3F;
 }
