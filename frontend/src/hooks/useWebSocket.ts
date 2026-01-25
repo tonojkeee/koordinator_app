@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import api from '../api/client';
+import { useAuthStore } from '../store/useAuthStore';
 
 interface UseWebSocketOptions {
     onMessage?: (data: unknown) => void;
@@ -7,6 +8,76 @@ interface UseWebSocketOptions {
 
 // Global connection registry to prevent duplicate connections in StrictMode
 const connectionRegistry = new Map<string, { socket: WebSocket; refCount: number }>();
+
+// Helper to check if token is expired or about to expire (within 1 minute)
+const isTokenExpired = (token: string): boolean => {
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const exp = payload.exp * 1000; // Convert to milliseconds
+        return Date.now() >= exp - 60000; // Expired or expiring within 1 minute
+    } catch {
+        return true; // If we can't decode, assume expired
+    }
+};
+
+// Helper to refresh the token
+const refreshTokenIfNeeded = async (token: string): Promise<string | null> => {
+    if (!token) return null;
+
+    if (!isTokenExpired(token)) {
+        return token; // Token is still valid
+    }
+
+    console.log('🔄 Token expired, refreshing before channel WebSocket connect...');
+
+    try {
+        const storage = localStorage.getItem('auth-storage');
+        if (!storage) return null;
+
+        const data = JSON.parse(storage);
+        const refreshToken = data.state?.refreshToken;
+
+        if (!refreshToken) {
+            console.error('❌ No refresh token available');
+            useAuthStore.getState().clearAuth();
+            return null;
+        }
+
+        const apiBase = api.defaults.baseURL || import.meta.env.VITE_API_URL || '';
+        const res = await fetch(`${apiBase}/auth/refresh`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refresh_token: refreshToken }),
+            credentials: 'include'
+        });
+
+        if (!res.ok) {
+            console.error('❌ Token refresh failed');
+            useAuthStore.getState().clearAuth();
+            return null;
+        }
+
+        const { access_token, refresh_token: newRefreshToken } = await res.json();
+
+        // Update localStorage
+        data.state.token = access_token;
+        data.state.refreshToken = newRefreshToken;
+        localStorage.setItem('auth-storage', JSON.stringify(data));
+
+        // Update Zustand store
+        const currentUser = useAuthStore.getState().user;
+        if (currentUser) {
+            useAuthStore.getState().setAuth(currentUser, access_token, newRefreshToken);
+        }
+
+        console.log('✅ Token refreshed successfully');
+        return access_token;
+    } catch (error) {
+        console.error('❌ Failed to refresh token:', error);
+        useAuthStore.getState().clearAuth();
+        return null;
+    }
+};
 
 export const useWebSocket = (channelId: number | undefined, token: string | null, options: UseWebSocketOptions = {}) => {
     const [isConnected, setIsConnected] = useState(false);
@@ -56,8 +127,15 @@ export const useWebSocket = (channelId: number | undefined, token: string | null
             }
         };
 
-        const connect = () => {
+        const connect = async () => {
             if (!channelId || !token) return;
+
+            // Check and refresh token if needed before connecting
+            const validToken = await refreshTokenIfNeeded(token);
+            if (!validToken) {
+                console.log('❌ No valid token, cannot connect to channel WebSocket');
+                return;
+            }
 
             // Clear any pending cleanup for this connection
             if (cleanupTimeoutRef.current) {
@@ -88,7 +166,7 @@ export const useWebSocket = (channelId: number | undefined, token: string | null
                 wsBase = `${protocol}//${host}`;
             }
 
-            const wsUrl = `${wsBase}/api/chat/ws/${channelId}?token=${token}`;
+            const wsUrl = `${wsBase}/api/chat/ws/${channelId}?token=${validToken}`;
             const socket = new WebSocket(wsUrl);
 
             connectionRegistry.set(connectionKey, { socket, refCount: (existing?.refCount || 0) + 1 });

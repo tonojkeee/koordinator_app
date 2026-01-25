@@ -113,8 +113,85 @@ export const useGlobalWebSocket = (token: string | null, options: GlobalWebSocke
             }
         };
 
-        const connect = () => {
+        // Helper to check if token is expired or about to expire (within 1 minute)
+        const isTokenExpired = (token: string): boolean => {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const exp = payload.exp * 1000; // Convert to milliseconds
+                return Date.now() >= exp - 60000; // Expired or expiring within 1 minute
+            } catch {
+                return true; // If we can't decode, assume expired
+            }
+        };
+
+        // Helper to refresh the token
+        const refreshTokenIfNeeded = async (): Promise<string | null> => {
+            if (!token) return null;
+
+            if (!isTokenExpired(token)) {
+                return token; // Token is still valid
+            }
+
+            console.log('🔄 Token expired or expiring soon, refreshing before WebSocket connect...');
+
+            try {
+                const storage = localStorage.getItem('auth-storage');
+                if (!storage) return null;
+
+                const data = JSON.parse(storage);
+                const refreshToken = data.state?.refreshToken;
+
+                if (!refreshToken) {
+                    console.error('❌ No refresh token available');
+                    useAuthStore.getState().clearAuth();
+                    return null;
+                }
+
+                const apiBase = api.defaults.baseURL || import.meta.env.VITE_API_URL || '';
+                const res = await fetch(`${apiBase}/auth/refresh`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ refresh_token: refreshToken }),
+                    credentials: 'include'
+                });
+
+                if (!res.ok) {
+                    console.error('❌ Token refresh failed');
+                    useAuthStore.getState().clearAuth();
+                    return null;
+                }
+
+                const { access_token, refresh_token: newRefreshToken } = await res.json();
+
+                // Update localStorage
+                data.state.token = access_token;
+                data.state.refreshToken = newRefreshToken;
+                localStorage.setItem('auth-storage', JSON.stringify(data));
+
+                // Update Zustand store
+                const currentUser = useAuthStore.getState().user;
+                if (currentUser) {
+                    useAuthStore.getState().setAuth(currentUser, access_token, newRefreshToken);
+                }
+
+                console.log('✅ Token refreshed successfully');
+                return access_token;
+            } catch (error) {
+                console.error('❌ Failed to refresh token:', error);
+                useAuthStore.getState().clearAuth();
+                return null;
+            }
+        };
+
+        const connect = async () => {
             if (!token) return;
+
+            // Check and refresh token if needed before connecting
+            const validToken = await refreshTokenIfNeeded();
+            if (!validToken) {
+                console.log('❌ No valid token available, cannot connect WebSocket');
+                return;
+            }
 
             // If already connected or connecting, just increment refCount
             if (globalConnection && (globalConnection.socket.readyState === WebSocket.OPEN || globalConnection.socket.readyState === WebSocket.CONNECTING)) {
@@ -127,7 +204,7 @@ export const useGlobalWebSocket = (token: string | null, options: GlobalWebSocke
             // Derive WS URL from API base URL to ensure consistency
             const apiBase = api.defaults.baseURL || import.meta.env.VITE_API_URL || '';
             const wsBase = apiBase.replace(/^http/, 'ws').replace('/api', '');
-            const wsUrl = `${wsBase}/api/chat/ws/user?token=${token}`;
+            const wsUrl = `${wsBase}/api/chat/ws/user?token=${validToken}`;
             const socket = new WebSocket(wsUrl);
 
             globalConnection = { socket, refCount: (globalConnection?.refCount || 0) + 1 };

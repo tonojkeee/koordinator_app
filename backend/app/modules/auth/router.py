@@ -26,7 +26,7 @@ from app.modules.auth.models import User
 from app.core.websocket_manager import websocket_manager
 from app.core.events import event_bus
 from app.modules.auth.events import UserCreated, UserDeleted, UserUpdated
-from app.modules.auth.handlers import UserEventHandlers
+from app.modules.auth.handlers import register_auth_handlers
 from app.core.timezone_utils import get_common_timezones
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])

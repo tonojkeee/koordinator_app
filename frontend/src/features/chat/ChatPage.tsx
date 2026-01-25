@@ -632,7 +632,19 @@ const ChatPage: React.FC = () => {
                 prevChannelIdRef.current = channelId;
             });
         }
-    }, [channelId]);
+
+        // Immediately clear unread when entering a channel (optimistic update)
+        if (channelId) {
+            const numChannelId = Number(channelId);
+            // Clear Zustand store immediately for instant UI feedback
+            clearUnread(numChannelId);
+            // Also update React Query cache immediately
+            queryClient.setQueryData<Channel[]>(['channels'], (old) => {
+                if (!old) return old;
+                return old.map(c => c.id === numChannelId ? { ...c, unread_count: 0 } : c);
+            });
+        }
+    }, [channelId, clearUnread, queryClient]);
 
     // Hide participants list for system channels
     useEffect(() => {
@@ -681,9 +693,17 @@ const ChatPage: React.FC = () => {
         },
         onSuccess: () => {
             if (channelId) {
-                clearUnread(Number(channelId));
-                queryClient.invalidateQueries({ queryKey: ['channels'] });
-                queryClient.invalidateQueries({ queryKey: ['channel', channelId] });
+                const numChannelId = Number(channelId);
+                // Clear unread in Zustand store
+                clearUnread(numChannelId);
+                // Update React Query cache optimistically (don't invalidate to avoid refetch)
+                queryClient.setQueryData<Channel[]>(['channels'], (old) => {
+                    if (!old) return old;
+                    return old.map(c => c.id === numChannelId ? { ...c, unread_count: 0 } : c);
+                });
+                // Clear the "New Messages" separator by setting a very high last read ID
+                // This ensures no message will be shown as "unread"
+                setInitialLastReadId(Number.MAX_SAFE_INTEGER);
             }
         }
     });
@@ -700,18 +720,23 @@ const ChatPage: React.FC = () => {
         }
     };
 
-    const unreadCount = channel?.unread_count;
-    const markAsRead = useCallback(() => {
-        if (channelId && unreadCount && unreadCount > 0 && !markReadMutation.isPending) {
-            markReadMutation.mutate(Number(channelId));
-        }
-    }, [channelId, unreadCount, markReadMutation]);
+    // Track last marked channel to avoid duplicate API calls
+    const lastMarkedChannelRef = useRef<string | null>(null);
 
+    // Effect to trigger mark-as-read when entering a channel with unread messages
     useEffect(() => {
-        if (channelId && unreadCount) {
-            markAsRead();
+        if (!channelId) return;
+
+        // Only mark once per channel entry
+        if (lastMarkedChannelRef.current === channelId) return;
+
+        // Fire API call to mark channel as read (always, since we already optimistically cleared UI)
+        // This ensures backend state is updated even if we've already cleared the UI
+        if (!markReadMutation.isPending) {
+            markReadMutation.mutate(Number(channelId));
+            lastMarkedChannelRef.current = channelId;
         }
-    }, [channelId, unreadCount, markAsRead]);
+    }, [channelId, markReadMutation]);
 
     const {
         data: historyData,

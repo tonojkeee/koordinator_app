@@ -44,16 +44,25 @@ const MainLayout: React.FC = () => {
         enabled: !!token,
     });
 
-    // Sync backend unread counts to store
+    // Sync backend unread counts to store, but preserve optimistic updates for current channel
     useEffect(() => {
         if (channels && Array.isArray(channels)) {
+            // Extract current channel ID from path
+            const currentChannelId = location.pathname.match(/\/chat\/(\d+)/)?.[1];
+            const currentChannelIdNum = currentChannelId ? Number(currentChannelId) : null;
+
             const counts: Record<number, number> = {};
             channels.forEach(c => {
-                counts[c.id] = c.unread_count;
+                // Don't overwrite current channel's unread - let optimistic update persist
+                if (currentChannelIdNum && c.id === currentChannelIdNum) {
+                    counts[c.id] = 0; // User is viewing this channel, so it's read
+                } else {
+                    counts[c.id] = c.unread_count;
+                }
             });
             syncUnreads(counts);
         }
-    }, [channels, syncUnreads]);
+    }, [channels, syncUnreads, location.pathname]);
 
     // Clear document unread when visiting the board
     useEffect(() => {
@@ -72,16 +81,16 @@ const MainLayout: React.FC = () => {
         enabled: !!token,
     });
 
-            // Update unread count based on active tasks
-            useEffect(() => {
-                if (Array.isArray(tasks)) {
-                    // Count active tasks (IN_PROGRESS, OVERDUE)
-                    const activeCount = (tasks as { status: string }[]).filter((t) =>
-                        t.status === 'in_progress' || t.status === 'overdue'
-                    ).length;
-                    setTasksUnread(activeCount);
-                }
-            }, [tasks, setTasksUnread]);
+    // Update unread count based on active tasks
+    useEffect(() => {
+        if (Array.isArray(tasks)) {
+            // Count active tasks (IN_PROGRESS, OVERDUE)
+            const activeCount = (tasks as { status: string }[]).filter((t) =>
+                t.status === 'in_progress' || t.status === 'overdue'
+            ).length;
+            setTasksUnread(activeCount);
+        }
+    }, [tasks, setTasksUnread]);
 
 
 
@@ -188,14 +197,21 @@ const MainLayout: React.FC = () => {
                 if (!oldChannels) return oldChannels;
                 return oldChannels.map(ch => {
                     if (ch.id === channelId) {
+                        // Determine if we should increment unread_count
+                        const isSelf = msgData.message?.sender_id === user?.id;
+                        const isViewingChannel = currentChannelIdNum === channelId;
+                        const shouldIncrementUnread = !isSelf && !isViewingChannel;
+
                         return {
                             ...ch,
                             last_message: {
                                 id: msgData.message!.id || 0,
                                 content: (msgData.message!.content || '').slice(0, 100),
-                                sender_name: msgData.message!.sender_name || 'Unknown',
+                                sender_name: msgData.message!.sender_name || t('common.system'),
                                 created_at: msgData.message!.created_at || new Date().toISOString(),
-                            }
+                            },
+                            // Increment unread_count for instant sidebar update
+                            unread_count: shouldIncrementUnread ? (ch.unread_count || 0) + 1 : ch.unread_count
                         };
                     }
                     return ch;
@@ -318,14 +334,14 @@ const MainLayout: React.FC = () => {
             if (isMember) {
                 const newCount = Math.max(0, (channel.online_count || 0) + delta);
                 // Also update other_user if it's a DM and this is the user
-                const otherUser = channel.is_direct && channel.other_user?.id === data.user_id 
-                    ? { 
-                        ...channel.other_user, 
+                const otherUser = channel.is_direct && channel.other_user?.id === data.user_id
+                    ? {
+                        ...channel.other_user,
                         is_online: data.status === 'online',
                         last_seen: data.status === 'offline' ? new Date().toISOString() : channel.other_user.last_seen
-                      } 
+                    }
                     : channel.other_user;
-                
+
                 return { ...channel, online_count: newCount, other_user: otherUser };
             }
             return old;

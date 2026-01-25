@@ -89,16 +89,14 @@ function CreateChannelModal({ isOpen, onClose, onCreate }: CreateChannelModalPro
             <button
               type="button"
               onClick={() => setVisibility('public')}
-              className={`p-4 rounded-xl border-2 transition-all text-left ${
-                visibility === 'public'
-                  ? 'border-indigo-500 bg-indigo-50'
-                  : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-              }`}
+              className={`p-4 rounded-xl border-2 transition-all text-left ${visibility === 'public'
+                ? 'border-indigo-500 bg-indigo-50'
+                : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                }`}
             >
               <div className="flex flex-col items-center gap-2">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  visibility === 'public' ? 'bg-indigo-500' : 'bg-slate-400'
-                }`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${visibility === 'public' ? 'bg-indigo-500' : 'bg-slate-400'
+                  }`}>
                   <Globe size={20} className="text-white" />
                 </div>
                 <span className="text-sm font-medium text-slate-900">
@@ -113,16 +111,14 @@ function CreateChannelModal({ isOpen, onClose, onCreate }: CreateChannelModalPro
             <button
               type="button"
               onClick={() => setVisibility('private')}
-              className={`p-4 rounded-xl border-2 transition-all text-left ${
-                visibility === 'private'
-                  ? 'border-indigo-500 bg-indigo-50'
-                  : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-              }`}
+              className={`p-4 rounded-xl border-2 transition-all text-left ${visibility === 'private'
+                ? 'border-indigo-500 bg-indigo-50'
+                : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                }`}
             >
               <div className="flex flex-col items-center gap-2">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  visibility === 'private' ? 'bg-indigo-500' : 'bg-slate-400'
-                }`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${visibility === 'private' ? 'bg-indigo-500' : 'bg-slate-400'
+                  }`}>
                   <Lock size={20} className="text-white" />
                 </div>
                 <span className="text-sm font-medium text-slate-900">
@@ -144,7 +140,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
   const { t } = useTranslation();
   const { channelId } = useParams();
   const navigate = useNavigate();
-  
+
   // Универсальная функция навигации с fallback
   const navigateToChannel = useCallback((targetChannelId: number) => {
     try {
@@ -155,7 +151,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
       window.location.href = `/chat/${targetChannelId}`;
     }
   }, [navigate]);
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [muteModalChannelId, setMuteModalChannelId] = useState<number | null>(null);
@@ -232,7 +228,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
     onMutate: async (id: number) => {
       await queryClient.cancelQueries({ queryKey: ['channels'] });
       const previousChannels = queryClient.getQueryData<Channel[]>(['channels']);
-      
+
       queryClient.setQueryData<Channel[]>(['channels'], (old) => {
         if (!old) return [];
         return old.map(c =>
@@ -309,7 +305,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
     togglePinMutation.mutate(id);
   };
 
-  const filteredChannels = channels.filter(c => 
+  const filteredChannels = channels.filter(c =>
     (c.display_name || c.name || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -343,7 +339,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
           <button className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-md transition-colors">
             <Filter size={18} />
           </button>
-          <button 
+          <button
             onClick={() => {
               queryClient.invalidateQueries({ queryKey: ['channels'] });
               queryClient.invalidateQueries({ queryKey: ['channel'] });
@@ -353,7 +349,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
           >
             <Search size={18} />
           </button>
-          <button 
+          <button
             onClick={() => setIsCreating(true)}
             className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-md transition-colors"
           >
@@ -365,8 +361,8 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
       <div className="px-3 py-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder={t('common.search') || 'Search'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -639,7 +635,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
         onClose={() => setIsCreating(false)}
         onCreate={handleCreateChannel}
       />
-      
+
       <MuteModal
         isOpen={!!muteModalChannelId}
         onClose={() => setMuteModalChannelId(null)}
@@ -649,12 +645,12 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
   );
 };
 
-const ChannelItem = ({ 
+const ChannelItem = ({
   channel, isActive, unread, onClick, onPin, onDelete, onMute, currentUser, t, isSystem = false
-}: {  
-  channel: Channel, 
-  isActive: boolean, 
-  unread: number, 
+}: {
+  channel: Channel,
+  isActive: boolean,
+  unread: number,
   onClick: () => void,
   onPin: (e: React.MouseEvent, id: number) => void,
   onDelete: (e: React.MouseEvent, id: number) => void,
@@ -680,16 +676,16 @@ const ChannelItem = ({
       data-channel-name={channel.name}
       className={`
         group relative flex items-center px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-200
-        ${isActive 
+        ${isActive
           ? channel.visibility === 'private' && !channel.is_direct
-            ? 'bg-gradient-to-r from-amber-50 to-amber-100 shadow-sm ring-1 ring-amber-200' 
+            ? 'bg-gradient-to-r from-amber-50 to-amber-100 shadow-sm ring-1 ring-amber-200'
             : 'bg-white shadow-sm ring-1 ring-slate-200'
           : 'hover:bg-white/60 hover:shadow-sm'
         }
       `}
     >
       <div className="relative shrink-0 mr-3">
-        <Avatar 
+        <Avatar
           src={channel.is_direct ? channel.other_user?.avatar_url : undefined}
           name={channel.display_name || channel.name}
           size="md"
@@ -715,7 +711,7 @@ const ChannelItem = ({
           <h3 className={`text-sm font-semibold truncate flex items-center ${isActive ? 'text-indigo-900' : 'text-slate-700'}`}>
             {channel.other_user?.rank && <span className="text-slate-400 mr-1 font-bold">{abbreviateRank(channel.other_user.rank)}</span>}
             <span className="truncate">{channel.display_name || channel.name}</span>
-            {channel.is_owner && !channel.is_direct && (
+            {channel.is_owner && !channel.is_direct && !channel.is_system && (
               <Crown size={12} className="text-amber-500 ml-1.5 shrink-0" fill="currentColor" />
             )}
           </h3>
@@ -727,7 +723,12 @@ const ChannelItem = ({
         </div>
         <div className="flex justify-between items-center">
           <p className={`text-xs truncate pr-2 ${unread ? 'text-slate-900 font-medium' : 'text-slate-500'}`}>
-            {channel.last_message?.content || t('chat.no_messages')}
+            {channel.last_message ? (
+              <>
+                <span className="font-semibold">{channel.last_message.sender_name}: </span>
+                {channel.last_message.content}
+              </>
+            ) : t('chat.no_messages')}
           </p>
           {unread > 0 && (
             <span className="min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 shadow-sm">
@@ -738,16 +739,16 @@ const ChannelItem = ({
       </div>
 
       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 rounded-lg p-1 shadow-sm z-10">
-        <button 
-          onClick={(e) => { e.stopPropagation(); onMute(); }} 
+        <button
+          onClick={(e) => { e.stopPropagation(); onMute(); }}
           className="p-1 text-slate-400 hover:text-indigo-500 transition-colors"
           title={channel.mute_until && new Date(channel.mute_until) > new Date() ? t('chat.notifications.unmute') : t('chat.notifications.mute')}
         >
           <BellOff size={14} fill={channel.mute_until && new Date(channel.mute_until) > new Date() ? "currentColor" : "none"} />
         </button>
         {!isSystem && (
-          <button 
-            onClick={(e) => onPin(e, channel.id)} 
+          <button
+            onClick={(e) => onPin(e, channel.id)}
             className="p-1 text-slate-400 hover:text-indigo-500 transition-colors"
             title={channel.is_pinned ? t('chat.unpin') : t('chat.pin')}
           >
@@ -755,8 +756,8 @@ const ChannelItem = ({
           </button>
         )}
         {!isSystem && (channel.created_by === currentUser?.id || currentUser?.role === 'admin') && (
-          <button 
-            onClick={(e) => onDelete(e, channel.id)} 
+          <button
+            onClick={(e) => onDelete(e, channel.id)}
             className="p-1 text-slate-400 hover:text-rose-500 transition-colors"
             title={t('chat.deleteChat')}
           >

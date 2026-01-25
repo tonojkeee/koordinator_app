@@ -48,6 +48,10 @@ class WebSocketManager:
         await redis_manager.connect(redis_url)
         
         if redis_manager.is_available:
+            # Clear stale online users from previous server instance
+            await redis_manager.delete("ws:online_users")
+            logger.info("WebSocket manager: Cleared stale online users from Redis")
+            
             # Subscribe to broadcast channels
             await redis_manager.subscribe("ws:broadcast:all", self._handle_redis_broadcast_all)
             await redis_manager.subscribe("ws:broadcast:presence", self._handle_redis_presence)
@@ -132,6 +136,7 @@ class WebSocketManager:
         logger.debug(f"User {user_id} connected. Total: {len(self.user_connections[user_id])}")
         
         if is_first_connection:
+            # Always add to Redis if available (will be cleaned on restart)
             if redis_manager.is_available:
                 await redis_manager.sadd("ws:online_users", str(user_id))
             
@@ -199,8 +204,8 @@ class WebSocketManager:
                 del self.user_connections[user_id]
                 logger.debug(f"User {user_id} has no more connections. Waiting...")
                 
-                # Wait a short time to allow for reconnection
-                await asyncio.sleep(2.0)
+                # Wait a short time to allow for reconnection (reduced from 2s to 0.5s for snappier status)
+                await asyncio.sleep(0.5)
                 
                 # Check again if user is still offline (locally)
                 if user_id not in self.user_connections:

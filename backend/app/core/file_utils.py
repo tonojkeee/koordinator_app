@@ -1,21 +1,31 @@
 """
 Shared file upload utilities to eliminate code duplication.
 Used by auth, board, archive, zsspd modules for consistent file handling.
+
+This module consolidates functionality from:
+- file_helpers.py (merged)
+- file_utils.py (this file)
 """
 import os
 import re
 import hashlib
 import unicodedata
-from typing import BinaryIO, Tuple
+import logging
+from typing import BinaryIO, Tuple, Optional
 from fastapi import UploadFile
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+logger = logging.getLogger(__name__)
 
 # Reserved filenames on Windows
 RESERVED_NAMES = {'CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4', 
                   'LPT1', 'LPT2', 'LPT3', 'LPT4'}
 
+
+# =============================================================================
+# FILENAME SANITIZATION
+# =============================================================================
 
 def sanitize_filename(filename: str) -> str:
     """
@@ -60,6 +70,88 @@ def sanitize_filename(filename: str) -> str:
     return sanitized
 
 
+# Alias for backward compatibility
+get_safe_filename = sanitize_filename
+
+
+# =============================================================================
+# FILE PATH OPERATIONS
+# =============================================================================
+
+def sanitize_file_path(
+    base_dir: str,
+    user_id: int,
+    file_path: str
+) -> Tuple[bool, str, str]:
+    """
+    Sanitize and validate file path to prevent path traversal attacks.
+    
+    Args:
+        base_dir: Base directory for file storage
+        user_id: User ID for user-specific directory
+        file_path: Relative file path to validate
+        
+    Returns:
+        Tuple of (is_valid, full_path, error_message)
+    """
+    # Check for empty or suspicious path
+    if not file_path or '..' in file_path:
+        return False, '', "Invalid file path"
+    
+    # Build full path
+    user_dir = os.path.join(base_dir, str(user_id))
+    full_path = os.path.join(user_dir, file_path)
+    
+    # Normalize path to resolve any . or .. components
+    full_path = os.path.normpath(full_path)
+    user_dir = os.path.normpath(user_dir)
+    
+    # Check if file exists
+    if not os.path.exists(full_path):
+        return False, '', "File not found"
+    
+    # Verify path is within user directory (prevent path traversal)
+    if not full_path.startswith(user_dir + os.sep):
+        return False, '', "Path traversal detected"
+    
+    return True, full_path, ''
+
+
+def validate_file_path_exists(
+    base_dir: str,
+    user_id: int,
+    file_path: str
+) -> Tuple[bool, str]:
+    """
+    Validate that a file path exists and is safe.
+    
+    Returns:
+        Tuple of (is_valid, error_message)
+    """
+    is_valid, _, error = sanitize_file_path(base_dir, user_id, file_path)
+    return is_valid, error
+
+
+def ensure_user_directory(base_dir: str, user_id: int) -> str:
+    """
+    Ensure user-specific directory exists and return its path.
+    
+    Args:
+        base_dir: Base directory for file storage
+        user_id: User ID for user-specific directory
+        
+    Returns:
+        Path to user directory
+    """
+    user_dir = os.path.join(base_dir, str(user_id))
+    os.makedirs(user_dir, exist_ok=True)
+    return user_dir
+
+
+# =============================================================================
+# FILE VALIDATION
+# =============================================================================
+
 def validate_file_size(file: UploadFile, max_size_mb: int) -> None:
     """Validate file size against maximum allowed size in MB."""
     if file.size and file.size > max_size_mb * 1024 * 1024:
@@ -83,6 +175,17 @@ def validate_file_type(file: UploadFile, allowed_types: str = None) -> None:
             detail=f"File type {ext} not allowed. Allowed types: {allowed_types}"
         )
 
+
+def parse_allowed_types(allowed_types_str: str) -> Optional[set]:
+    """Parse comma-separated allowed types string into set."""
+    if not allowed_types_str:
+        return None
+    return {t.strip().lower() for t in allowed_types_str.split(",")}
+
+
+# =============================================================================
+# FILE OPERATIONS
+# =============================================================================
 
 async def save_uploaded_file(
     file: UploadFile,
@@ -144,23 +247,20 @@ def _generate_unique_filename(directory: str, filename: str) -> str:
     return unique_name
 
 
-async def calculate_file_size_bytes(max_mb_str: str) -> int:
-    """Convert MB string to bytes."""
+def get_file_size(file_path: str) -> int:
+    """
+    Get file size in bytes.
+    
+    Returns:
+        File size in bytes, or 0 if file doesn't exist
+    """
     try:
-        max_mb = int(max_mb_str)
-        return max_mb * 1024 * 1024
-    except (ValueError, TypeError):
-        return 50 * 1024 * 1024  # Default 50MB
+        return os.path.getsize(file_path)
+    except (OSError, FileNotFoundError):
+        return 0
 
 
-def parse_allowed_types(allowed_types_str: str) -> set:
-    """Parse comma-separated allowed types string into set."""
-    if not allowed_types_str:
-        return None
-    return {t.strip().lower() for t in allowed_types_str.split(",")}
-
-
-async def delete_file_safe(file_path: str) -> bool:
+def delete_file_safe(file_path: str) -> bool:
     """
     Safely delete file if it exists.
     
@@ -172,7 +272,14 @@ async def delete_file_safe(file_path: str) -> bool:
             os.remove(file_path)
             return True
     except OSError as e:
-        from app.core.config import get_settings
-        logger = get_settings().get_logger(__name__)
         logger.error(f"Error deleting file {file_path}: {e}")
     return False
+
+
+async def calculate_file_size_bytes(max_mb_str: str) -> int:
+    """Convert MB string to bytes."""
+    try:
+        max_mb = int(max_mb_str)
+        return max_mb * 1024 * 1024
+    except (ValueError, TypeError):
+        return 50 * 1024 * 1024  # Default 50MB
