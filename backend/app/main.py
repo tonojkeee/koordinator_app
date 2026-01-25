@@ -282,10 +282,25 @@ if not os.path.exists("static/avatars"):
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-@app.get("/")
-async def root() -> dict[str, str]:
-    """Root endpoint"""
+@app.get("/api")
+async def api_root() -> dict[str, str]:
+    """API Root enpoint"""
     return {"message": get_text("system.api_root"), "version": settings.app_version, "status": "running"}
+
+@app.get("/")
+async def root():
+    """Serve Frontend Root"""
+    # Try to find index.html
+    # We use the same path resolution logic as below
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    FRONTEND_DIST = os.path.join(os.path.dirname(BASE_DIR), "frontend", "dist")
+    index_path = os.path.join(FRONTEND_DIST, "index.html")
+    
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    
+    # Fallback to API message if frontend not found
+    return {"message": get_text("system.api_root"), "version": settings.app_version, "status": "running", "warning": "Frontend not found"}
 
 
 @app.get("/health")
