@@ -163,7 +163,8 @@ export const MessageInput = React.forwardRef<MessageInputHandle, MessageInputPro
                             <EmojiPicker
                                 onEmojiClick={onEmojiClick}
                                 theme={Theme.AUTO}
-                                emojiStyle={EmojiStyle.NATIVE}
+                                emojiStyle={EmojiStyle.GOOGLE}
+                                getEmojiUrl={(unified) => `/emoji/${unified}.png`}
                                 searchPlaceholder={t('chat.searchEmoji')}
                             />
                         </div>

@@ -65,27 +65,6 @@ textarea {
   font-family: inherit;
 }
 
-/* Force Noto Color Emoji font for cross-platform consistency in Electron */
-.EmojiPickerReact,
-.EmojiPickerReact * {
-  font-family: 'Outfit', 'Noto Color Emoji', sans-serif !important;
-}
-
-/* Emoji display using bundled font */
-.epr-emoji-native,
-.epr-emoji-native span,
-.epr-preview-emoji,
-[data-unified] {
-  font-family: 'Noto Color Emoji' !important;
-}
-
-/* Ensure all emoji characters use the bundled font */
-span[role="img"],
-.emoji,
-[data-emoji] {
-  font-family: 'Noto Color Emoji', sans-serif;
-}
-
 .glass {
   background: rgba(255, 255, 255, 0.4);
   backdrop-filter: blur(24px) saturate(180%);

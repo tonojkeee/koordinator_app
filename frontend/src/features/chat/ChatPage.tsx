@@ -340,7 +340,8 @@ const MessageInput = React.forwardRef<MessageInputHandle, MessageInputProps>((
                             <EmojiPicker
                                 onEmojiClick={onEmojiClick}
                                 theme={Theme.LIGHT}
-                                emojiStyle={EmojiStyle.NATIVE}
+                                emojiStyle={EmojiStyle.GOOGLE}
+                                getEmojiUrl={(unified) => `/emoji/${unified}.png`}
                                 lazyLoadEmojis={true}
                                 searchPlaceholder={t('common.search')}
                                 previewConfig={{ showPreview: false }}
