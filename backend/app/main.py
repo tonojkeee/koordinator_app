@@ -24,6 +24,7 @@ from zeroconf.asyncio import AsyncZeroconf
 from zeroconf import ServiceInfo
 
 from app.core.i18n import i18n, get_text
+from app.modules.email.smtp_server import SMTPServerManager
 
 settings = get_settings()
 logger = logging.getLogger("uvicorn.error")
@@ -121,9 +122,29 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     except Exception:
         logger.exception("mDNS: Failed to register service")
     
+    # Start internal SMTP server for receiving emails
+    smtp_port = int(os.getenv("SMTP_SERVER_PORT", 2525))
+    smtp_host = os.getenv("SMTP_SERVER_HOST", "0.0.0.0")
+    smtp_server = SMTPServerManager(hostname=smtp_host, port=smtp_port)
+    try:
+        smtp_server.start()
+        app.state.smtp_server = smtp_server
+        logger.info(f"SMTP Server started on {smtp_host}:{smtp_port}")
+    except Exception as e:
+        logger.error(f"Failed to start SMTP server: {e}")
+        app.state.smtp_server = None
+    
     yield
     
     # ========== SHUTDOWN ==========
+    
+    # Stop SMTP server
+    if hasattr(app.state, "smtp_server") and app.state.smtp_server:
+        try:
+            app.state.smtp_server.stop()
+            logger.info("SMTP Server stopped")
+        except Exception as e:
+            logger.error(f"Error stopping SMTP server: {e}")
     
     # Graceful WebSocket shutdown
     await manager.graceful_shutdown()
