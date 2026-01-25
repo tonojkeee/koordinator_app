@@ -40,7 +40,10 @@ class ChannelCreate(ChannelBase):
 class LastMessageInfo(BaseModel):
     id: int
     content: str
+    sender_id: Optional[int] = None
     sender_name: str
+    sender_full_name: Optional[str] = None
+    sender_rank: Optional[str] = None
     created_at: datetime
 
     class Config:

@@ -113,6 +113,8 @@ const AdminPage: React.FC = () => {
             api.patch(`/auth/users/${userId}`, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+            queryClient.invalidateQueries({ queryKey: ['channel_members'] });
+            queryClient.invalidateQueries({ queryKey: ['channels'] });
             addToast({ type: 'success', title: t('common.saved'), message: t('admin.userUpdated') });
             setEditingUser(null);
         }

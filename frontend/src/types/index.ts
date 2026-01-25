@@ -82,7 +82,10 @@ export interface Channel {
     last_message?: {
         id: number;
         content: string;
+        sender_id?: number | null;
         sender_name: string;
+        sender_full_name?: string | null;
+        sender_rank?: string | null;
         created_at: string;
     };
     created_by: number;

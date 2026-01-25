@@ -915,6 +915,8 @@ async def websocket_endpoint(
                             "content": message.content[:100],  # Truncate for notification
                             "sender_id": user_id,
                             "sender_name": user.full_name or user.username,
+                            "sender_full_name": user.full_name,
+                            "sender_rank": user.rank,
                             "created_at": message.created_at.isoformat(),
                             "invitation_id": message.invitation_id  # Add invitation_id for system messages
                         }
@@ -1194,32 +1196,46 @@ async def export_chat_history(
     if not await ChatService.is_user_member(db, channel_id, current_user.id):
         raise HTTPException(status_code=403, detail="Нет доступа к этому чату")
     
+    # Get channel info for name
+    channel = await ChatService.get_channel_by_id(db, channel_id)
+    if not channel:
+        raise HTTPException(status_code=404, detail="Канал не найден")
+    
+    channel_name = channel.display_name or channel.name or f"channel_{channel_id}"
+    
     # Get messages (limit to 10000 for safety)
     messages = await ChatService.get_channel_messages(db, channel_id, limit=10000)
     
     # Build text content
     buffer = io.StringIO()
-    buffer.write(f"Chat History Export - Channel ID: {channel_id}\n")
-    buffer.write(f"Exported by: {current_user.username} on {datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
+    buffer.write(f"Экспорт истории чата: {channel_name}\n")
+    buffer.write(f"Экспортировал: {current_user.full_name or current_user.username} ({current_user.username})\n")
+    buffer.write(f"Дата экспорта: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
     buffer.write("-" * 50 + "\n\n")
     
     # Messages come newest first from service, so reverse them
     for msg in reversed(messages):
-        username = msg.user.username if msg.user else "Unknown"
+        username = msg.user.username if msg.user else "Система"
         fullname = f" ({msg.user.full_name})" if msg.user and msg.user.full_name else ""
         time = msg.created_at.strftime("[%Y-%m-%d %H:%M:%S]")
         
         buffer.write(f"{time} {username}{fullname}:\n")
         buffer.write(f"{msg.content}\n")
         if msg.document_id:
-             buffer.write(f"[Attachment: Document ID {msg.document_id}]\n")
+             buffer.write(f"[Вложение: Документ ID {msg.document_id}]\n")
         buffer.write("\n")
         
     buffer.seek(0)
+    
+    # Safe filename - URL encode for non-ASCII characters (RFC 5987)
+    from urllib.parse import quote
+    safe_name = "".join(c if c.isalnum() or c in (' ', '_', '-') else '_' for c in channel_name)
+    encoded_filename = quote(f"export_{safe_name}.txt")
+    
     return StreamingResponse(
         io.BytesIO(buffer.getvalue().encode('utf-8')),
-        media_type="text/plain",
-        headers={"Content-Disposition": f"attachment; filename=chat_{channel_id}_export.txt"}
+        media_type="text/plain; charset=utf-8",
+        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{encoded_filename}"}
     )
 
 

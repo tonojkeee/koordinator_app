@@ -213,7 +213,10 @@ class ChatService:
             )
             .outerjoin(ParentMsg, Message.parent_id == ParentMsg.id)
             .outerjoin(ParentUser, ParentMsg.user_id == ParentUser.id)
-            .options(selectinload(Message.reactions).selectinload(MessageReaction.user))
+            .options(
+                selectinload(Message.user),
+                selectinload(Message.reactions).selectinload(MessageReaction.user)
+            )
             .where(Message.channel_id == channel_id) # Removed parent_id.is_(None) check to show all messages
             .order_by(Message.created_at.desc())
             .limit(limit)

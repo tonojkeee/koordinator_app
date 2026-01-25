@@ -133,6 +133,8 @@ const MainLayout: React.FC = () => {
                 id?: number;
                 document_id?: number;
                 sender_name?: string;
+                sender_full_name?: string | null;
+                sender_rank?: string | null;
                 sender_id?: number;
                 content?: string;
                 created_at?: string;
@@ -207,7 +209,10 @@ const MainLayout: React.FC = () => {
                             last_message: {
                                 id: msgData.message!.id || 0,
                                 content: (msgData.message!.content || '').slice(0, 100),
+                                sender_id: msgData.message!.sender_id,
                                 sender_name: msgData.message!.sender_name || t('common.system'),
+                                sender_full_name: msgData.message!.sender_full_name,
+                                sender_rank: msgData.message!.sender_rank,
                                 created_at: msgData.message!.created_at || new Date().toISOString(),
                             },
                             // Increment unread_count for instant sidebar update

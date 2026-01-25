@@ -8,7 +8,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useUnreadStore } from '../../store/useUnreadStore';
-import { abbreviateRank } from '../../utils/formatters';
+import { abbreviateRank, formatName } from '../../utils/formatters';
 import { Modal, Input, Button, Avatar, ContextMenu, type ContextMenuOption } from '../../design-system';
 import MuteModal from './MuteModal';
 
@@ -722,14 +722,35 @@ const ChannelItem = ({
           )}
         </div>
         <div className="flex justify-between items-center">
-          <p className={`text-xs truncate pr-2 ${unread ? 'text-slate-900 font-medium' : 'text-slate-500'}`}>
-            {channel.last_message ? (
-              <>
-                <span className="font-semibold">{channel.last_message.sender_name}: </span>
-                {channel.last_message.content}
-              </>
-            ) : t('chat.no_messages')}
-          </p>
+          <div className="flex items-baseline gap-1.5 min-w-0 pr-2 overflow-hidden">
+            {channel.last_message ? (() => {
+              const isMe = channel.last_message?.sender_id === currentUser?.id;
+              // Only show sender name in group channels or if it's "You"
+              const showSender = !channel.is_direct || isMe;
+
+              return (
+                <>
+                  {showSender && (
+                    <span className={`shrink-0 font-bold text-[10px] uppercase tracking-wider ${unread ? 'text-indigo-600' : 'text-slate-400/80'}`}>
+                      {isMe ? t('chat.you') || 'Вы' : (
+                        <>
+                          {channel.last_message?.sender_rank && (
+                            <span className="mr-0.5 font-black">{abbreviateRank(channel.last_message.sender_rank)}</span>
+                          )}
+                          {formatName(channel.last_message?.sender_full_name, channel.last_message?.sender_name || '')}
+                        </>
+                      )}:
+                    </span>
+                  )}
+                  <span className={`text-xs truncate ${unread ? 'text-slate-900 font-medium' : 'text-slate-500/80'}`}>
+                    {channel.last_message.content}
+                  </span>
+                </>
+              );
+            })() : (
+              <span className="text-xs text-slate-400 italic">{t('chat.no_messages')}</span>
+            )}
+          </div>
           {unread > 0 && (
             <span className="min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 shadow-sm">
               {unread > 99 ? '99+' : unread}

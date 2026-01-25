@@ -115,7 +115,10 @@ async def enrich_last_message(
         resp.last_message = LastMessageInfo(
             id=last_msg.id,
             content=last_msg.content[:100] if last_msg.content else "",
+            sender_id=sender.id if sender else None,
             sender_name=sender.full_name or sender.username if sender else "Система",
+            sender_full_name=sender.full_name if sender else None,
+            sender_rank=sender.rank if sender else None,
             created_at=last_msg.created_at
         )
     else:
