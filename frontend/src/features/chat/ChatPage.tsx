@@ -49,6 +49,7 @@ type WebSocketMessage =
 
 // Skeleton loader for messages - imported from components
 import { MessageSkeleton } from './components';
+import { QuickReactionPicker } from './components/QuickReactionPicker';
 
 interface MessageInputProps {
     isConnected: boolean;
@@ -388,6 +389,7 @@ const ChatPage: React.FC = () => {
     const [searchModalOpen, setSearchModalOpen] = useState(false);
     const [showTransferOwnershipModal, setShowTransferOwnershipModal] = useState(false);
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+    const [quickReactionMessageId, setQuickReactionMessageId] = useState<number | null>(null);
 
     const updateMessageMutation = useMutation({
         mutationFn: async ({ id, content }: { id: number; content: string }) => {
@@ -1621,16 +1623,35 @@ const ChatPage: React.FC = () => {
                                                                                 >
                                                                                     <MessageSquare size={14} />
                                                                                 </button>
-                                                                                <button
-                                                                                    onClick={(e) => {
-                                                                                        e.stopPropagation();
-                                                                                        messageInputRef.current?.openForReaction(msg.id);
-                                                                                    }}
-                                                                                    className="p-1.5 bg-white border border-slate-200 rounded-lg shadow-sm text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all active:scale-90"
-                                                                                    title={t('chat.reactions.add')}
-                                                                                >
-                                                                                    <Smile size={14} />
-                                                                                </button>
+                                                                                <div className="relative">
+                                                                                    <button
+                                                                                        onMouseDown={(e) => {
+                                                                                            e.preventDefault();
+                                                                                            e.stopPropagation();
+                                                                                            setQuickReactionMessageId(prev => prev === msg.id ? null : msg.id);
+                                                                                        }}
+                                                                                        className={`p-1.5 bg-white border rounded-lg shadow-sm transition-all active:scale-90 ${quickReactionMessageId === msg.id
+                                                                                            ? 'text-indigo-600 border-indigo-300 bg-indigo-50'
+                                                                                            : 'border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200'
+                                                                                            }`}
+                                                                                        title={t('chat.reactions.add')}
+                                                                                    >
+                                                                                        <Smile size={14} />
+                                                                                    </button>
+
+                                                                                    {quickReactionMessageId === msg.id && (
+                                                                                        <QuickReactionPicker
+                                                                                            messageId={msg.id}
+                                                                                            onReaction={handleReactionClick}
+                                                                                            onOpenFullPicker={() => {
+                                                                                                setQuickReactionMessageId(null);
+                                                                                                messageInputRef.current?.openForReaction(msg.id);
+                                                                                            }}
+                                                                                            onClose={() => setQuickReactionMessageId(null)}
+                                                                                            position="top"
+                                                                                        />
+                                                                                    )}
+                                                                                </div>
                                                                                 {(msg.user_id === user?.id || user?.role === 'admin') && (
                                                                                     <>
                                                                                         <button
