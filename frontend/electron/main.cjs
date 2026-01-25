@@ -55,6 +55,23 @@ const isPathSecure = (filePath, allowedBaseDir = null) => {
     return true;
 };
 
+// Helper to get consistent icon path in dev and prod
+const getIconPath = () => {
+    // In production, resources are often placed differently
+    if (app.isPackaged) {
+        // Try resource path (if using extraResources)
+        const resourcePath = path.join(process.resourcesPath, 'icon.png');
+        if (fs.existsSync(resourcePath)) return resourcePath;
+
+        // Try next to the main script (inside asar or dist)
+        const mainDirIcon = path.join(__dirname, 'icon.png');
+        if (fs.existsSync(mainDirIcon)) return mainDirIcon;
+    }
+
+    // Default development path
+    return path.join(__dirname, '../public/icon.png');
+};
+
 if (process.defaultApp) {
     if (process.argv.length >= 2) {
         app.setAsDefaultProtocolClient(PROTOCOL, process.execPath, [path.resolve(process.argv[1])]);
@@ -81,7 +98,7 @@ function createWindow() {
         },
         titleBarStyle: 'hiddenInset',
         backgroundColor: '#ffffff',
-        icon: path.join(__dirname, '../public/icon.png'),
+        icon: getIconPath(),
         show: false, // Don't show the window until it's ready
     });
 
@@ -163,10 +180,17 @@ function createWindow() {
 }
 
 function createTray() {
-    const iconPath = path.join(__dirname, '../public/icon.png');
-    if (!fs.existsSync(iconPath)) return;
+    const iconPath = getIconPath();
+    // In production we might not have fs.existsSync specific access if inside asar, 
+    // but getIconPath tries to verify.
+    // However, for Tray, passing a non-existent path usually doesn't throw but shows nothing.
 
-    tray = new Tray(iconPath);
+    try {
+        tray = new Tray(iconPath);
+    } catch (e) {
+        console.error("Failed to create tray:", e);
+        return;
+    }
     const contextMenu = Menu.buildFromTemplate([
         {
             label: 'Открыть Координатор',

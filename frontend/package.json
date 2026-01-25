@@ -87,7 +87,8 @@
       "electron/**/*"
     ],
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "public/icon.png"
     },
     "nsis": {
       "oneClick": false,
@@ -97,10 +98,19 @@
       "artifactName": "${productName}-Setup-${version}.${ext}"
     },
     "linux": {
-      "target": "AppImage"
+      "target": "AppImage",
+      "icon": "public/icon.png",
+      "category": "Utility"
     },
     "mac": {
-      "target": "dmg"
-    }
+      "target": "dmg",
+      "icon": "public/icon.png"
+    },
+    "extraResources": [
+      {
+        "from": "public/icon.png",
+        "to": "icon.png"
+      }
+    ]
   }
 }
