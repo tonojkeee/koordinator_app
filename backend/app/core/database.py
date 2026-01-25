@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker, AsyncEngine
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.pool import NullPool
-from sqlalchemy import select, delete, func
+from sqlalchemy import select, delete, func, text, event
 from app.core.config import get_settings
 from typing import AsyncGenerator
 
@@ -62,6 +62,23 @@ AsyncSessionLocal = async_sessionmaker(
     autocommit=False,
     autoflush=False,
 )
+
+
+@event.listens_for(engine.sync_engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    """
+    Apply SQLite performance and concurrency optimizations.
+    
+    - WAL Mode: Allows concurrent reads and writes
+    - busy_timeout: Retries when database is locked
+    - synchronous=NORMAL: Improved write performance safely in WAL mode
+    """
+    if settings.is_sqlite:
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA busy_timeout=5000")  # 5 seconds
+        cursor.close()
 
 
 

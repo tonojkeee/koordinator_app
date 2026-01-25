@@ -75,6 +75,7 @@ async def seed_system_settings(session: AsyncSession) -> None:
         {"key": "chat_page_size", "value": "50", "type": "int", "group": "chat", "description": "Количество сообщений на странице", "is_public": True},
     ]
 
+    # Optimize: Use a single transaction for all settings
     for s_data in default_settings:
         result = await session.execute(select(SystemSetting).where(SystemSetting.key == s_data["key"]))
         if not result.scalar_one_or_none():
@@ -88,6 +89,7 @@ async def seed_system_settings(session: AsyncSession) -> None:
             )
             session.add(setting)
 
+    # Note: caller will commit or we can commit here if we want atomic settings seed
     await session.commit()
 
 
@@ -240,8 +242,13 @@ async def main():
             
             print("🎉 Database seeding completed successfully!")
         except Exception as e:
-            print(f"❌ Error during seeding: {e}")
             await session.rollback()
+            # If it's a lock error, provide better context
+            if "locked" in str(e).lower():
+                print(f"⚠️  Database is temporarily locked. Seeding might have failed or partially completed.")
+                print(f"Error details: {e}")
+            else:
+                print(f"❌ Error during seeding: {e}")
             raise
 
 
