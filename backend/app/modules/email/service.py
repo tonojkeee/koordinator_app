@@ -18,6 +18,7 @@ from app.modules.email.schemas import EmailMessageCreate, EmailMessageUpdate, Em
 from app.modules.auth.models import User
 from email import message_from_bytes, encoders
 from email.header import decode_header
+from app.core.websocket_manager import websocket_manager
 
 logger = logging.getLogger(__name__)
 
@@ -517,6 +518,18 @@ async def process_incoming_email(
         )
         db.add(db_msg)
         await db.flush()
+
+        # Notify user via WebSocket
+        try:
+            await websocket_manager.broadcast_to_user(account.user_id, {
+                "type": "new_email",
+                "id": db_msg.id,
+                "subject": subject,
+                "from_address": sender,
+                "received_at": db_msg.received_at.isoformat()
+            })
+        except Exception as ws_err:
+            logger.warning(f"Failed to send email notification to user {account.user_id}: {ws_err}")
 
         await _save_email_attachments(db, email_msg, db_msg.id, max_bytes, max_total_bytes, allowed_exts)
 

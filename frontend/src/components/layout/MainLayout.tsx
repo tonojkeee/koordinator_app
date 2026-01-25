@@ -118,7 +118,7 @@ const MainLayout: React.FC = () => {
             if (user?.notify_browser) {
                 sendSystemNotification(t('chat.new_space'), {
                     body: t('chat.new_space_created', { name: channel.display_name || channel.name }),
-                    icon: '/favicon.ico',
+                    icon: '/icon.png',
                     tag: `channel-${channel.id}`,
                 });
             }
@@ -139,6 +139,7 @@ const MainLayout: React.FC = () => {
                 sender_id?: number;
                 content?: string;
                 created_at?: string;
+                avatar_url?: string | null;
             };
         };
 
@@ -189,10 +190,27 @@ const MainLayout: React.FC = () => {
                         });
                     }
 
-                    sendSystemNotification(title, {
-                        body: content,
-                        icon: '/favicon.ico',
+                    const senderRank = msgData.message?.sender_rank;
+                    const senderFullName = msgData.message?.sender_full_name || senderName;
+                    const displaySender = senderRank ? `${senderRank} ${senderFullName}` : senderFullName;
+                    const channelName = channel?.display_name || channel?.name;
+                    const avatarUrl = msgData.message?.avatar_url || undefined;
+
+                    // Clearer layout: Title = Type, Body = Who/What
+                    const notificationTitle = isMentioned
+                        ? t('chat.mentioned_title')
+                        : t('chat.new_message_title');
+
+                    const context = channel && !channel.is_direct && channelName ? ` @ ${channelName}` : '';
+                    const notificationBody = `${displaySender}${context}: ${content}`;
+
+                    sendSystemNotification(notificationTitle, {
+                        body: notificationBody,
+                        icon: '/icon.png',
+                        iconUrl: avatarUrl ? getFullUrl(avatarUrl) : undefined,
                         tag: `message-${channelId}`,
+                        data: { type: 'chat', channel_id: channelId },
+                        actions: [{ action: 'view', title: t('common.view') }]
                     });
                 }
             }
@@ -256,7 +274,7 @@ const MainLayout: React.FC = () => {
                 body: is_direct
                     ? t('chat.direct_chat_deleted_by', { name: deletedByName })
                     : t('chat.channel_deleted_by', { name: deletedByName, channel: channel_name }),
-                icon: '/favicon.ico',
+                icon: '/icon.png',
                 tag: `channel-deleted-${channel_id}`,
             });
         }
@@ -292,10 +310,13 @@ const MainLayout: React.FC = () => {
         const shouldNotify = user?.notify_browser !== false;
 
         if (shouldNotify) {
+            const senderInfo = sharedData.owner_name;
             sendSystemNotification(t('common.new_document'), {
-                body: t('common.document_shared_by', { owner: sharedData.owner_name, title: sharedData.title }),
-                icon: '/favicon.ico',
+                body: t('common.document_shared_by', { owner: senderInfo, title: sharedData.title }),
+                icon: '/icon.png',
                 tag: `doc-${sharedData.id}`,
+                data: { type: 'chat', channel_id: channelId },
+                actions: [{ action: 'view', title: t('common.view') }]
             });
         }
     }, [queryClient, addToast, openViewer, user?.notify_browser, t, addDocUnread, location.pathname]);
@@ -377,10 +398,12 @@ const MainLayout: React.FC = () => {
         });
 
         if (user?.notify_browser) {
-            sendSystemNotification(title, {
+            sendSystemNotification(t('tasks.new_task'), {
                 body: message,
-                icon: '/favicon.ico',
+                icon: '/icon.png',
                 tag: `task-${data.task_id}`,
+                data: { type: 'task', tab: 'received', taskId: data.task_id },
+                actions: [{ action: 'view', title: t('common.view') }]
             });
         }
     }, [queryClient, user?.notify_sound, user?.notify_browser, t, addToast, navigate]);
@@ -402,10 +425,12 @@ const MainLayout: React.FC = () => {
         });
 
         if (user?.notify_browser) {
-            sendSystemNotification(title, {
+            sendSystemNotification(t('tasks.task_returned'), {
                 body: message,
-                icon: '/favicon.ico',
+                icon: '/icon.png',
                 tag: `task-returned-${data.task_id}`,
+                data: { type: 'task', tab: 'received', taskId: data.task_id },
+                actions: [{ action: 'view', title: t('common.view') }]
             });
         }
     }, [queryClient, user?.notify_sound, user?.notify_browser, t, addToast, navigate]);
@@ -428,10 +453,12 @@ const MainLayout: React.FC = () => {
         });
 
         if (user?.notify_browser) {
-            sendSystemNotification(title, {
+            sendSystemNotification(t('tasks.task_submitted'), {
                 body: message,
-                icon: '/favicon.ico',
+                icon: '/icon.png',
                 tag: `task-submitted-${data.task_id}`,
+                data: { type: 'task', tab: 'issued', taskId: data.task_id },
+                actions: [{ action: 'view', title: t('common.view') }]
             });
         }
     }, [queryClient, user?.notify_sound, user?.notify_browser, t, addToast, navigate]);
@@ -454,13 +481,40 @@ const MainLayout: React.FC = () => {
         });
 
         if (user?.notify_browser) {
-            sendSystemNotification(title, {
+            sendSystemNotification(t('tasks.task_confirmed'), {
                 body: message,
-                icon: '/favicon.ico',
+                icon: '/icon.png',
                 tag: `task-confirmed-${data.task_id}`,
+                data: { type: 'task', tab: 'completed', taskId: data.task_id },
+                actions: [{ action: 'view', title: t('common.view') }]
             });
         }
     }, [queryClient, user?.notify_sound, user?.notify_browser, t, addToast, navigate]);
+
+    const onEmailReceived = useCallback((data: { id: number; subject: string; from_address: string }) => {
+        if (user?.notify_sound) playNotificationSound();
+
+        const title = t('email.new_message');
+        const message = `${t('email.from')}: ${data.from_address}\n${t('email.subject')}: ${data.subject}`;
+
+        addToast({
+            type: 'info',
+            title: title,
+            message: data.subject,
+            duration: 6000,
+            onClick: () => navigate('/email')
+        });
+
+        if (user?.notify_browser) {
+            sendSystemNotification(t('email.new_message'), {
+                body: message,
+                icon: '/icon.png',
+                tag: `email-${data.id}`,
+                data: { type: 'email' },
+                actions: [{ action: 'view', title: t('common.view') }]
+            });
+        }
+    }, [user?.notify_sound, user?.notify_browser, t, addToast, navigate]);
 
     const onMessageUpdated = useCallback((data: unknown) => {
         const msgData = data as {
@@ -497,8 +551,41 @@ const MainLayout: React.FC = () => {
         onTaskAssigned,
         onTaskReturned,
         onTaskSubmitted,
-        onTaskConfirmed
+        onTaskConfirmed,
+        onEmailReceived
     });
+
+    useEffect(() => {
+        if (!window.electron) return;
+
+        const removeHandler = window.electron.onNotificationClicked((data: any) => {
+            if (data.type === 'chat' && data.channel_id) {
+                navigate(`/chat/${data.channel_id}`);
+            } else if (data.type === 'task') {
+                navigate('/tasks');
+            } else if (data.type === 'email') {
+                navigate('/email');
+            }
+        });
+
+        const removeActionHandler = (window.electron as any).onNotificationAction?.((payload: { action: string; data: any }) => {
+            if (payload.action === 'view' && payload.data) {
+                const data = payload.data;
+                if (data.type === 'chat' && data.channel_id) {
+                    navigate(`/chat/${data.channel_id}`);
+                } else if (data.type === 'task') {
+                    navigate('/tasks');
+                } else if (data.type === 'email') {
+                    navigate('/email');
+                }
+            }
+        });
+
+        return () => {
+            removeHandler();
+            if (removeActionHandler) removeActionHandler();
+        };
+    }, [navigate]);
 
     useEffect(() => {
         if ('Notification' in window && Notification.permission === 'default') {

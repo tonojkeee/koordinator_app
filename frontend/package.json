@@ -89,7 +89,7 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "public/icon.png"
+      "icon": "public/icon.ico"
     },
     "nsis": {
       "oneClick": false,
@@ -111,6 +111,10 @@
       {
         "from": "public/icon.png",
         "to": "icon.png"
+      },
+      {
+        "from": "public/icon.ico",
+        "to": "icon.ico"
       }
     ]
   }

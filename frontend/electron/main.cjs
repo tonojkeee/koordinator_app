@@ -2,6 +2,7 @@ const { app, BrowserWindow, shell, Notification, Menu, ipcMain, Tray, globalShor
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const crypto = require('crypto');
 const axios = require('axios');
 const https = require('https');
 const { Bonjour } = require('bonjour-service');
@@ -10,6 +11,11 @@ const discoveredServers = new Map();
 
 // Set Application Name for System Menus
 app.setName('Koordinator');
+
+// Windows Toast Notifications (required for packaged app)
+if (process.platform === 'win32') {
+    app.setAppUserModelId('ru.mil.coordinator');
+}
 
 // const __filename = fileURLToPath(import.meta.url); // Not needed in CJS
 // const __dirname = path.dirname(__filename); // __dirname is available in CJS
@@ -57,18 +63,32 @@ const isPathSecure = (filePath, allowedBaseDir = null) => {
 
 // Helper to get consistent icon path in dev and prod
 const getIconPath = () => {
+    const isWin = process.platform === 'win32';
+    const ext = isWin ? 'ico' : 'png';
+    const fileName = `icon.${ext}`;
+
     // In production, resources are often placed differently
     if (app.isPackaged) {
         // Try resource path (if using extraResources)
-        const resourcePath = path.join(process.resourcesPath, 'icon.png');
+        const resourcePath = path.join(process.resourcesPath, fileName);
         if (fs.existsSync(resourcePath)) return resourcePath;
 
+        // Fallback to png if ico not found
+        if (isWin) {
+            const pngResource = path.join(process.resourcesPath, 'icon.png');
+            if (fs.existsSync(pngResource)) return pngResource;
+        }
+
         // Try next to the main script (inside asar or dist)
-        const mainDirIcon = path.join(__dirname, 'icon.png');
+        const mainDirIcon = path.join(__dirname, fileName);
         if (fs.existsSync(mainDirIcon)) return mainDirIcon;
     }
 
     // Default development path
+    const devPath = path.join(__dirname, `../public/${fileName}`);
+    if (fs.existsSync(devPath)) return devPath;
+
+    // Final fallback to png in dev
     return path.join(__dirname, '../public/icon.png');
 };
 
@@ -316,12 +336,85 @@ app.on('will-quit', () => {
     globalShortcut.unregisterAll();
 });
 
+// Helper to download and cache icons
+async function downloadAndCacheIcon(url) {
+    if (!url) return null;
+    try {
+        const cacheDir = path.join(app.getPath('userData'), 'avatar_cache');
+        if (!fs.existsSync(cacheDir)) {
+            fs.mkdirSync(cacheDir, { recursive: true });
+        }
+
+        const hash = crypto.createHash('md5').update(url).digest('hex');
+        const ext = path.extname(url).split('?')[0] || '.png'; // Default to png if no ext
+        const cachedPath = path.join(cacheDir, `${hash}${ext}`);
+
+        if (fs.existsSync(cachedPath)) {
+            return cachedPath;
+        }
+
+        const response = await fetch(url);
+        if (!response.ok) return null;
+
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        fs.writeFileSync(cachedPath, buffer);
+
+        return cachedPath;
+    } catch (err) {
+        console.error('Failed to download icon:', err);
+        return null;
+    }
+}
+
 // IPC listeners
-ipcMain.on('show-notification', (event, { title, body, icon, data }) => {
+ipcMain.on('show-notification', async (event, { title, body, icon, data, subtitle, actions, silent, iconUrl }) => {
+    // Icon resolution strategy для уведомлений:
+    let iconPath = undefined;
+
+    // 1. Try remote icon first (Avatar)
+    if (iconUrl) {
+        iconPath = await downloadAndCacheIcon(iconUrl);
+    }
+
+    // 2. If no remote icon or download failed, try local icon
+    if (!iconPath && icon) {
+        // Remove leading slash for path joining
+        const iconName = icon.replace(/^\//, '');
+
+        if (app.isPackaged) {
+            // In packaged app, we look in resources or dist
+            const resourcePath = path.join(process.resourcesPath, iconName);
+            if (fs.existsSync(resourcePath)) {
+                iconPath = resourcePath;
+            } else {
+                const asarPath = path.join(__dirname, iconName);
+                if (fs.existsSync(asarPath)) iconPath = asarPath;
+            }
+        } else {
+            // In dev, we look in public or dist
+            const publicPath = path.join(__dirname, '../public', iconName);
+            if (fs.existsSync(publicPath)) {
+                iconPath = publicPath;
+            } else {
+                const distPath = path.join(__dirname, '../dist', iconName);
+                if (fs.existsSync(distPath)) iconPath = distPath;
+            }
+        }
+    }
+
+    // If no icon found from request, use app icon
+    if (!iconPath) {
+        iconPath = getIconPath();
+    }
+
     const notification = new Notification({
         title,
         body,
-        icon: icon ? path.join(__dirname, '../public', icon) : undefined,
+        icon: iconPath,
+        subtitle,
+        silent,
+        actions: actions ? actions.map(a => ({ type: 'button', text: a.title })) : undefined,
     });
 
     notification.on('click', () => {
@@ -331,6 +424,15 @@ ipcMain.on('show-notification', (event, { title, body, icon, data }) => {
             if (data) {
                 mainWindow.webContents.send('notification-clicked', data);
             }
+        }
+    });
+
+    notification.on('action', (e, index) => {
+        if (actions && actions[index] && mainWindow) {
+            mainWindow.webContents.send('notification-action', {
+                action: actions[index].action,
+                data: data
+            });
         }
     });
 

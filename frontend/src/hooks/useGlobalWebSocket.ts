@@ -14,6 +14,7 @@ interface GlobalWebSocketOptions {
     onTaskReturned?: (data: { task_id: number; title: string; sender_name: string }) => void;
     onTaskSubmitted?: (data: { task_id: number; title: string; sender_name: string }) => void;
     onTaskConfirmed?: (data: { task_id: number; title: string; sender_name: string }) => void;
+    onEmailReceived?: (data: { id: number; subject: string; from_address: string; received_at: string }) => void;
 }
 
 // Singleton connection for global WebSocket to prevent duplicates in StrictMode
@@ -33,6 +34,7 @@ export const useGlobalWebSocket = (token: string | null, options: GlobalWebSocke
     const onTaskReturnedRef = useRef(options.onTaskReturned);
     const onTaskSubmittedRef = useRef(options.onTaskSubmitted);
     const onTaskConfirmedRef = useRef(options.onTaskConfirmed);
+    const onEmailReceivedRef = useRef(options.onEmailReceived);
     const reconnectAttemptRef = useRef(0);
     const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -47,6 +49,7 @@ export const useGlobalWebSocket = (token: string | null, options: GlobalWebSocke
         onTaskReturnedRef.current = options.onTaskReturned;
         onTaskSubmittedRef.current = options.onTaskSubmitted;
         onTaskConfirmedRef.current = options.onTaskConfirmed;
+        onEmailReceivedRef.current = options.onEmailReceived;
     }, [options]);
 
     useEffect(() => {
@@ -107,6 +110,8 @@ export const useGlobalWebSocket = (token: string | null, options: GlobalWebSocke
                     onTaskSubmittedRef.current(data);
                 } else if (data.type === 'task_confirmed' && onTaskConfirmedRef.current) {
                     onTaskConfirmedRef.current(data);
+                } else if (data.type === 'new_email' && onEmailReceivedRef.current) {
+                    onEmailReceivedRef.current(data);
                 }
             } catch (error) {
                 console.error('❌ Failed to parse WebSocket message:', error);

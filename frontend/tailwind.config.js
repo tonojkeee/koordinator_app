@@ -15,6 +15,9 @@ export default {
           header: '#FFFFFF',
         }
       },
+      fontFamily: {
+        sans: ['Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif', 'Emoji', "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"],
+      },
       boxShadow: {
         'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
       },
@@ -32,23 +35,23 @@ export default {
           '100%': { opacity: '1' },
         },
         slideInFromBottom: {
-          '0%': { 
-            opacity: '0', 
-            transform: 'translateY(1rem)' 
+          '0%': {
+            opacity: '0',
+            transform: 'translateY(1rem)'
           },
-          '100%': { 
-            opacity: '1', 
-            transform: 'translateY(0)' 
+          '100%': {
+            opacity: '1',
+            transform: 'translateY(0)'
           },
         },
         zoomIn: {
-          '0%': { 
-            opacity: '0', 
-            transform: 'scale(0.95)' 
+          '0%': {
+            opacity: '0',
+            transform: 'scale(0.95)'
           },
-          '100%': { 
-            opacity: '1', 
-            transform: 'scale(1)' 
+          '100%': {
+            opacity: '1',
+            transform: 'scale(1)'
           },
         },
       },

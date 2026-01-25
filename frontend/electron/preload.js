@@ -2,8 +2,8 @@ const { contextBridge, ipcRenderer, clipboard } = require('electron');
 
 contextBridge.exposeInMainWorld('electron', {
     platform: process.platform,
-    sendNotification: (title, body, icon, data) => {
-        ipcRenderer.send('show-notification', { title, body, icon, data });
+    sendNotification: (title, options) => {
+        ipcRenderer.send('show-notification', { title, ...options });
     },
     focusWindow: () => {
         ipcRenderer.send('focus-window');

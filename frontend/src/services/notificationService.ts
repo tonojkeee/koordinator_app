@@ -10,7 +10,7 @@ export const sendSystemNotification = (title: string, options?: NotificationOpti
 
     if (isElectron) {
         // Use Electron bridge
-        window.electron!.sendNotification(title, options?.body, options?.icon, options?.data);
+        window.electron!.sendNotification(title, options);
     } else {
         // Check for standard Web Notification API
         if (!("Notification" in window)) {

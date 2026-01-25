@@ -57,6 +57,14 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Force font inheritance for form elements */
+input,
+button,
+select,
+textarea {
+  font-family: inherit;
+}
+
 .glass {
   background: rgba(255, 255, 255, 0.4);
   backdrop-filter: blur(24px) saturate(180%);
@@ -81,7 +89,7 @@ body {
 /* Mesh Gradient Background */
 .mesh-gradient {
   background-color: #f8fafc;
-  background-image: 
+  background-image:
     radial-gradient(at 0% 0%, hsla(262, 83%, 58%, 0.15) 0px, transparent 50%),
     radial-gradient(at 50% 0%, hsla(220, 100%, 70%, 0.15) 0px, transparent 50%),
     radial-gradient(at 100% 0%, hsla(262, 83%, 58%, 0.15) 0px, transparent 50%),
@@ -106,10 +114,21 @@ body {
 }
 
 @keyframes blob-float {
-  0% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(30px, -50px) scale(1.1); }
-  66% { transform: translate(-20px, 20px) scale(0.9); }
-  100% { transform: translate(0, 0) scale(1); }
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
 }
 
 /* Radar Animation */
@@ -132,8 +151,15 @@ body {
 }
 
 @keyframes radar-pulse {
-  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.4; }
-  100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.4;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scale(2.5);
+    opacity: 0;
+  }
 }
 
 

@@ -51,7 +51,14 @@ export interface NotificationOptions {
     body?: string;
     icon?: string;
     tag?: string;
-    data?: unknown;
+    data?: any;
+    subtitle?: string; // macOS only mostly, but good for context
+    silent?: boolean;
+    iconUrl?: string;
+    actions?: {
+        action: string;
+        title: string;
+    }[];
 }
 
 export interface Channel {
@@ -166,7 +173,7 @@ export interface ElectronAPI {
     openInNativeApp: (url: string, fileName: string, fileId?: number) => Promise<{ success: boolean; error?: string }>;
     onFileModified: (callback: (data: { fileId: number; filePath: string; fileName: string }) => void) => () => void;
     copyToClipboard: (text: string) => void;
-    sendNotification: (title: string, body?: string, icon?: string, data?: unknown) => void;
+    sendNotification: (title: string, options?: NotificationOptions) => void;
     focusWindow: () => void;
     onTriggerSearch: (callback: () => void) => () => void;
     onTriggerUpload: (callback: () => void) => () => void;
