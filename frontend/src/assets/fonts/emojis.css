@@ -1,9 +1,129 @@
+/* Force bundled emoji font for cross-platform consistency (offline-first) */
 @font-face {
-    font-family: 'Emoji';
-    src: local('Apple Color Emoji'),
-        local('Segoe UI Emoji'),
-        local('Segoe UI Symbol'),
-        local('Noto Color Emoji'),
-        url('./NotoColorEmoji.ttf') format('truetype');
+    font-family: 'Noto Color Emoji';
+    src: url('./NotoColorEmoji.ttf') format('truetype');
     font-display: swap;
+    /* Unicode ranges for emoji characters */
+    unicode-range: U+1F300-1F9FF,
+        /* Miscellaneous Symbols and Pictographs, Emoticons, etc. */
+        U+2600-26FF,
+        /* Miscellaneous Symbols */
+        U+2700-27BF,
+        /* Dingbats */
+        U+FE00-FE0F,
+        /* Variation Selectors */
+        U+1F000-1F02F,
+        /* Mahjong Tiles, Domino Tiles */
+        U+1F0A0-1F0FF,
+        /* Playing Cards */
+        U+1FA00-1FAFF,
+        /* Chess, Extended-A symbols */
+        U+200D,
+        /* Zero Width Joiner (for emoji sequences) */
+        U+2300-23FF,
+        /* Miscellaneous Technical */
+        U+2B50,
+        /* Star */
+        U+231A-231B,
+        /* Watch, Hourglass */
+        U+25AA-25AB,
+        /* Squares */
+        U+25B6,
+        /* Play button */
+        U+25C0,
+        /* Reverse button */
+        U+25FB-25FE,
+        /* Squares */
+        U+2614-2615,
+        /* Umbrella, Hot Beverage */
+        U+2648-2653,
+        /* Zodiac */
+        U+267F,
+        /* Wheelchair */
+        U+2693,
+        /* Anchor */
+        U+26A1,
+        /* High Voltage */
+        U+26AA-26AB,
+        /* Circles */
+        U+26BD-26BE,
+        /* Sports */
+        U+26C4-26C5,
+        /* Snowman, Sun */
+        U+26CE,
+        /* Ophiuchus */
+        U+26D4,
+        /* No Entry */
+        U+26EA,
+        /* Church */
+        U+26F2-26F3,
+        /* Fountain, Golf */
+        U+26F5,
+        /* Sailboat */
+        U+26FA,
+        /* Tent */
+        U+26FD,
+        /* Fuel Pump */
+        U+2702,
+        /* Scissors */
+        U+2705,
+        /* Check Mark */
+        U+2708-270D,
+        /* Various symbols */
+        U+270F,
+        /* Pencil */
+        U+2712,
+        /* Black Nib */
+        U+2714,
+        /* Check Mark */
+        U+2716,
+        /* Cross Mark */
+        U+271D,
+        /* Latin Cross */
+        U+2721,
+        /* Star of David */
+        U+2728,
+        /* Sparkles */
+        U+2733-2734,
+        /* Eight Spoked Asterisk */
+        U+2744,
+        /* Snowflake */
+        U+2747,
+        /* Sparkle */
+        U+274C,
+        /* Cross Mark */
+        U+274E,
+        /* Cross Mark */
+        U+2753-2755,
+        /* Question marks */
+        U+2757,
+        /* Exclamation Mark */
+        U+2763-2764,
+        /* Heart */
+        U+2795-2797,
+        /* Plus, Minus, Division */
+        U+27A1,
+        /* Right Arrow */
+        U+27B0,
+        /* Curly Loop */
+        U+27BF,
+        /* Double Curly Loop */
+        U+2934-2935,
+        /* Arrows */
+        U+2B05-2B07,
+        /* Arrows */
+        U+2B1B-2B1C,
+        /* Squares */
+        U+2B55,
+        /* Circle */
+        U+3030,
+        /* Wavy Dash */
+        U+303D,
+        /* Part Alternation Mark */
+        U+3297,
+        /* Circled Ideograph Congratulation */
+        U+3299,
+        /* Circled Ideograph Secret */
+        U+E000-F8FF;
+    /* Private Use Area (for custom emoji) */
 }

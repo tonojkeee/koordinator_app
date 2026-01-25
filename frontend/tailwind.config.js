@@ -16,7 +16,7 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif', 'Emoji', "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"],
+        sans: ['Outfit', 'ui-sans-serif', 'system-ui', 'sans-serif', 'Noto Color Emoji'],
       },
       boxShadow: {
         'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
