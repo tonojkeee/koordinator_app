@@ -53,7 +53,7 @@ body,
 body {
   @apply bg-teams-bg text-slate-900 font-outfit;
   background-color: var(--color-teams-bg);
-  font-family: var(--font-outfit);
+  font-family: var(--font-outfit), 'Noto Color Emoji', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
