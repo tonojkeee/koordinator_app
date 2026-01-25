@@ -11,15 +11,17 @@ class DatabaseHandler:
         recipients = envelope.rcpt_tos
         content = envelope.content  # Bytes
         
-        logger.info(f"Receiving email from {sender} to {recipients}")
+        logger.info(f"SMTP: Receiving email from {sender} to {recipients}")
         
         try:
             # We need a new DB session for this operation
             async with AsyncSessionLocal() as db:
                 await process_incoming_email(db, sender, recipients, content)
+            
+            logger.info(f"SMTP: Successfully processed email from {sender}")
             return '250 OK'
         except Exception as e:
-            logger.error(f"Error processing incoming email: {e}")
+            logger.error(f"SMTP: Error processing incoming email from {sender}: {e}", exc_info=True)
             return '500 Internal Server Error'
 
 class SMTPServerManager:

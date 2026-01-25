@@ -438,19 +438,27 @@ async def _find_or_create_email_account(
     if not account:
         try:
             from app.core.config_service import ConfigService
+            from app.core.config import get_settings
+            settings = get_settings()
+            
             username = clean_recipient.split("@")[0]
             stmt_user = select(User).where(User.username == username)
             res_user = await db.execute(stmt_user)
             user = res_user.scalar_one_or_none()
-            email_domain = await ConfigService.get_value(db, "internal_email_domain", "40919.com")
+            
+            # Use DB config with fallback to app settings
+            email_domain = await ConfigService.get_value(db, "internal_email_domain", settings.internal_email_domain)
+            
             if user and clean_recipient.endswith(f"@{email_domain}"):
                 account = EmailAccount(user_id=user.id, email_address=clean_recipient)
                 db.add(account)
                 await db.flush()
                 accounts_dict[clean_recipient] = account
-                logger.info(f"Auto-created email account for recipient: {clean_recipient}")
+                logger.info(f"Email: Auto-created account for user {user.username} with address {clean_recipient}")
+            else:
+                logger.warning(f"Email: No account found for recipient {clean_recipient} and no matching user for domain {email_domain}")
         except Exception as e:
-            logger.error(f"Failed to auto-create account for {clean_recipient}: {e}")
+            logger.error(f"Email: Failed to auto-create account for {clean_recipient}: {e}")
 
     if account:
         accounts_dict[clean_recipient] = account
@@ -496,6 +504,10 @@ async def process_incoming_email(
         clean_recipients.append(clean_recipient)
 
         await _find_or_create_email_account(db, recipient, accounts_dict)
+
+    if not accounts_dict:
+        logger.warning(f"Email: Rejected incoming email from {sender} - no valid internal recipients found in {recipients}")
+        return
 
     # Create email messages for each recipient account
     for recipient, clean_recipient in zip(recipients, clean_recipients):
