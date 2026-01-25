@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api, { setCsrfToken } from '../../api/client';
+import api from '../../api/client';
 import { AxiosError } from 'axios';
 import { useAuthStore } from '../../store/useAuthStore';
 import { LogIn, AlertCircle, Settings, User, Lock, Eye, EyeOff } from 'lucide-react';
@@ -25,10 +25,9 @@ const LoginPage: React.FC = () => {
 
     useEffect(() => {
         // Fetch CSRF token first to ensure it's available for non-GET requests
-        api.get('/auth/csrf-token').then(res => {
-            if (res.data?.csrf_token) {
-                setCsrfToken(res.data.csrf_token);
-            }
+        api.get('/auth/csrf-token').then(() => {
+            // setCsrfToken was removed. Cookie is automatically handled.
+            // setCsrfToken(res.data.csrf_token);
         }).finally(() => {
             api.get('/auth/config').then(res => {
                 if (res.data.allow_registration === false) {
@@ -57,10 +56,10 @@ const LoginPage: React.FC = () => {
 
             const { access_token, refresh_token, csrf_token } = loginRes.data;
 
-            // Сохраняем CSRF токен из ответа логина
+            // Сохраняем CSRF токен из ответа логина - removed manual save
             if (csrf_token) {
-                setCsrfToken(csrf_token);
-                console.log('🔐 CSRF token saved from login response');
+                // setCsrfToken(csrf_token);
+                console.log('🔐 CSRF token received in login response');
             }
 
             const userRes = await api.get('/auth/me', {
@@ -96,12 +95,12 @@ const LoginPage: React.FC = () => {
 
             {/* Split Card Container */}
             <div className="w-full max-w-4xl bg-slate-800/50 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col sm:flex-row relative z-10 animate-in">
-                
+
                 {/* Left Panel (Brand/Visual) */}
                 <div className="hidden sm:flex w-1/2 bg-slate-900/40 relative flex-col items-center justify-center p-12 text-center border-r border-white/5">
                     {/* Decorative pattern/circles */}
                     <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-500 via-transparent to-transparent" />
-                    
+
                     {/* Abstract Shapes */}
                     <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
                         <div className="absolute -top-[20%] -left-[20%] w-[140%] h-[140%] border-[40px] border-indigo-500/10 rounded-full blur-3xl" />
@@ -138,19 +137,19 @@ const LoginPage: React.FC = () => {
                                 />
                             </div>
                         </div>
-                        
+
                         <div className="animate-in slide-in-from-bottom-8 fade-in duration-700 delay-150">
                             <h2 className="text-4xl font-bold text-white mb-4 tracking-tight">{t('auth.welcomeBack')}</h2>
                             <p className="text-slate-400 mb-10 max-w-xs mx-auto leading-relaxed">
                                 {t('auth.loginPrompt')}
                             </p>
                         </div>
-                        
+
                         {registrationAllowed && (
                             <div className="space-y-4 animate-in slide-in-from-bottom-8 fade-in duration-700 delay-300">
                                 <span className="text-indigo-400 text-[10px] font-bold uppercase tracking-widest block opacity-80">{t('auth.noAccount')}</span>
-                                <Link 
-                                    to="/register" 
+                                <Link
+                                    to="/register"
                                     className="inline-block px-10 py-3.5 border border-white/20 bg-white/5 backdrop-blur-md rounded-2xl text-white font-bold hover:bg-white/10 hover:border-white/40 hover:scale-105 transition-all duration-300 shadow-xl"
                                 >
                                     {t('auth.signUp')}

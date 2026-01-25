@@ -10,6 +10,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useUnreadStore } from '../../store/useUnreadStore';
 import { abbreviateRank, formatName } from '../../utils/formatters';
 import { Modal, Input, Button, Avatar, ContextMenu, type ContextMenuOption } from '../../design-system';
+import { animations } from '../../design-system/tokens/animations';
 import MuteModal from './MuteModal';
 
 interface ChannelSidebarProps {
@@ -675,12 +676,12 @@ const ChannelItem = ({
       data-channel-item={channel.id}
       data-channel-name={channel.name}
       className={`
-        group relative flex items-center px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-200
+        group relative flex items-center px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-300
         ${isActive
           ? channel.visibility === 'private' && !channel.is_direct
-            ? 'bg-gradient-to-r from-amber-50 to-amber-100 shadow-sm ring-1 ring-amber-200'
-            : 'bg-white shadow-sm ring-1 ring-slate-200'
-          : 'hover:bg-white/60 hover:shadow-sm'
+            ? 'bg-gradient-to-r from-amber-50 to-amber-100 shadow-sm ring-1 ring-amber-200 translate-x-1'
+            : 'bg-white shadow-sm ring-1 ring-slate-200 translate-x-1'
+          : `hover:bg-white/60 hover:shadow-sm ${animations.hoverLift}`
         }
       `}
     >

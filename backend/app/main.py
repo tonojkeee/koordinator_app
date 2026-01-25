@@ -324,3 +324,46 @@ async def health(db: AsyncSession = Depends(get_db)) -> dict[str, Any]:
         health_status["status"] = "degraded"
     
     return health_status
+
+
+# ========== FRONTEND SERVING ==========
+
+from starlette.responses import FileResponse
+from fastapi import HTTPException
+
+# Path to frontend build directory
+# Assuming typical structure: backend/app/main.py -> backend/app -> backend -> frontend/dist
+# We are in backend/app/main.py, so cwd depends on where we run it. Usually backend/
+# If running from backend/, then ../frontend/dist
+# Let's make it robust based on current file path
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) # backend/app -> backend
+FRONTEND_DIST = os.path.join(os.path.dirname(BASE_DIR), "frontend", "dist")
+
+if os.path.exists(os.path.join(FRONTEND_DIST, "assets")):
+    app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIST, "assets")), name="assets")
+
+if os.path.exists(os.path.join(FRONTEND_DIST, "sounds")):
+    app.mount("/sounds", StaticFiles(directory=os.path.join(FRONTEND_DIST, "sounds")), name="sounds")
+
+@app.get("/{full_path:path}")
+async def serve_spa(full_path: str):
+    """
+    Catch-all route to serve Frontend SPA.
+    First checks if file exists in dist folder, otherwise returns index.html.
+    Prioritizes API routes (handled above) by returning 404 if path implies API but wasn't matched.
+    """
+    # If it looks like an API call but wasn't handled by routers, return 404
+    if full_path.startswith("api/") or full_path.startswith("docs") or full_path.startswith("openapi.json"):
+        raise HTTPException(status_code=404, detail="Not Found")
+
+    # Try to serve static file from root of dist (e.g. icon.png, vite.svg)
+    file_path = os.path.join(FRONTEND_DIST, full_path)
+    if os.path.exists(file_path) and os.path.isfile(file_path):
+        return FileResponse(file_path)
+
+    # Fallback to index.html for client-side routing
+    index_path = os.path.join(FRONTEND_DIST, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    
+    return {"message": "Frontend build not found. Please run 'npm run build' in frontend directory."}

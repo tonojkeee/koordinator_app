@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api, { setCsrfToken } from '../../api/client';
+import api from '../../api/client';
 import { AxiosError } from 'axios';
 import { AlertCircle, ShieldCheck, Loader2, User, Lock, Eye, EyeOff, Type } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -25,7 +25,7 @@ const RegisterPage: React.FC = () => {
         // Fetch CSRF token first to ensure it's available for non-GET requests
         api.get('/auth/csrf-token').then(res => {
             if (res.data?.csrf_token) {
-                setCsrfToken(res.data.csrf_token);
+                // setCsrfToken(res.data.csrf_token);
             }
         }).finally(() => {
             api.get('/auth/config').then(res => {
@@ -99,11 +99,11 @@ const RegisterPage: React.FC = () => {
             <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-rose-600/10 rounded-full blur-[120px] animate-pulse pointer-events-none" />
 
             <div className="w-full max-w-4xl bg-slate-800/50 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col sm:flex-row relative z-10 animate-in">
-                
+
                 {/* Left Panel (Visual) */}
                 <div className="hidden sm:flex w-1/2 bg-slate-900/40 relative flex-col items-center justify-center p-12 text-center border-r border-white/5">
                     <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-500 via-transparent to-transparent" />
-                    
+
                     <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
                         <div className="absolute -top-[20%] -left-[20%] w-[140%] h-[140%] border-[40px] border-indigo-500/10 rounded-full blur-3xl" />
                         <div className="absolute bottom-[20%] right-[20%] w-[20%] h-[20%] bg-indigo-500/20 rounded-full blur-2xl" />
@@ -146,11 +146,11 @@ const RegisterPage: React.FC = () => {
                                 {t('auth.registerPrompt')}
                             </p>
                         </div>
-                        
+
                         <div className="space-y-4 animate-in slide-in-from-bottom-8 fade-in duration-700 delay-300">
                             <span className="text-indigo-400 text-[10px] font-bold uppercase tracking-widest block opacity-80">{t('auth.haveAccount')}</span>
-                            <Link 
-                                to="/login" 
+                            <Link
+                                to="/login"
                                 className="inline-block px-10 py-3.5 border border-white/20 bg-white/5 backdrop-blur-md rounded-2xl text-white font-bold hover:bg-white/10 hover:border-white/40 hover:scale-105 transition-all duration-300 shadow-xl"
                             >
                                 {t('auth.loginButton')}
@@ -186,42 +186,42 @@ const RegisterPage: React.FC = () => {
 
                         <div className="grid grid-cols-1 gap-5">
                             <div className="space-y-3">
-                                <FormGroup 
-                                    label={t('common.username')} 
-                                    name="username" 
-                                    value={formData.username} 
-                                    onChange={handleChange} 
-                                    placeholder="johndoe" 
-                                    required 
+                                <FormGroup
+                                    label={t('common.username')}
+                                    name="username"
+                                    value={formData.username}
+                                    onChange={handleChange}
+                                    placeholder="johndoe"
+                                    required
                                     icon={<User className="h-4 w-4 sm:h-5 sm:w-5" />}
                                 />
-                                <FormGroup 
-                                    label={t('common.fullNameOptional')} 
-                                    name="full_name" 
-                                    value={formData.full_name} 
-                                    onChange={handleChange} 
-                                    placeholder="John Doe" 
+                                <FormGroup
+                                    label={t('common.fullNameOptional')}
+                                    name="full_name"
+                                    value={formData.full_name}
+                                    onChange={handleChange}
+                                    placeholder="John Doe"
                                     icon={<Type className="h-4 w-4 sm:h-5 sm:w-5" />}
                                 />
-                                <FormGroup 
-                                    label={t('common.password')} 
-                                    name="password" 
-                                    type="password" 
-                                    value={formData.password} 
-                                    onChange={handleChange} 
-                                    placeholder="••••••••" 
-                                    required 
+                                <FormGroup
+                                    label={t('common.password')}
+                                    name="password"
+                                    type="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="••••••••"
+                                    required
                                     icon={<Lock className="h-4 w-4 sm:h-5 sm:w-5" />}
                                     isPassword
                                 />
-                                <FormGroup 
-                                    label={t('auth.confirmPassword') || 'Confirm Password'} 
-                                    name="confirmPassword" 
-                                    type="password" 
-                                    value={formData.confirmPassword} 
-                                    onChange={handleChange} 
-                                    placeholder="••••••••" 
-                                    required 
+                                <FormGroup
+                                    label={t('auth.confirmPassword') || 'Confirm Password'}
+                                    name="confirmPassword"
+                                    type="password"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    placeholder="••••••••"
+                                    required
                                     icon={<Lock className="h-4 w-4 sm:h-5 sm:w-5" />}
                                     isPassword
                                 />

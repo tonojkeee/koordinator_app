@@ -45,8 +45,6 @@ const ChannelHeader: React.FC<ChannelHeaderProps> = ({
   setIsMuteModalOpen,
   handleExportChat,
   onLeaveChannel,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onInvite,
   onOpenInviteModal,
   formatLastSeen
 }) => {
@@ -93,7 +91,7 @@ const ChannelHeader: React.FC<ChannelHeaderProps> = ({
                 <div className={`w-1.5 h-1.5 rounded-full ${channel?.is_direct
                   ? (isDmPartnerOnline ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300')
                   : (isConnected ? 'bg-emerald-500' : 'bg-rose-500')
-                }`} />
+                  }`} />
                 <span className="font-semibold">
                   {channel?.is_system ? (
                     t('chat.system_channel')
@@ -122,7 +120,7 @@ const ChannelHeader: React.FC<ChannelHeaderProps> = ({
               className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isMuted
                 ? 'text-rose-500 hover:bg-rose-50'
                 : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
-              }`}
+                }`}
               title={isMuted ? t('chat.notifications.unmute') : t('chat.notifications.mute')}
             >
               {isMuted ? <BellOff size={18} /> : <Bell size={18} />}
@@ -151,7 +149,7 @@ const ChannelHeader: React.FC<ChannelHeaderProps> = ({
                 className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${showParticipants
                   ? 'bg-indigo-600 text-white'
                   : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
-                }`}
+                  }`}
                 title={t('chat.participants')}
               >
                 <Users size={18} />

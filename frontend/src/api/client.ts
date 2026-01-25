@@ -31,14 +31,6 @@ const getTokens = (): TokenData => {
     return { token: null, refreshToken: null };
 };
 
-// Internal memory storage for CSRF token (fallback if cookies fail)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-let memoryCsrfToken: string | null = null;
-
-export const setCsrfToken = (token: string) => {
-    memoryCsrfToken = token;
-};
-
 // Helper to get CSRF token from cookies
 const getCsrfToken = (): string | null => {
     // More robust cookie parsing
@@ -115,7 +107,7 @@ api.interceptors.response.use(
                         // Fetch a new CSRF token
                         const res = await api.get('/auth/csrf-token');
                         if (res.data?.csrf_token) {
-                            setCsrfToken(res.data.csrf_token);
+                            // setCsrfToken(res.data.csrf_token);
                             console.log('🔐 Got new CSRF token after 403 error');
                         }
                         // CSRF token is set in cookie, interceptor will pick it up on retry
@@ -167,7 +159,7 @@ api.interceptors.response.use(
 
                     // Сохраняем новый CSRF токен
                     if (csrf_token) {
-                        setCsrfToken(csrf_token);
+                        // setCsrfToken(csrf_token);
                     }
 
                     // Update localStorage manually so next requests get it

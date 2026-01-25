@@ -1507,7 +1507,7 @@ const ChatPage: React.FC = () => {
                                                         )}
 
                                                         {showUnreadSeparator && (
-                                                            <div className={`flex items-center my-8 ${animations.fadeIn}`}>
+                                                            <div className={`flex items-center my-8 ${animations.slideIn}`}>
                                                                 <div className="flex-1 border-t border-rose-200/60" />
                                                                 <div className="mx-4 flex items-center space-x-2 px-3 py-1 bg-rose-50/50 rounded-full border border-rose-100">
                                                                     <Bell size={12} className="text-rose-500" />
@@ -1517,7 +1517,7 @@ const ChatPage: React.FC = () => {
                                                             </div>
                                                         )}
 
-                                                        <div className={`${isFirstInGroup ? 'mt-7' : 'mt-[2px]'} ${animations.fadeIn}`}>
+                                                        <div className={`${isFirstInGroup ? 'mt-7' : 'mt-[2px]'} ${animations.slideIn}`}>
                                                             <ContextMenu options={contextOptions}>
                                                                 <div className="flex items-end group flex-row gap-2 w-full">
                                                                     <div className="flex flex-col items-center shrink-0 w-10">

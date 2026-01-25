@@ -92,10 +92,13 @@ function createWindow() {
         mainWindow.show();
     });
 
-    if (process.env.NODE_ENV === 'development') {
-        mainWindow.loadURL('http://localhost:5173');
+    const config = getConfig();
+    if (config.serverUrl) {
+        console.log('Loading server URL:', config.serverUrl);
+        mainWindow.loadURL(config.serverUrl);
     } else {
-        mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+        // Fallback to loader.html if no config
+        mainWindow.loadFile(path.join(__dirname, 'loader.html'));
     }
 
     mainWindow.setMenu(null);
@@ -304,6 +307,12 @@ ipcMain.on('focus-window', () => {
     }
 });
 
+ipcMain.on('load-app', (event, url) => {
+    if (mainWindow && url) {
+        mainWindow.loadURL(url);
+    }
+});
+
 // mDNS Discovery logic
 function startDiscovery() {
     const browser = bonjour.find({ type: 'koordinator', protocol: 'tcp' });
@@ -345,9 +354,9 @@ app.whenReady().then(() => {
 });
 
 // Config Store
-const getConfigPath = () => path.join(app.getPath('userData'), 'config.json');
+function getConfigPath() { return path.join(app.getPath('userData'), 'config.json'); }
 
-const getConfig = () => {
+function getConfig() {
     try {
         const configPath = getConfigPath();
         console.log('Reading config from:', configPath);
@@ -361,9 +370,9 @@ const getConfig = () => {
         console.error('Error reading config:', error);
     }
     return { serverUrl: '', downloadPath: '' };
-};
+}
 
-const saveConfig = (config) => {
+function saveConfig(config) {
     try {
         const configPath = getConfigPath();
         const configDir = path.dirname(configPath);

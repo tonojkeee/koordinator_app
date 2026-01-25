@@ -88,5 +88,8 @@ contextBridge.exposeInMainWorld('electron', {
         const listener = (event, servers) => callback(servers);
         ipcRenderer.on('servers-discovered', listener);
         return () => ipcRenderer.removeListener('servers-discovered', listener);
+    },
+    loadApp: (url) => {
+        ipcRenderer.send('load-app', url);
     }
 });

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Координатор - Подключение</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f1f5f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #334155;
+            -webkit-user-select: none;
+        }
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            color: #0f172a;
+        }
+        p {
+            color: #64748b;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 0.875rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.15s;
+        }
+        button:hover {
+            background-color: #4338ca;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        .server-list {
+            margin-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 1rem;
+        }
+        .server-list h2 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            margin-bottom: 1rem;
+        }
+        .server-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            margin-bottom: 0.5rem;
+        }
+        .server-item:hover {
+            border-color: #6366f1;
+            background-color: #f8fafc;
+        }
+        .server-info {
+            flex: 1;
+        }
+        .server-name {
+            font-weight: 500;
+            color: #0f172a;
+        }
+        .server-url {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            margin-right: 0.75rem;
+            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Подключение</h1>
+        <p>Укажите адрес сервера Координатор</p>
+        
+        <div class="form-group">
+            <label for="serverUrl">Адрес сервера</label>
+            <input type="text" id="serverUrl" placeholder="http://192.168.1.100:8000" value="http://localhost:8000">
+        </div>
+        
+        <button id="connectBtn">Подключиться</button>
+        
+        <div class="server-list" id="serverListContainer" style="display: none;">
+            <h2>Найденные серверы</h2>
+            <div id="serverList"></div>
+        </div>
+    </div>
+
+    <script>
+        const serverInput = document.getElementById('serverUrl');
+        const connectBtn = document.getElementById('connectBtn');
+        const serverList = document.getElementById('serverList');
+        const serverListContainer = document.getElementById('serverListContainer');
+
+        async function connect(url) {
+            if (!url) return;
+            // Clean url
+            url = url.replace(/\/$/, '');
+            
+            // Save config
+            try {
+                await window.electron.saveAppConfig({ serverUrl: url });
+                // Load app
+                window.electron.loadApp(url);
+            } catch (e) {
+                console.error('Failed to save config:', e);
+                alert('Ошибка сохранения настроек');
+            }
+        }
+
+        connectBtn.addEventListener('click', () => {
+            connect(serverInput.value);
+        });
+
+        // Auto-discovery
+        window.electron.onServersDiscovered((servers) => {
+            if (servers.length > 0) {
+                serverListContainer.style.display = 'block';
+                serverList.innerHTML = '';
+                servers.forEach(server => {
+                    const el = document.createElement('div');
+                    el.className = 'server-item';
+                    el.innerHTML = `
+                        <div class="pulse"></div>
+                        <div class="server-info">
+                            <div class="server-name">${server.name}</div>
+                            <div class="server-url">${server.url}</div>
+                        </div>
+                    `;
+                    el.onclick = () => connect(server.url);
+                    serverList.appendChild(el);
+                });
+            }
+        });
+
+        // Trigger discovery
+        window.electron.discoverServers();
+    </script>
+</body>
+</html>

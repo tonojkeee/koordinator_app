@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal, Button, TextArea, UserAutocomplete, type AutocompleteUser } from '../../../design-system';
 import api from '../../../api/client';
@@ -23,19 +23,19 @@ function InviteModal({ isOpen, onClose, channelName, onInvite }: InviteModalProp
     try {
       const response = await api.get('/auth/users');
       const allUsers = response.data;
-      
+
       // Filter users based on search query
       const filtered = allUsers.filter((user: AutocompleteUser) => {
         const searchTerm = query.toLowerCase();
         const fullName = user.full_name?.toLowerCase() || '';
         const username = user.username.toLowerCase();
         const email = user.email?.toLowerCase() || '';
-        
-        return fullName.includes(searchTerm) || 
-               username.includes(searchTerm) || 
-               email.includes(searchTerm);
+
+        return fullName.includes(searchTerm) ||
+          username.includes(searchTerm) ||
+          email.includes(searchTerm);
       });
-      
+
       return filtered.slice(0, 10); // Limit to 10 results
     } catch (error) {
       return [];
@@ -47,7 +47,7 @@ function InviteModal({ isOpen, onClose, channelName, onInvite }: InviteModalProp
 
     setIsLoading(true);
     setError(null);
-    
+
     try {
       await onInvite(
         selectedUsers.map(u => u.id),
