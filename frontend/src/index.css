@@ -1,9 +1,10 @@
+@import "./assets/fonts/inter.css";
 @import "./assets/fonts/fonts.css";
 @import "./assets/fonts/emojis.css";
 @import "tailwindcss";
 
 @theme {
-  --font-outfit: "Outfit", sans-serif;
+  --font-inter: "Inter", "Outfit", sans-serif;
   --color-teams-bg: #F5F5F5;
   --color-teams-sidebar: #2D2F3F;
 }
@@ -51,9 +52,9 @@ body,
 }
 
 body {
-  @apply bg-teams-bg text-slate-900 font-outfit;
+  @apply bg-teams-bg text-slate-900 font-inter;
   background-color: var(--color-teams-bg);
-  font-family: var(--font-outfit), 'Noto Color Emoji', sans-serif;
+  font-family: var(--font-inter), 'Noto Color Emoji', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
