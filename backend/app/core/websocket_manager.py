@@ -313,17 +313,24 @@ class WebSocketManager:
         Broadcast a message to all connections in a channel.
         Uses parallel sending with asyncio.gather for performance.
         """
+        msg_type = message.get('type', 'unknown')
+        
         if channel_id not in self.active_connections:
+            logger.debug(f"broadcast_to_channel: No connections for channel {channel_id} (message type: {msg_type})")
             return
+        
+        connections = self.active_connections[channel_id]
+        logger.debug(f"broadcast_to_channel: Sending {msg_type} to {len(connections)} connections in channel {channel_id}")
             
         # Collect tasks for parallel execution
         tasks = []
-        for ws, user_id in self.active_connections[channel_id]:
+        for ws, user_id in connections:
             if exclude_websocket and ws == exclude_websocket:
                 continue
             tasks.append(self._safe_send(ws, message))
         
         if tasks:
+            logger.debug(f"broadcast_to_channel: Executing {len(tasks)} send tasks for channel {channel_id}")
             await asyncio.gather(*tasks, return_exceptions=True)
     
     async def broadcast_to_user(self, user_id, message: dict):

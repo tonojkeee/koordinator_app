@@ -616,9 +616,20 @@ const ChatPage: React.FC = () => {
 
     useEffect(() => {
         if (channel && channel.id === Number(channelId)) {
-            setTimeout(() => setInitialLastReadId(prev => (prev === null ? channel.last_read_message_id : prev)), 0);
+            // Initialize once
+            setInitialLastReadId(prev => (prev === null ? channel.last_read_message_id : prev));
         }
     }, [channel, channelId]);
+
+    // Auto-clear the "New Messages" separator after 3 seconds of being in the channel
+    useEffect(() => {
+        if (initialLastReadId !== null && initialLastReadId !== Number.MAX_SAFE_INTEGER && channelId) {
+            const timer = setTimeout(() => {
+                setInitialLastReadId(Number.MAX_SAFE_INTEGER);
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [initialLastReadId, channelId]);
 
     const prevChannelIdRef = useRef(channelId);
     useLayoutEffect(() => {
@@ -701,9 +712,9 @@ const ChatPage: React.FC = () => {
                     if (!old) return old;
                     return old.map(c => c.id === numChannelId ? { ...c, unread_count: 0 } : c);
                 });
-                // Clear the "New Messages" separator by setting a very high last read ID
-                // This ensures no message will be shown as "unread"
-                setInitialLastReadId(Number.MAX_SAFE_INTEGER);
+                // NOTE: We no longer setInitialLastReadId(MAX_SAFE_INTEGER) here.
+                // The 3-second auto-clear effect or manual scroll should handle it,
+                // otherwise the banner disappears too fast to be seen.
             }
         }
     });
@@ -720,23 +731,20 @@ const ChatPage: React.FC = () => {
         }
     };
 
-    // Track last marked channel to avoid duplicate API calls
-    const lastMarkedChannelRef = useRef<string | null>(null);
-
-    // Effect to trigger mark-as-read when entering a channel with unread messages
+    // Effect to trigger mark-as-read after a short delay
     useEffect(() => {
         if (!channelId) return;
 
-        // Only mark once per channel entry
-        if (lastMarkedChannelRef.current === channelId) return;
+        // Delay marking as read slightly to let the "New Messages" banner be seen
+        // AND to ensure it's not immediately cleared by onSuccess
+        const timer = setTimeout(() => {
+            if (!markReadMutation.isPending) {
+                markReadMutation.mutate(Number(channelId));
+            }
+        }, 1500);
 
-        // Fire API call to mark channel as read (always, since we already optimistically cleared UI)
-        // This ensures backend state is updated even if we've already cleared the UI
-        if (!markReadMutation.isPending) {
-            markReadMutation.mutate(Number(channelId));
-            lastMarkedChannelRef.current = channelId;
-        }
-    }, [channelId, markReadMutation]);
+        return () => clearTimeout(timer);
+    }, [channelId]); // Only trigger on channel change
 
     const {
         data: historyData,
@@ -878,11 +886,10 @@ const ChatPage: React.FC = () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const msgChannelId = (data as any).channel_id;
 
-        // Verify this message belongs to the currently active channel context
-        if (msgChannelId && currentChannelId && Number(msgChannelId) !== Number(currentChannelId)) {
-            // Ignore messages from other channels that might have leaked due to race conditions
-            return;
-        }
+        console.log('🔌 Channel WS onMessage:', { type: data.type, msgChannelId, currentChannelId });
+
+        // NOTE: We removed the early return here because it was preventing valid messages
+        // from being processed. The new_message handler has its own channel check.
 
         if (data.type === 'typing') {
             const { user_id, full_name, username, is_typing } = data;
@@ -1067,11 +1074,28 @@ const ChatPage: React.FC = () => {
         if (data.type === 'new_message' || !data.type) {
             const message: Message = data;
 
+            console.log('📬 Channel WebSocket message received:', message.id, message.channel_id);
+
             // Prevent cross-talk: Ignore messages from other channels
             // This ensures that even if the socket receives a broadcast, we only show relevant data
-            if (currentChannelId && message.channel_id !== Number(currentChannelId)) {
-                return;
+
+            // Verify channel match (robust check)
+            if (currentChannelId) {
+                const msgChId = String(message.channel_id);
+                const currChId = String(currentChannelId);
+                if (msgChId !== currChId) {
+                    console.log('⚠️ Skipping message - channel mismatch:', {
+                        msgChId,
+                        currChId,
+                        rawMsgCh: message.channel_id,
+                        rawCurrCh: currentChannelId
+                    });
+                    return;
+                }
             }
+
+
+            console.log('✅ Processing new message:', message.id, 'for channel', message.channel_id);
 
             // Обновляем кэш React Query для сообщений
             queryClient.setQueryData(['messages', channelId], (oldData: { pages: Message[][]; pageParams: number[] } | undefined) => {
@@ -1129,7 +1153,10 @@ const ChatPage: React.FC = () => {
                             last_message: {
                                 id: message.id,
                                 content: (message.content || '').slice(0, 100),
+                                sender_id: message.user_id,
                                 sender_name: message.full_name || message.username,
+                                sender_full_name: message.full_name,
+                                sender_rank: message.rank,
                                 created_at: message.created_at,
                             }
                         };

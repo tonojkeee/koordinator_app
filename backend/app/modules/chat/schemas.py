@@ -48,6 +48,9 @@ class LastMessageInfo(BaseModel):
 
     class Config:
         from_attributes = True
+        json_encoders = {
+            datetime: lambda v: v.strftime('%Y-%m-%dT%H:%M:%SZ') if v else None
+        }
 
 class ChannelResponse(ChannelBase):
     id: int
@@ -71,6 +74,9 @@ class ChannelResponse(ChannelBase):
 
     class Config:
         from_attributes = True
+        json_encoders = {
+            datetime: lambda v: v.strftime('%Y-%m-%dT%H:%M:%SZ') if v else None
+        }
 
 
 class MessageBase(BaseModel):

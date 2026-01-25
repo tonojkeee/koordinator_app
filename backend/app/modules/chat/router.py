@@ -102,7 +102,7 @@ async def create_channel(
                 "members_count": enriched_channel.members_count,
                 "online_count": enriched_channel.online_count,
                 "other_user": None,
-                "created_at": enriched_channel.created_at.isoformat(),
+                "created_at": enriched_channel.created_at.strftime('%Y-%m-%dT%H:%M:%SZ'),
                 "is_member": True # Creator is always member
             }
         })
@@ -893,7 +893,7 @@ async def websocket_endpoint(
                     "parent": parent_info,
                     "invitation_id": message.invitation_id,  # Add invitation_id for system messages
                     **doc_info,
-                    "created_at": message.created_at.isoformat(),
+                    "created_at": message.created_at.strftime('%Y-%m-%dT%H:%M:%SZ'),
                     "mentions": mentioned_user_ids,
                     "reply_count": 0
                 })
@@ -917,7 +917,7 @@ async def websocket_endpoint(
                             "sender_name": user.full_name or user.username,
                             "sender_full_name": user.full_name,
                             "sender_rank": user.rank,
-                            "created_at": message.created_at.isoformat(),
+                            "created_at": message.created_at.strftime('%Y-%m-%dT%H:%M:%SZ'),
                             "invitation_id": message.invitation_id  # Add invitation_id for system messages
                         }
                     })
@@ -1134,7 +1134,7 @@ async def update_message(
         "id": full_msg.id,
         "channel_id": full_msg.channel_id,
         "content": full_msg.content,
-        "updated_at": full_msg.updated_at.isoformat() if full_msg.updated_at else None
+        "updated_at": full_msg.updated_at.strftime('%Y-%m-%dT%H:%M:%SZ') if full_msg.updated_at else None
     })
     
     return response

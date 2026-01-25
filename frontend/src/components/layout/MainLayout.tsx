@@ -129,6 +129,7 @@ const MainLayout: React.FC = () => {
         const msgData = data as {
             channel_id: number;
             is_mentioned?: boolean;
+            type?: string;
             message?: {
                 id?: number;
                 document_id?: number;
@@ -140,6 +141,8 @@ const MainLayout: React.FC = () => {
                 created_at?: string;
             };
         };
+
+        console.log('📬 Global WebSocket message received:', msgData.type, msgData.channel_id);
         // Ensure channelId is a number
         const channelId = Number(msgData.channel_id);
         const currentChannelId = location.pathname.match(/\/chat\/(\d+)/)?.[1];
@@ -152,7 +155,8 @@ const MainLayout: React.FC = () => {
             if (!isSelf) {
                 addUnread(channelId);
 
-                const channel = Array.isArray(channels) ? channels.find(c => c.id === channelId) : undefined;
+                const currentChannels = queryClient.getQueryData<Channel[]>(['channels']);
+                const channel = Array.isArray(currentChannels) ? currentChannels.find(c => c.id === channelId) : undefined;
                 const isMuted = channel?.mute_until ? new Date(channel.mute_until) > new Date() : false;
 
                 if (user?.notify_sound && !isMuted) {
@@ -223,7 +227,7 @@ const MainLayout: React.FC = () => {
                 });
             });
         }
-    }, [addUnread, location.pathname, user?.notify_browser, user?.notify_sound, queryClient, addDocUnread, channels, t, navigate, addToast, user?.id]);
+    }, [addUnread, location.pathname, user?.notify_browser, user?.notify_sound, queryClient, addDocUnread, t, navigate, addToast, user?.id]);
 
     const onChannelDeleted = useCallback((data: unknown) => {
         const { channel_id, deleted_by, is_direct, channel_name } = data as { channel_id: number; deleted_by: { full_name?: string; username: string } | null; is_direct: boolean; channel_name: string };
