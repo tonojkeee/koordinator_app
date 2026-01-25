@@ -33,13 +33,18 @@ if __name__ == "__main__":
             
             # Start Frontend (Vite)
             print("🎨 Starting Frontend (Vite)...")
-            frontend_proc = run_command("npm run dev", cwd=frontend_dir)
+            # Set NODE_ENV to development for consistency
+            env = os.environ.copy()
+            env["NODE_ENV"] = "development"
+            
+            # Using Popen to run in background
+            frontend_proc = subprocess.Popen("npm run dev", cwd=frontend_dir, shell=True, env=env)
             processes.append(frontend_proc)
             
-            # Start Backend (Uvicorn)
-            print("📦 Starting Backend (FastAPI) with reload...")
-            # We'll run the uvicorn.run below instead of separate process to keep reload working well
-            # But since we want parallel frontend, we run uvicorn in the main thread
+            # Allow some time for Vite to initialize before Backend logs take over
+            time.sleep(1)
+            
+            # Backend starting is handled below by uvicorn.run
 
         elif args.mode == "build":
             print("🏗️  Building Koordinator for PRODUCTION...")

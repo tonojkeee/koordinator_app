@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && NODE_ENV=development electron .\"",
+    "electron:dev": "node electron/watch.cjs",
     "electron:multi-1": "NODE_ENV=development electron . --user-data-dir=.user-data-1",
     "electron:multi-2": "NODE_ENV=development electron . --user-data-dir=.user-data-2",
     "electron:build": "npm run build && electron-builder",
