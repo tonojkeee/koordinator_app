@@ -47,6 +47,22 @@ const SettingsPage: React.FC = () => {
         birth_date: user?.birth_date ? new Date(user.birth_date).toISOString().split('T')[0] : '',
     });
 
+    const [generalFormData, setGeneralFormData] = React.useState({
+        timezone: user?.timezone || 'UTC',
+        preferences: {
+            start_page: user?.preferences?.start_page || 'chat',
+            enter_to_send: user?.preferences?.enter_to_send ?? true,
+            font_size: user?.preferences?.font_size || 14,
+            tasks_view: user?.preferences?.tasks_view || 'list',
+        }
+    });
+
+    const [notificationFormData, setNotificationFormData] = React.useState({
+        notify_browser: user?.notify_browser ?? true,
+        notify_sound: user?.notify_sound ?? true,
+        notify_email: user?.notify_email ?? false,
+    });
+
     React.useEffect(() => {
         if (user) {
             setFormData({
@@ -56,6 +72,20 @@ const SettingsPage: React.FC = () => {
                 rank: user.rank || '',
                 position: user.position || '',
                 birth_date: user.birth_date ? new Date(user.birth_date).toISOString().split('T')[0] : '',
+            });
+            setGeneralFormData({
+                timezone: user.timezone || 'UTC',
+                preferences: {
+                    start_page: user.preferences?.start_page || 'chat',
+                    enter_to_send: user.preferences?.enter_to_send ?? true,
+                    font_size: user.preferences?.font_size || 14,
+                    tasks_view: user.preferences?.tasks_view || 'list',
+                }
+            });
+            setNotificationFormData({
+                notify_browser: user.notify_browser ?? true,
+                notify_sound: user.notify_sound ?? true,
+                notify_email: user.notify_email ?? false,
             });
         }
     }, [user]);
@@ -100,10 +130,7 @@ const SettingsPage: React.FC = () => {
                 title: t('settings.settingsUpdated'),
                 message: t('settings.changesSaved'),
             });
-            // Only close if it was a form submission (full profile update), not a toggle
-            if (Object.keys(updatedUser).some(k => ['full_name', 'cabinet'].includes(k)) && activeSection === 'account') {
-                setActiveSection(null);
-            }
+            setActiveSection(null);
         },
         onError: (error: unknown) => {
             const err = error as AxiosError<{ detail: string }>;
@@ -125,6 +152,16 @@ const SettingsPage: React.FC = () => {
     const handleFormSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         updateProfileMutation.mutate(formData);
+    };
+
+    const handleGeneralSave = (e: React.FormEvent) => {
+        e.preventDefault();
+        updateProfileMutation.mutate(generalFormData);
+    };
+
+    const handleNotificationsSave = (e: React.FormEvent) => {
+        e.preventDefault();
+        updateProfileMutation.mutate(notificationFormData);
     };
 
     const sections = [
@@ -240,14 +277,20 @@ const SettingsPage: React.FC = () => {
                 <Modal
                     isOpen={true}
                     onClose={() => setActiveSection(null)}
-                    title={t('settings.account')}
+                    title={
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600">
+                                <User size={24} />
+                            </div>
+                            <span>{t('settings.account')}</span>
+                        </div>
+                    }
                     size="md"
                     footer={
                         <>
                             <Button
                                 variant="secondary"
                                 onClick={() => setActiveSection(null)}
-                                fullWidth
                             >
                                 {t('common.cancel')}
                             </Button>
@@ -255,65 +298,29 @@ const SettingsPage: React.FC = () => {
                                 variant="primary"
                                 onClick={handleFormSubmit}
                                 loading={updateProfileMutation.isPending}
-                                fullWidth
                             >
                                 {updateProfileMutation.isPending ? t('settings.saving') : t('common.save')}
                             </Button>
                         </>
                     }
                 >
-                    <form onSubmit={handleFormSubmit} className="space-y-4">
-                        <Input
-                            label={t('common.fullName')}
-                            value={formData.full_name}
-                            onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                            placeholder={t('settings.name_placeholder')}
-                            fullWidth
-                        />
-                        <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-1">Email</label>
-                            <div className="px-5 py-3 bg-gray-50 border border-gray-100 rounded-xl font-medium text-gray-500 shadow-sm cursor-not-allowed flex items-center justify-between">
-                                <span>{user?.email}</span>
-                                <span className="text-[10px] font-black uppercase text-indigo-400 tracking-widest bg-indigo-50 px-2 py-0.5 rounded">{t('settings.email_system')}</span>
+                    <div className="space-y-8">
+                        {/* Personal Information */}
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-4 border-b border-gray-100 pb-2">
+                                <User size={16} className="text-gray-400" />
+                                <h3 className="font-bold text-gray-900 text-sm">{t('settings.personal_info')}</h3>
                             </div>
-                            <p className="text-[10px] text-gray-400 mt-1.5 px-1 font-medium">{t('settings.email_system_desc')}</p>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
+
                             <Input
-                                label={t('common.cabinet')}
-                                value={formData.cabinet}
-                                onChange={(e) => setFormData({ ...formData, cabinet: e.target.value })}
-                                placeholder="301"
+                                label={t('common.fullName')}
+                                value={formData.full_name}
+                                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                                placeholder={t('settings.name_placeholder')}
+                                fullWidth
                             />
-                            <div className="col-span-2">
-                                <Input
-                                    label={t('common.rank') || 'Rank'}
-                                    value={formData.rank}
-                                    onChange={(e) => setFormData({ ...formData, rank: e.target.value })}
-                                    placeholder={t('settings.rank_placeholder') || 'Lieutenant'}
-                                    fullWidth
-                                />
-                            </div>
-                            <div className="col-span-2">
-                                <Input
-                                    label={t('common.phoneNumber')}
-                                    value={formData.phone_number}
-                                    onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
-                                    placeholder="+7..."
-                                    fullWidth
-                                />
-                            </div>
-                            <div className="col-span-2">
-                                <Input
-                                    label={t('company.position')}
-                                    value={formData.position}
-                                    onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                                    placeholder={t('company.position')}
-                                    leftIcon={<Briefcase size={16} />}
-                                    fullWidth
-                                />
-                            </div>
-                            <div className="col-span-2">
+
+                            <div className="grid grid-cols-2 gap-4">
                                 <Input
                                     label={t('company.birth_date')}
                                     type="date"
@@ -322,9 +329,60 @@ const SettingsPage: React.FC = () => {
                                     leftIcon={<Calendar size={16} />}
                                     fullWidth
                                 />
+                                <Input
+                                    label={t('common.phoneNumber')}
+                                    value={formData.phone_number}
+                                    onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+                                    placeholder="+7..."
+                                    fullWidth
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Email</label>
+                                <div className="px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl font-medium text-gray-500 flex items-center justify-between">
+                                    <span className="text-sm">{user?.email}</span>
+                                    <span className="text-[9px] font-black uppercase text-indigo-400 tracking-widest bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-100/50">
+                                        {t('settings.email_system')}
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                    </form>
+
+                        {/* Organizational Details */}
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-4 border-b border-gray-100 pb-2">
+                                <Briefcase size={16} className="text-gray-400" />
+                                <h3 className="font-bold text-gray-900 text-sm">{t('settings.organization_info')}</h3>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <Input
+                                    label={t('common.rank') || 'Rank'}
+                                    value={formData.rank}
+                                    onChange={(e) => setFormData({ ...formData, rank: e.target.value })}
+                                    placeholder={t('settings.rank_placeholder') || 'Lieutenant'}
+                                    fullWidth
+                                />
+                                <Input
+                                    label={t('common.cabinet')}
+                                    value={formData.cabinet}
+                                    onChange={(e) => setFormData({ ...formData, cabinet: e.target.value })}
+                                    placeholder="301"
+                                    fullWidth
+                                />
+                            </div>
+
+                            <Input
+                                label={t('company.position')}
+                                value={formData.position}
+                                onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                                placeholder={t('company.position')}
+                                leftIcon={<Briefcase size={16} />}
+                                fullWidth
+                            />
+                        </div>
+                    </div>
                 </Modal>
             )}
             {/* Notification Settings Modal */}
@@ -342,6 +400,23 @@ const SettingsPage: React.FC = () => {
                             </div>
                         }
                         size="md"
+                        footer={
+                            <>
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => setActiveSection(null)}
+                                >
+                                    {t('common.cancel')}
+                                </Button>
+                                <Button
+                                    variant="primary"
+                                    onClick={handleNotificationsSave}
+                                    loading={updateProfileMutation.isPending}
+                                >
+                                    {updateProfileMutation.isPending ? t('settings.saving') : t('common.save')}
+                                </Button>
+                            </>
+                        }
                     >
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
@@ -353,9 +428,8 @@ const SettingsPage: React.FC = () => {
                                     <input
                                         type="checkbox"
                                         className="sr-only peer"
-                                        checked={user?.notify_browser ?? true}
-                                        onChange={(e) => updateProfileMutation.mutate({ notify_browser: e.target.checked })}
-                                        disabled={updateProfileMutation.isPending}
+                                        checked={notificationFormData.notify_browser}
+                                        onChange={(e) => setNotificationFormData({ ...notificationFormData, notify_browser: e.target.checked })}
                                     />
                                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                                 </label>
@@ -370,9 +444,8 @@ const SettingsPage: React.FC = () => {
                                     <input
                                         type="checkbox"
                                         className="sr-only peer"
-                                        checked={user?.notify_sound ?? true}
-                                        onChange={(e) => updateProfileMutation.mutate({ notify_sound: e.target.checked })}
-                                        disabled={updateProfileMutation.isPending}
+                                        checked={notificationFormData.notify_sound}
+                                        onChange={(e) => setNotificationFormData({ ...notificationFormData, notify_sound: e.target.checked })}
                                     />
                                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                                 </label>
@@ -387,9 +460,8 @@ const SettingsPage: React.FC = () => {
                                     <input
                                         type="checkbox"
                                         className="sr-only peer"
-                                        checked={user?.notify_email ?? false}
-                                        onChange={(e) => updateProfileMutation.mutate({ notify_email: e.target.checked })}
-                                        disabled={updateProfileMutation.isPending}
+                                        checked={notificationFormData.notify_email}
+                                        onChange={(e) => setNotificationFormData({ ...notificationFormData, notify_email: e.target.checked })}
                                     />
                                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                                 </label>
@@ -467,6 +539,23 @@ const SettingsPage: React.FC = () => {
                         </div>
                     }
                     size="md"
+                    footer={
+                        <>
+                            <Button
+                                variant="secondary"
+                                onClick={() => setActiveSection(null)}
+                            >
+                                {t('common.cancel')}
+                            </Button>
+                            <Button
+                                variant="primary"
+                                onClick={handleGeneralSave}
+                                loading={updateProfileMutation.isPending}
+                            >
+                                {updateProfileMutation.isPending ? t('settings.saving') : t('common.save')}
+                            </Button>
+                        </>
+                    }
                 >
                     <div className="space-y-6">
                         {/* Timezone */}
@@ -475,8 +564,8 @@ const SettingsPage: React.FC = () => {
                             <div className="relative">
                                 <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                 <select
-                                    value={user?.timezone || 'UTC'}
-                                    onChange={(e) => updateProfileMutation.mutate({ timezone: e.target.value })}
+                                    value={generalFormData.timezone}
+                                    onChange={(e) => setGeneralFormData({ ...generalFormData, timezone: e.target.value })}
                                     disabled={timezonesLoading}
                                     className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none appearance-none cursor-pointer"
                                 >
@@ -503,8 +592,11 @@ const SettingsPage: React.FC = () => {
                         <div>
                             <h3 className="font-bold text-gray-900 mb-2">{t('settings.start_page')}</h3>
                             <select
-                                value={user?.preferences?.start_page || 'chat'}
-                                onChange={(e) => updateProfileMutation.mutate({ preferences: { ...user?.preferences, start_page: e.target.value } })}
+                                value={generalFormData.preferences.start_page}
+                                onChange={(e) => setGeneralFormData({
+                                    ...generalFormData,
+                                    preferences: { ...generalFormData.preferences, start_page: e.target.value }
+                                })}
                                 className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
                             >
                                 <option value="chat">{t('settings.start_page_chat')}</option>
@@ -529,8 +621,11 @@ const SettingsPage: React.FC = () => {
                                         <input
                                             type="checkbox"
                                             className="sr-only peer"
-                                            checked={user?.preferences?.enter_to_send ?? true}
-                                            onChange={(e) => updateProfileMutation.mutate({ preferences: { ...user?.preferences, enter_to_send: e.target.checked } })}
+                                            checked={generalFormData.preferences.enter_to_send}
+                                            onChange={(e) => setGeneralFormData({
+                                                ...generalFormData,
+                                                preferences: { ...generalFormData.preferences, enter_to_send: e.target.checked }
+                                            })}
                                         />
                                         <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                                     </label>
@@ -540,10 +635,10 @@ const SettingsPage: React.FC = () => {
                                     <div className="flex items-center justify-between mb-2">
                                         <p className="font-medium text-gray-700">{t('settings.font_size')}</p>
                                         <span className="text-sm font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
-                                            {typeof user?.preferences?.font_size === 'number'
-                                                ? `${user.preferences.font_size}px`
-                                                : user?.preferences?.font_size === 'large' ? '18px'
-                                                    : user?.preferences?.font_size === 'small' ? '12px'
+                                            {typeof generalFormData.preferences.font_size === 'number'
+                                                ? `${generalFormData.preferences.font_size}px`
+                                                : generalFormData.preferences.font_size === 'large' ? '18px'
+                                                    : generalFormData.preferences.font_size === 'small' ? '12px'
                                                         : '14px'}
                                         </span>
                                     </div>
@@ -555,12 +650,13 @@ const SettingsPage: React.FC = () => {
                                                 min="10"
                                                 max="24"
                                                 step="1"
-                                                value={typeof user?.preferences?.font_size === 'number'
-                                                    ? user.preferences.font_size
-                                                    : user?.preferences?.font_size === 'large' ? 18
-                                                        : user?.preferences?.font_size === 'small' ? 12 : 14}
-                                                onChange={(e) => updateProfileMutation.mutate({
-                                                    preferences: { ...user?.preferences, font_size: parseInt(e.target.value) }
+                                                value={typeof generalFormData.preferences.font_size === 'number'
+                                                    ? generalFormData.preferences.font_size
+                                                    : generalFormData.preferences.font_size === 'large' ? 18
+                                                        : generalFormData.preferences.font_size === 'small' ? 12 : 14}
+                                                onChange={(e) => setGeneralFormData({
+                                                    ...generalFormData,
+                                                    preferences: { ...generalFormData.preferences, font_size: parseInt(e.target.value) }
                                                 })}
                                                 className="flex-1 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 hover:accent-indigo-700 transition-all"
                                             />
@@ -576,10 +672,10 @@ const SettingsPage: React.FC = () => {
                                                     <p
                                                         className="text-slate-900 leading-relaxed break-words"
                                                         style={{
-                                                            fontSize: typeof user?.preferences?.font_size === 'number'
-                                                                ? `${user.preferences.font_size}px`
-                                                                : user?.preferences?.font_size === 'large' ? '18px'
-                                                                    : user?.preferences?.font_size === 'small' ? '12px'
+                                                            fontSize: typeof generalFormData.preferences.font_size === 'number'
+                                                                ? `${generalFormData.preferences.font_size}px`
+                                                                : generalFormData.preferences.font_size === 'large' ? '18px'
+                                                                    : generalFormData.preferences.font_size === 'small' ? '12px'
                                                                         : '14px'
                                                         }}
                                                     >
@@ -602,8 +698,11 @@ const SettingsPage: React.FC = () => {
                                 </div>
                                 <div className="flex bg-gray-100 p-1 rounded-lg">
                                     <button
-                                        onClick={() => updateProfileMutation.mutate({ preferences: { ...user?.preferences, tasks_view: 'list' } })}
-                                        className={`px-3 py-1 text-sm rounded-md transition-all ${(user?.preferences?.tasks_view || 'list') === 'list'
+                                        onClick={() => setGeneralFormData({
+                                            ...generalFormData,
+                                            preferences: { ...generalFormData.preferences, tasks_view: 'list' }
+                                        })}
+                                        className={`px-3 py-1 text-sm rounded-md transition-all ${(generalFormData.preferences.tasks_view || 'list') === 'list'
                                             ? 'bg-white shadow text-gray-900 font-medium'
                                             : 'text-gray-500 hover:text-gray-700'
                                             }`}
@@ -611,8 +710,11 @@ const SettingsPage: React.FC = () => {
                                         {t('settings.tasks_view_list')}
                                     </button>
                                     <button
-                                        onClick={() => updateProfileMutation.mutate({ preferences: { ...user?.preferences, tasks_view: 'board' } })}
-                                        className={`px-3 py-1 text-sm rounded-md transition-all ${(user?.preferences?.tasks_view) === 'board'
+                                        onClick={() => setGeneralFormData({
+                                            ...generalFormData,
+                                            preferences: { ...generalFormData.preferences, tasks_view: 'board' }
+                                        })}
+                                        className={`px-3 py-1 text-sm rounded-md transition-all ${(generalFormData.preferences.tasks_view) === 'board'
                                             ? 'bg-white shadow text-gray-900 font-medium'
                                             : 'text-gray-500 hover:text-gray-700'
                                             }`}
