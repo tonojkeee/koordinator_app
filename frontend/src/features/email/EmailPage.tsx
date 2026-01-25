@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { emailService, type EmailAccount, type EmailFolder, type EmailMessage, type EmailMessageList, type FolderStats } from './emailService';
+import { useUnreadStore } from '../../store/useUnreadStore';
 import EmailList from './components/EmailList';
 import EmailDetails from './components/EmailDetails';
 import EmailComposer from './components/EmailComposer';
@@ -18,6 +19,7 @@ import i18n from '../../i18n';
 const EmailPage: React.FC = () => {
     const { t } = useTranslation();
     const { addToast } = useToast();
+    const { setEmailsUnread } = useUnreadStore();
     const [account, setAccount] = useState<EmailAccount | null>(null);
     const [emails, setEmails] = useState<EmailMessageList[]>([]);
     const [customFolders, setCustomFolders] = useState<EmailFolder[]>([]);
@@ -64,10 +66,12 @@ const EmailPage: React.FC = () => {
         try {
             const stats = await emailService.getStats();
             setStats(stats);
+            // Sync with global store
+            setEmailsUnread(stats.unread);
         } catch (err) {
             console.error(err);
         }
-    }, []);
+    }, [setEmailsUnread]);
 
     const fetchEmails = useCallback(async () => {
         setLoading(true);
@@ -102,6 +106,20 @@ const EmailPage: React.FC = () => {
         fetchEmails();
         setSelectedEmailId(null);
     }, [selectedFolder, fetchEmails]);
+
+    // WebSocket Real-time Updates
+    useEffect(() => {
+        const handleNewEmail = () => {
+            fetchStats();
+            // If we are in the inbox, refresh the list too
+            if (selectedFolder === 'inbox') {
+                fetchEmails();
+            }
+        };
+
+        window.addEventListener('new-email', handleNewEmail);
+        return () => window.removeEventListener('new-email', handleNewEmail);
+    }, [selectedFolder, fetchEmails, fetchStats]);
 
     const handleCreateFolder = async (name: string) => {
         try {
@@ -296,22 +314,24 @@ const EmailPage: React.FC = () => {
                                         <ContextMenu key={`fav-${folder.id}`} options={contextOptions}>
                                             <button
                                                 onClick={() => setSelectedFolder(folder.id)}
-                                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group relative ${isActive
+                                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group ${isActive
                                                     ? 'bg-white shadow-sm text-indigo-700 font-bold ring-1 ring-slate-200'
                                                     : 'text-slate-600 hover:bg-slate-200/50'
                                                     }`}
                                             >
                                                 <folder.icon size={18} className={isActive ? 'text-indigo-600' : 'text-slate-500'} />
                                                 <span className="flex-1 text-left truncate">{folder.name}</span>
-                                                {folder.unread_count > 0 && (
-                                                    <span className="text-[10px] font-black text-slate-500">{folder.unread_count}</span>
-                                                )}
-                                                <div
-                                                    onClick={(e) => toggleFavorite(e, folder.id)}
-                                                    className="absolute right-2 opacity-0 group-hover:opacity-100 text-amber-400 hover:text-amber-500 transition-all p-1"
-                                                    title={t('email.remove_from_favorites')}
-                                                >
-                                                    <Star size={12} fill="currentColor" />
+                                                <div className="flex items-center gap-2">
+                                                    {folder.unread_count > 0 && (
+                                                        <span className="text-[10px] font-black text-slate-500 shrink-0">{folder.unread_count}</span>
+                                                    )}
+                                                    <div
+                                                        onClick={(e) => toggleFavorite(e, folder.id)}
+                                                        className="opacity-0 group-hover:opacity-100 text-amber-400 hover:text-amber-500 transition-all p-1 shrink-0"
+                                                        title={t('email.remove_from_favorites')}
+                                                    >
+                                                        <Star size={12} fill="currentColor" />
+                                                    </div>
                                                 </div>
                                             </button>
                                         </ContextMenu>
@@ -345,19 +365,25 @@ const EmailPage: React.FC = () => {
                                         <ContextMenu key={`fav-custom-${folder.id}`} options={contextOptions}>
                                             <button
                                                 onClick={() => setSelectedFolder(folder.id.toString())}
-                                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group relative ${isActive
+                                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group ${isActive
                                                     ? 'bg-white shadow-sm text-amber-700 font-bold ring-1 ring-slate-200'
                                                     : 'text-slate-600 hover:bg-slate-200/50'
                                                     }`}
                                             >
                                                 <Folder size={18} className={isActive ? 'text-amber-500' : 'text-slate-500'} />
                                                 <span className="flex-1 text-left truncate">{folder.name}</span>
-                                                <div
-                                                    onClick={(e) => toggleFavorite(e, folder.id.toString())}
-                                                    className="absolute right-2 opacity-0 group-hover:opacity-100 text-amber-400 hover:text-amber-500 transition-all p-1"
-                                                    title={t('email.remove_from_favorites')}
-                                                >
-                                                    <Star size={12} fill="currentColor" />
+                                                <div className="flex items-center gap-2">
+                                                    {/* Custom folders also have unread_count from API */}
+                                                    {(folder as any).unread_count > 0 && (
+                                                        <span className="text-[10px] font-black text-slate-500 shrink-0">{(folder as any).unread_count}</span>
+                                                    )}
+                                                    <div
+                                                        onClick={(e) => toggleFavorite(e, folder.id.toString())}
+                                                        className="opacity-0 group-hover:opacity-100 text-amber-400 hover:text-amber-500 transition-all p-1 shrink-0"
+                                                        title={t('email.remove_from_favorites')}
+                                                    >
+                                                        <Star size={12} fill="currentColor" />
+                                                    </div>
                                                 </div>
                                             </button>
                                         </ContextMenu>
@@ -430,19 +456,24 @@ const EmailPage: React.FC = () => {
 
                                             <button
                                                 onClick={() => setSelectedFolder(folder.id)}
-                                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group relative ${isActive
+                                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group ${isActive
                                                     ? 'bg-white shadow-sm text-indigo-700 font-bold ring-1 ring-slate-200'
                                                     : 'text-slate-600 hover:bg-slate-200/50'
                                                     }`}
                                             >
                                                 <folder.icon size={18} className={isActive ? 'text-indigo-600' : 'text-slate-500'} />
                                                 <span className="flex-1 text-left truncate">{folder.name}</span>
-                                                <div
-                                                    onClick={(e) => toggleFavorite(e, folder.id)}
-                                                    className={`absolute right-2 transition-all p-1 ${isFav ? 'text-amber-400 opacity-100' : 'text-slate-300 opacity-0 group-hover:opacity-100 hover:text-slate-400'}`}
-                                                    title={isFav ? t('email.remove_from_favorites') : t('email.add_to_favorites')}
-                                                >
-                                                    <Star size={12} fill={isFav ? "currentColor" : "none"} />
+                                                <div className="flex items-center gap-2">
+                                                    {folder.unread_count > 0 && (
+                                                        <span className="text-[10px] font-black text-slate-500 shrink-0">{folder.unread_count}</span>
+                                                    )}
+                                                    <div
+                                                        onClick={(e) => toggleFavorite(e, folder.id)}
+                                                        className={`transition-all p-1 shrink-0 ${isFav ? 'text-amber-400 opacity-100' : 'text-slate-300 opacity-0 group-hover:opacity-100 hover:text-slate-400'}`}
+                                                        title={isFav ? t('email.remove_from_favorites') : t('email.add_to_favorites')}
+                                                    >
+                                                        <Star size={12} fill={isFav ? "currentColor" : "none"} />
+                                                    </div>
                                                 </div>
                                             </button>
                                         </ContextMenu>
@@ -492,27 +523,32 @@ const EmailPage: React.FC = () => {
                                             <div className="relative group">
                                                 <button
                                                     onClick={() => setSelectedFolder(folder.id.toString())}
-                                                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group relative ${isActive
+                                                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group ${isActive
                                                         ? 'bg-white shadow-sm text-amber-700 font-bold ring-1 ring-slate-200'
                                                         : 'text-slate-600 hover:bg-slate-200/50'
                                                         }`}
                                                 >
                                                     <Folder size={18} className={isActive ? 'text-amber-500' : 'text-slate-500'} />
                                                     <span className="flex-1 text-left truncate">{folder.name}</span>
-                                                    <div
-                                                        onClick={(e) => toggleFavorite(e, folder.id.toString())}
-                                                        className={`absolute right-8 transition-all p-1 ${isFav ? 'text-amber-400 opacity-100' : 'text-slate-300 opacity-0 group-hover:opacity-100 hover:text-slate-400'}`}
-                                                        title={isFav ? t('email.remove_from_favorites') : t('email.add_to_favorites')}
-                                                    >
-                                                        <Star size={12} fill={isFav ? "currentColor" : "none"} />
+                                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <div
+                                                            onClick={(e) => toggleFavorite(e, folder.id.toString())}
+                                                            className={`transition-all p-1 ${isFav ? 'text-amber-400 opacity-100' : 'text-slate-300 hover:text-slate-400'}`}
+                                                            title={isFav ? t('email.remove_from_favorites') : t('email.add_to_favorites')}
+                                                        >
+                                                            <Star size={12} fill={isFav ? "currentColor" : "none"} />
+                                                        </div>
+                                                        <div
+                                                            onClick={(e) => handleDeleteFolder(e, folder.id)}
+                                                            className="text-slate-400 hover:text-rose-500 transition-all p-1"
+                                                            title={t('common.delete')}
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </div>
                                                     </div>
-                                                </button>
-                                                <button
-                                                    onClick={(e) => handleDeleteFolder(e, folder.id)}
-                                                    className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-500 transition-all p-1"
-                                                    title={t('common.delete')}
-                                                >
-                                                    <Trash2 size={14} />
+                                                    {(folder as any).unread_count > 0 && (
+                                                        <span className="text-[10px] font-black text-slate-500 shrink-0 group-hover:hidden">{(folder as any).unread_count}</span>
+                                                    )}
                                                 </button>
                                             </div>
                                         </ContextMenu>

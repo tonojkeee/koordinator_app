@@ -12,6 +12,7 @@ import logging
 from datetime import datetime, timezone
 from pathlib import Path
 import bleach
+from bleach.css_sanitizer import CSSSanitizer
 
 from app.modules.email.models import EmailMessage, EmailAccount, EmailAttachment, EmailFolder
 from app.modules.email.schemas import EmailMessageCreate, EmailMessageUpdate, EmailFolderCreate
@@ -30,13 +31,21 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 ALLOWED_TAGS = [
     'p', 'br', 'strong', 'em', 'u', 'a', 'ul', 'ol', 'li',
     'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-    'table', 'tr', 'td', 'th', 'thead', 'tbody', 'div', 'span'
+    'table', 'tr', 'td', 'th', 'thead', 'tbody', 'div', 'span',
+    'img', 'hr'
 ]
 
 ALLOWED_ATTRIBUTES = {
     'a': ['href', 'title', 'target', 'rel'],
-    '*': ['class']
+    'img': ['src', 'alt', 'title', 'width', 'height', 'align'],
+    '*': ['class', 'style']
 }
+
+ALLOWED_STYLES = [
+    'color', 'background-color', 'font-family', 'font-size', 'font-weight',
+    'text-align', 'text-decoration', 'padding', 'margin', 'border',
+    'border-collapse', 'border-radius', 'width', 'height', 'line-height'
+]
 
 
 def sanitize_html(html: str) -> str:
@@ -47,10 +56,13 @@ def sanitize_html(html: str) -> str:
     if not html:
         return html
 
+    css_sanitizer = CSSSanitizer(allowed_css_properties=ALLOWED_STYLES)
+
     return bleach.clean(
         html,
         tags=ALLOWED_TAGS,
         attributes=ALLOWED_ATTRIBUTES,
+        css_sanitizer=css_sanitizer,
         strip=True
     )
 

@@ -24,7 +24,7 @@ const MainLayout: React.FC = () => {
     const location = useLocation();
     const queryClient = useQueryClient();
     const openViewer = useDocumentViewer(state => state.open);
-    const { addUnread, syncUnreads, addDocUnread, clearDocUnread, setTasksUnread, setTasksReview } = useUnreadStore();
+    const { addUnread, syncUnreads, addDocUnread, clearDocUnread, setTasksUnread, setTasksReview, setEmailsUnread, incrementEmailsUnread } = useUnreadStore();
     const { isConnected, isOffline } = useConnectionStore();
 
     const getFullUrl = (path: string) => {
@@ -103,6 +103,21 @@ const MainLayout: React.FC = () => {
             setTasksReview(reviews);
         }
     }, [issuedTasks, setTasksReview]);
+
+    // Fetch initial email unread count
+    useEffect(() => {
+        const fetchEmailUnread = async () => {
+            try {
+                const res = await api.get('/email/unread-count');
+                setEmailsUnread(res.data.total);
+            } catch (err) {
+                console.error('Failed to fetch initial email unread count', err);
+            }
+        };
+        if (token) {
+            fetchEmailUnread();
+        }
+    }, [token, setEmailsUnread]);
 
     const onChannelCreated = useCallback((data: unknown) => {
         const { channel } = data as { channel: Channel };
@@ -492,6 +507,11 @@ const MainLayout: React.FC = () => {
     }, [queryClient, user?.notify_sound, user?.notify_browser, t, addToast, navigate]);
 
     const onEmailReceived = useCallback((data: { id: number; subject: string; from_address: string }) => {
+        incrementEmailsUnread();
+
+        // Dispatch custom event for real-time updates in EmailPage
+        window.dispatchEvent(new CustomEvent('new-email', { detail: data }));
+
         if (user?.notify_sound) playNotificationSound();
 
         const title = t('email.new_message');
@@ -514,7 +534,7 @@ const MainLayout: React.FC = () => {
                 actions: [{ action: 'view', title: t('common.view') }]
             });
         }
-    }, [user?.notify_sound, user?.notify_browser, t, addToast, navigate]);
+    }, [user?.notify_sound, user?.notify_browser, t, addToast, navigate, incrementEmailsUnread]);
 
     const onMessageUpdated = useCallback((data: unknown) => {
         const msgData = data as {

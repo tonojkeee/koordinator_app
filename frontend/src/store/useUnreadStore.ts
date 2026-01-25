@@ -32,6 +32,11 @@ interface UnreadState {
     addTaskReview: () => void;
     clearTaskReview: () => void;
     setTasksReview: (count: number) => void;
+
+    // Email specific
+    emailsUnreadCount: number;
+    setEmailsUnread: (count: number) => void;
+    incrementEmailsUnread: () => void;
 }
 
 export const useUnreadStore = create<UnreadState>((set, get): UnreadState => ({
@@ -39,6 +44,7 @@ export const useUnreadStore = create<UnreadState>((set, get): UnreadState => ({
     unreadDocs: [],
     tasksUnreadCount: 0,
     tasksReviewCount: 0,
+    emailsUnreadCount: 0,
 
     addUnread: (channelId: number): void => {
         set((state) => ({
@@ -106,4 +112,7 @@ export const useUnreadStore = create<UnreadState>((set, get): UnreadState => ({
     addTaskReview: (): void => set(state => ({ tasksReviewCount: state.tasksReviewCount + 1 })),
     clearTaskReview: (): void => set({ tasksReviewCount: 0 }),
     setTasksReview: (count: number): void => set({ tasksReviewCount: count }),
+
+    setEmailsUnread: (count: number): void => set({ emailsUnreadCount: count }),
+    incrementEmailsUnread: (): void => set(state => ({ emailsUnreadCount: state.emailsUnreadCount + 1 })),
 }));

@@ -28,7 +28,7 @@ const EmailDetails: React.FC<EmailDetailsProps> = ({ emailId, customFolders, onE
             try {
                 const data = await emailService.getMessage(emailId);
                 setEmail(data);
-                
+
                 if (!data.is_read) {
                     await emailService.updateMessage(emailId, { is_read: true });
                     setEmail(prev => prev ? { ...prev, is_read: true } : null);
@@ -208,10 +208,10 @@ const EmailDetails: React.FC<EmailDetailsProps> = ({ emailId, customFolders, onE
 
                     <div className="prose prose-slate max-w-none text-slate-800 leading-relaxed mb-12">
                         {email.body_html ? (
-                            <div dangerouslySetInnerHTML={{ 
+                            <div dangerouslySetInnerHTML={{
                                 __html: DOMPurify.sanitize(email.body_html, {
-                                    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'a', 'ul', 'ol', 'li', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'tr', 'td', 'th', 'thead', 'tbody', 'div', 'span'],
-                                    ALLOWED_ATTR: ['href', 'title', 'target', 'rel', 'class'],
+                                    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'a', 'ul', 'ol', 'li', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'tr', 'td', 'th', 'thead', 'tbody', 'div', 'span', 'img', 'hr'],
+                                    ALLOWED_ATTR: ['href', 'title', 'target', 'rel', 'class', 'style', 'src', 'alt', 'width', 'height', 'align'],
                                     ALLOW_DATA_ATTR: false
                                 })
                             }} />
