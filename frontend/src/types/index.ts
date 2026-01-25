@@ -1,7 +1,7 @@
 export interface UserPreferences {
     start_page?: string;
     enter_to_send?: boolean;
-    font_size?: 'small' | 'medium' | 'large';
+    font_size?: number | string;
     tasks_view?: 'list' | 'board';
     [key: string]: unknown;
 }

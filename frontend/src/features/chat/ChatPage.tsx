@@ -283,7 +283,14 @@ const MessageInput = React.forwardRef<MessageInputHandle, MessageInputProps>((
                             value={inputMessage}
                             onChange={handleInputChange}
                             placeholder={t('chat.inputPlaceholder')}
-                            className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none text-sm font-medium text-slate-700 placeholder:text-slate-400 px-2 h-10"
+                            className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none font-medium text-slate-700 placeholder:text-slate-400 px-2 h-10"
+                            style={{
+                                fontSize: typeof user?.preferences?.font_size === 'number'
+                                    ? `${user.preferences.font_size}px`
+                                    : user?.preferences?.font_size === 'small' ? '12px'
+                                        : user?.preferences?.font_size === 'large' ? '18px'
+                                            : '14px'
+                            }}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' && !e.shiftKey) {
                                     e.preventDefault();
@@ -608,6 +615,7 @@ const ChatPage: React.FC = () => {
     };
 
     const [initialLastReadId, setInitialLastReadId] = useState<number | null>(null);
+    const [isUnreadBannerVisible, setIsUnreadBannerVisible] = useState<boolean>(true);
 
     // Use ref to track current channelId to avoid race conditions in WebSocket callbacks
     // where a message from the previous channel might be processed by a stale closure
@@ -628,9 +636,16 @@ const ChatPage: React.FC = () => {
     useEffect(() => {
         if (initialLastReadId !== null && initialLastReadId !== Number.MAX_SAFE_INTEGER && channelId) {
             const timer = setTimeout(() => {
-                setInitialLastReadId(Number.MAX_SAFE_INTEGER);
+                // First trigger the animation
+                setIsUnreadBannerVisible(false);
+                // Then clear the ID after animation completes (approx 500ms)
+                setTimeout(() => {
+                    setInitialLastReadId(Number.MAX_SAFE_INTEGER);
+                }, 500);
             }, 3000);
             return () => clearTimeout(timer);
+        } else {
+            setIsUnreadBannerVisible(true);
         }
     }, [initialLastReadId, channelId]);
 
@@ -710,14 +725,26 @@ const ChatPage: React.FC = () => {
                 const numChannelId = Number(channelId);
                 // Clear unread in Zustand store
                 clearUnread(numChannelId);
-                // Update React Query cache optimistically (don't invalidate to avoid refetch)
+
+                // Get the absolute latest message ID we have in the query cache for this channel
+                const messagesData = queryClient.getQueryData<{ pages: Message[][] }>(['messages', channelId]);
+                const allMessages = messagesData?.pages.flat() || [];
+                const latestMsgId = allMessages.length > 0
+                    ? Math.max(...allMessages.map(m => m.id))
+                    : 0;
+
+                // Update React Query cache optimistically for the channel list
                 queryClient.setQueryData<Channel[]>(['channels'], (old) => {
                     if (!old) return old;
                     return old.map(c => c.id === numChannelId ? { ...c, unread_count: 0 } : c);
                 });
-                // NOTE: We no longer setInitialLastReadId(MAX_SAFE_INTEGER) here.
-                // The 3-second auto-clear effect or manual scroll should handle it,
-                // otherwise the banner disappears too fast to be seen.
+
+                // Update the specific channel object's last_read_message_id
+                queryClient.setQueryData<Channel>(['channel', channelId], (old) => {
+                    if (!old) return old;
+                    const finalId = Math.max(old.last_read_message_id || 0, latestMsgId);
+                    return { ...old, last_read_message_id: finalId, unread_count: 0 };
+                });
             }
         }
     });
@@ -738,15 +765,20 @@ const ChatPage: React.FC = () => {
     useEffect(() => {
         if (!channelId) return;
 
-        // Delay marking as read slightly to let the "New Messages" banner be seen
-        // AND to ensure it's not immediately cleared by onSuccess
+        // Trigger mutation with a short delay to ensure UI feels responsive
+        // and user has time to actually see the banner
         const timer = setTimeout(() => {
-            if (!markReadMutation.isPending) {
-                markReadMutation.mutate(Number(channelId));
-            }
-        }, 1500);
+            markReadMutation.mutate(Number(channelId));
+        }, 500);
 
-        return () => clearTimeout(timer);
+        return () => {
+            clearTimeout(timer);
+            // Synchronous update on leave/unmount if we haven't read yet
+            // (Note: mutate is async but we trigger it here)
+            if (channelId) {
+                api.post(`/chat/channels/${channelId}/read`).catch(() => { });
+            }
+        };
     }, [channelId]); // Only trigger on channel change
 
     const {
@@ -1510,7 +1542,7 @@ const ChatPage: React.FC = () => {
                                                         )}
 
                                                         {showUnreadSeparator && (
-                                                            <div className={`flex items-center my-8 ${animations.slideIn}`}>
+                                                            <div className={`flex items-center my-8 ${isUnreadBannerVisible ? animations.slideIn : animations.outCollapse}`}>
                                                                 <div className="flex-1 border-t border-rose-200/60" />
                                                                 <div className="mx-4 flex items-center space-x-2 px-3 py-1 bg-rose-50/50 rounded-full border border-rose-100">
                                                                     <Bell size={12} className="text-rose-500" />
@@ -1559,7 +1591,13 @@ const ChatPage: React.FC = () => {
                                                                             id={`message-${msg.id}`}
                                                                             className={`message-bubble group/message relative ${isSent ? 'message-sent' : 'message-received'} ${msgGroupClass} flex flex-col ${(msg.document_id && highlightDocId === msg.document_id) || highlightMessageId === msg.id ? 'message-highlight ring-2 ring-indigo-400 shadow-lg z-10' : ''}`}
                                                                             {...(msg.document_id ? { 'data-doc-id': msg.document_id } : {})}
-                                                                            style={{ fontSize: user?.preferences?.font_size === 'small' ? '0.85rem' : user?.preferences?.font_size === 'large' ? '1.1rem' : undefined }}
+                                                                            style={{
+                                                                                fontSize: typeof user?.preferences?.font_size === 'number'
+                                                                                    ? `${user.preferences.font_size}px`
+                                                                                    : user?.preferences?.font_size === 'small' ? '12px'
+                                                                                        : user?.preferences?.font_size === 'large' ? '18px'
+                                                                                            : '14px'
+                                                                            }}
                                                                         >
                                                                             {msg.parent && (
                                                                                 <div
@@ -1587,7 +1625,7 @@ const ChatPage: React.FC = () => {
 
                                                                             <div className="flex flex-col relative">
                                                                                 {msg.content && (!msg.document_id || !msg.content.startsWith('📎')) && (
-                                                                                    <div className={`leading-relaxed whitespace-pre-wrap break-words pr-14 ${isSent ? 'text-white' : 'text-slate-900'} ${msg.document_id ? 'mt-2 text-[13px] opacity-90' : ''}`}>
+                                                                                    <div className={`leading-relaxed whitespace-pre-wrap break-words pr-14 ${isSent ? 'text-white' : 'text-slate-900'} ${msg.document_id ? 'mt-2 opacity-90' : ''}`}>
                                                                                         {renderMessageContent(msg.content, isSent, msg.invitation_id)}
                                                                                         {msg.updated_at && (
                                                                                             <span className={`text-[10px] ml-1 opacity-60 italic select-none ${isSent ? 'text-white' : 'text-slate-500'}`}>

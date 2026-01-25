@@ -537,20 +537,57 @@ const SettingsPage: React.FC = () => {
                                 </div>
 
                                 <div>
-                                    <p className="font-medium text-gray-700 mb-2">{t('settings.font_size')}</p>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {['small', 'medium', 'large'].map((size) => (
-                                            <button
-                                                key={size}
-                                                onClick={() => updateProfileMutation.mutate({ preferences: { ...user?.preferences, font_size: size } })}
-                                                className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${(user?.preferences?.font_size || 'medium') === size
-                                                    ? 'bg-indigo-50 border-indigo-200 text-indigo-700 ring-2 ring-indigo-500/20'
-                                                    : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                                                    }`}
-                                            >
-                                                {size === 'small' ? t('settings.font_size_small') : size === 'medium' ? t('settings.font_size_medium') : t('settings.font_size_large')}
-                                            </button>
-                                        ))}
+                                    <div className="flex items-center justify-between mb-2">
+                                        <p className="font-medium text-gray-700">{t('settings.font_size')}</p>
+                                        <span className="text-sm font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
+                                            {typeof user?.preferences?.font_size === 'number'
+                                                ? `${user.preferences.font_size}px`
+                                                : user?.preferences?.font_size === 'large' ? '18px'
+                                                    : user?.preferences?.font_size === 'small' ? '12px'
+                                                        : '14px'}
+                                        </span>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-4">
+                                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">A</span>
+                                            <input
+                                                type="range"
+                                                min="10"
+                                                max="24"
+                                                step="1"
+                                                value={typeof user?.preferences?.font_size === 'number'
+                                                    ? user.preferences.font_size
+                                                    : user?.preferences?.font_size === 'large' ? 18
+                                                        : user?.preferences?.font_size === 'small' ? 12 : 14}
+                                                onChange={(e) => updateProfileMutation.mutate({
+                                                    preferences: { ...user?.preferences, font_size: parseInt(e.target.value) }
+                                                })}
+                                                className="flex-1 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 hover:accent-indigo-700 transition-all"
+                                            />
+                                            <span className="text-lg text-gray-400 font-bold uppercase tracking-wider">A</span>
+                                        </div>
+
+                                        {/* Preview Box */}
+                                        <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
+                                            <div className="flex items-start gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-indigo-100 flex-shrink-0" />
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="h-2 w-20 bg-gray-100 rounded mb-2" />
+                                                    <p
+                                                        className="text-slate-900 leading-relaxed break-words"
+                                                        style={{
+                                                            fontSize: typeof user?.preferences?.font_size === 'number'
+                                                                ? `${user.preferences.font_size}px`
+                                                                : user?.preferences?.font_size === 'large' ? '18px'
+                                                                    : user?.preferences?.font_size === 'small' ? '12px'
+                                                                        : '14px'
+                                                        }}
+                                                    >
+                                                        Пример текста сообщения с выбранным размером шрифта.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
