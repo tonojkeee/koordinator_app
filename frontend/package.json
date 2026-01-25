@@ -1,5 +1,5 @@
 {
-  "name": "koordinator",
+  "name": "koordinator-client",
   "private": true,
   "version": "1.0.7",
   "type": "module",
@@ -12,7 +12,8 @@
     "electron:multi-1": "NODE_ENV=development electron . --user-data-dir=.user-data-1",
     "electron:multi-2": "NODE_ENV=development electron . --user-data-dir=.user-data-2",
     "electron:build": "npm run build && electron-builder",
-    "build:win7": "node scripts/build-win7.js"
+    "build:win7": "node scripts/build-win7.js",
+    "build:all": "node scripts/build-all.js"
   },
   "main": "electron/main.cjs",
   "dependencies": {
@@ -71,7 +72,7 @@
   },
   "build": {
     "appId": "ru.mil.coordinator",
-    "productName": "КООРДИНАТОР",
+    "productName": "Koordinator",
     "publish": [
       {
         "provider": "github",

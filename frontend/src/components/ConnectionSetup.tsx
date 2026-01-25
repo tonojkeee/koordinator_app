@@ -36,11 +36,11 @@ const ConnectionSetup: React.FC<ConnectionSetupProps> = ({ onConfigured, initial
     }, []);
 
     const checkConnection = async (overrideUrl?: string) => {
-        const targetUrl = overrideUrl || url;
-        if (!targetUrl) return;
+        const inputUrl = overrideUrl || url;
+        if (!inputUrl) return;
 
         // Ensure URL has protocol
-        let testUrl = targetUrl.trim();
+        let testUrl = inputUrl.trim();
         if (!testUrl.startsWith('http://') && !testUrl.startsWith('https://')) {
             testUrl = `http://${testUrl}`;
         }
@@ -54,27 +54,67 @@ const ConnectionSetup: React.FC<ConnectionSetupProps> = ({ onConfigured, initial
         setErrorMsg('');
 
         try {
+            // Helper to try a specific path
+            const tryPath = async (baseUrl: string) => {
+                try {
+                    await axios.get(`${baseUrl}/health`, { timeout: 3000 });
+                    return true;
+                } catch (e) {
+                    if (axios.isAxiosError(e) && e.response) {
+                        // If we get a response (even 404/500), the server IS reachable, 
+                        // but maybe not the health endpoint. 
+                        // However, usually we need a successful 200 OK for 'health'.
+                        // Let's be strict about 200 for health check to ensure it's OUR server.
+                    }
+                    return false;
+                }
+            };
+
             let finalBaseUrl = testUrl;
-            if (!finalBaseUrl.endsWith('/api')) {
-                finalBaseUrl = `${finalBaseUrl}/api`;
-            }
+            let success = false;
 
-            // Test fetch
-            try {
-                await axios.get(`${finalBaseUrl}/health`, { timeout: 3000 });
-            } catch (e) {
-                if (!axios.isAxiosError(e) || !e.response) {
-                    throw new Error('Server unreachable');
+            // Strategy 1: Try exact URL provided (or normalized)
+            // If it already ends in /api, trust it first.
+            if (testUrl.endsWith('/api')) {
+                if (await tryPath(testUrl)) {
+                    success = true;
+                    finalBaseUrl = testUrl;
+                }
+            } else {
+                // Strategy 2: Try appending /api (most common case for seamless setup)
+                // We try this FIRST if the user just gave a host:port, because our app usually lives at /api
+                const urlWithApi = `${testUrl}/api`;
+                if (await tryPath(urlWithApi)) {
+                    success = true;
+                    finalBaseUrl = urlWithApi;
+                } else {
+                    // Strategy 3: Try the raw URL (maybe it's a proxy that rewrites /)
+                    if (await tryPath(testUrl)) {
+                        success = true;
+                        finalBaseUrl = testUrl;
+                    }
                 }
             }
 
+            if (!success) {
+                throw new Error('Server unreachable');
+            }
+
+            // Connection Successful
             setStatus('success');
-            setTimeout(async () => {
-                if (window.electron) {
-                    await window.electron.saveAppConfig({ serverUrl: finalBaseUrl });
-                }
+
+            // Ensure our internal state is updated too
+            setUrl(finalBaseUrl);
+
+            // Auto-save and proceed
+            if (window.electron) {
+                await window.electron.saveAppConfig({ serverUrl: finalBaseUrl });
+            }
+
+            // Small delay to show success state
+            setTimeout(() => {
                 onConfigured(finalBaseUrl);
-            }, 800);
+            }, 500);
 
         } catch {
             setStatus('error');
@@ -89,6 +129,7 @@ const ConnectionSetup: React.FC<ConnectionSetupProps> = ({ onConfigured, initial
 
     const handleSelectServer = (serverUrl: string) => {
         setUrl(serverUrl);
+        // Immediately check connection with the selected URL
         checkConnection(serverUrl);
     };
 

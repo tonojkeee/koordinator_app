@@ -9,7 +9,7 @@ const bonjour = new Bonjour();
 const discoveredServers = new Map();
 
 // Set Application Name for System Menus
-app.setName('КООРДИНАТОР');
+app.setName('Koordinator');
 
 // const __filename = fileURLToPath(import.meta.url); // Not needed in CJS
 // const __dirname = path.dirname(__filename); // __dirname is available in CJS
@@ -112,7 +112,8 @@ function createWindow() {
     const config = getConfig();
     if (config.serverUrl) {
         console.log('Loading server URL:', config.serverUrl);
-        mainWindow.loadURL(config.serverUrl);
+        const appUrl = config.serverUrl.replace(/\/api$/, '') || config.serverUrl;
+        mainWindow.loadURL(appUrl);
     } else {
         // Fallback to loader.html if no config
         mainWindow.loadFile(path.join(__dirname, 'loader.html'));
@@ -228,6 +229,18 @@ function createTray() {
         },
         { type: 'separator' },
         {
+            label: 'Сбросить настройки сервера',
+            click: () => {
+                saveConfig({ serverUrl: '' });
+                if (mainWindow) {
+                    mainWindow.loadFile(path.join(__dirname, 'loader.html'));
+                    mainWindow.show();
+                    mainWindow.focus();
+                }
+            }
+        },
+        { type: 'separator' },
+        {
             label: 'Выход',
             click: () => {
                 app.isQuiting = true;
@@ -333,7 +346,8 @@ ipcMain.on('focus-window', () => {
 
 ipcMain.on('load-app', (event, url) => {
     if (mainWindow && url) {
-        mainWindow.loadURL(url);
+        const appUrl = url.replace(/\/api$/, '') || url;
+        mainWindow.loadURL(appUrl);
     }
 });
 

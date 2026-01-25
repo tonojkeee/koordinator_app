@@ -48,8 +48,11 @@ const getCsrfToken = (): string | null => {
     return null;
 };
 
-// Add request interceptor to include JWT token and CSRF token
+// Helper to get CSRF token from cookies
 api.interceptors.request.use((config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
+    // Base URL is managed globally via setBaseUrl and useConfigStore
+    // which are called in App.tsx during initialization and configuration.
+
     const { token } = getTokens();
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -61,7 +64,6 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig): InternalAxios
         const csrfToken = getCsrfToken();
         if (csrfToken) {
             config.headers['X-CSRF-Token'] = csrfToken;
-            console.log('🔐 Adding CSRF token to request:', config.url, 'token:', csrfToken.substring(0, 10) + '...');
         } else {
             console.warn('🔐 No CSRF token available for request:', config.url);
         }
@@ -89,11 +91,19 @@ const processQueue = (error: unknown, token: string | null = null): void => {
     failedQueue = [];
 };
 
-// Add response interceptor to handle 401 errors
+// Add response interceptor to handle errors
 api.interceptors.response.use(
     (response: AxiosResponse): AxiosResponse => response,
-    async (error: unknown): Promise<AxiosResponse> => {
+    async (error: any): Promise<AxiosResponse> => {
         const axiosError = error as AxiosError;
+
+        // Log 405 errors specifically to help debug "Method Not Allowed" issues
+        if (axiosError.response?.status === 405) {
+            console.error('❌ Method Not Allowed (405) error at:', axiosError.config?.url);
+            console.error('Current baseURL:', axiosError.config?.baseURL);
+            console.error('Ensure the server is reachable and the URL is correct.');
+        }
+
         const originalRequest = axiosError.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
         if (axiosError.response?.status === 403) {
