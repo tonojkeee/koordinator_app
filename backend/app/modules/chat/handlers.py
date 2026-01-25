@@ -70,11 +70,20 @@ async def handle_invitation_created(event) -> None:
     async with AsyncSessionLocal() as db:
         try:
             # Check if invitee is an existing user
-            invitee_user = await UserService.get_user_by_email(db, event.invitee_email)
+            # Ensure email is lowercase for matching
+            invitee_email = event.invitee_email.lower()
+            logger.info(f"Processing invitation event: id={event.invitation_id}, email={invitee_email}")
+            
+            invitee_user = await UserService.get_user_by_email(db, invitee_email)
             
             if invitee_user:
+                logger.info(f"Invitee user found: id={invitee_user.id}, username={invitee_user.username}")
                 # Create or get notifications channel for user
                 notifications_channel = await UserService.get_or_create_notifications_channel(db, invitee_user.id)
+                
+                if not notifications_channel:
+                    logger.error(f"Failed to get/create notifications channel for user {invitee_user.id}")
+                    return
                 
                 # Create notification message with action buttons
                 notification_text = f"📩 Приглашение в канал '{event.channel_name}' от {event.inviter_name}"
@@ -147,7 +156,9 @@ async def handle_invitation_created(event) -> None:
                     
                     logger.info(f"WebSocket notifications sent for invitation {event.invitation_id}")
                 except Exception as ws_error:
-                    logger.warning(f"WebSocket notification failed: {ws_error}")
+                    logger.warning(f"WebSocket notification failed: {ws_error}", exc_info=True)
+                
+                logger.info(f"System notification created for user {invitee_user.id} regarding invitation {event.invitation_id}")
                 
                 # Prepare and send email notification
                 subject = f"Приглашение в канал '{event.channel_name}'"

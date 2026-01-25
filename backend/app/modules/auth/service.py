@@ -84,9 +84,10 @@ class UserService:
     @staticmethod
     async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
         """Get user by email"""
+        from sqlalchemy import func
         result = await db.execute(
             select(User)
-            .where(User.email == email)
+            .where(func.lower(User.email) == email.lower())
             .options(joinedload(User.unit), defer(User.hashed_password))
         )
         return result.scalar_one_or_none()

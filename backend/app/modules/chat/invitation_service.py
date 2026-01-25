@@ -69,7 +69,7 @@ class InvitationService:
         
         # Check if invitee is already a member (by email)
         user_result = await db.execute(
-            select(User).where(User.email == invitation_data.invitee_email)
+            select(User).where(func.lower(User.email) == invitation_data.invitee_email.lower())
         )
         invitee_user = user_result.scalar_one_or_none()
         
@@ -95,7 +95,7 @@ class InvitationService:
             select(ChannelInvitation).where(
                 and_(
                     ChannelInvitation.channel_id == invitation_data.channel_id,
-                    ChannelInvitation.invitee_email == invitation_data.invitee_email,
+                    func.lower(ChannelInvitation.invitee_email) == invitation_data.invitee_email.lower(),
                     ChannelInvitation.status == "pending"
                 )
             )
@@ -116,10 +116,11 @@ class InvitationService:
         
         # Create invitation
         expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=invitation_data.expires_hours)
+        normalized_email = invitation_data.invitee_email.lower()
         invitation = ChannelInvitation(
             channel_id=invitation_data.channel_id,
             inviter_id=inviter_id,
-            invitee_email=invitation_data.invitee_email,
+            invitee_email=normalized_email,
             role=invitation_data.role,
             message=invitation_data.message,
             token=str(uuid.uuid4()),
@@ -137,7 +138,7 @@ class InvitationService:
             channel_name=channel.name,
             inviter_id=inviter.id,
             inviter_name=inviter.full_name or inviter.username,
-            invitee_email=invitation_data.invitee_email,
+            invitee_email=normalized_email,
             message=invitation_data.message
         )
         await event_bus.publish(event)
@@ -370,7 +371,7 @@ class InvitationService:
             )
             .where(
                 and_(
-                    ChannelInvitation.invitee_email == user.email,
+                    func.lower(ChannelInvitation.invitee_email) == user.email.lower(),
                     ChannelInvitation.status == "pending",
                     or_(
                         ChannelInvitation.expires_at.is_(None),
