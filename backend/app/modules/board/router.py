@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 import os
@@ -186,19 +186,23 @@ async def get_document_file(
 
 @router.get("/documents/owned", response_model=List[DocumentResponse])
 async def get_my_documents(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=1000),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get documents owned by current user"""
-    return await BoardService.get_owned_documents(db, current_user.id)
+    return await BoardService.get_owned_documents(db, current_user.id, skip=skip, limit=limit)
 
 @router.get("/documents/received", response_model=List[DocumentShareResponse])
 async def get_received_documents(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=1000),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get documents shared with current user"""
-    return await BoardService.get_shared_with_me_documents(db, current_user.id)
+    return await BoardService.get_shared_with_me_documents(db, current_user.id, skip=skip, limit=limit)
 
 @router.post("/documents/{doc_id}/share", response_model=DocumentShareResponse)
 async def share_document(
@@ -224,7 +228,8 @@ async def share_document(
     share = await BoardService.share_document(
         db, doc_id, share_data.recipient_id,
         channel_id=channel.id,
-        sender_user=current_user
+        sender_user=current_user,
+        notify=True # Single share should notify
     )
 
     # Note: In a real implementation, BoardService.share_document should return the created message 
@@ -330,14 +335,32 @@ async def _share_document_with_recipients(
     db: AsyncSession,
     document,
     recipient_ids: List[int],
-    current_user_id: int
+    current_user_id: int,
+    current_user: User
 ):
-    """Share document with all recipients"""
-    for r_id in recipient_ids:
-        if r_id == current_user_id:
-            continue
-        await BoardService.share_document(db, document.id, r_id)
+    """Share document with all recipients (optimized bulk)"""
+    recipients = [rid for rid in recipient_ids if rid != current_user_id]
+    if not recipients:
+        return
 
+    # Bulk insert shares directly to avoid N+1 queries and unwanted events
+    from app.modules.board.models import DocumentShare
+    from sqlalchemy import select
+
+    # 1. Check existing
+    existing = await db.execute(
+        select(DocumentShare.recipient_id).where(
+            DocumentShare.document_id == document.id,
+            DocumentShare.recipient_id.in_(recipients)
+        )
+    )
+    existing_ids = set(existing.scalars().all())
+    new_ids = [rid for rid in recipients if rid not in existing_ids]
+
+    if new_ids:
+        shares = [DocumentShare(document_id=document.id, recipient_id=rid) for rid in new_ids]
+        db.add_all(shares)
+        await db.commit()
 
 async def _post_document_to_channel(
     db: AsyncSession,
@@ -487,8 +510,8 @@ async def upload_and_share_document(
         db, doc_data, file_path=file_path, owner_id=current_user.id, file_size=size
     )
 
-    await _share_document_with_recipients(db, document, r_ids, current_user.id)
-    
+    await _share_document_with_recipients(db, document, r_ids, current_user.id, notify=False)
+
     if channel_id:
         await _post_document_to_channel(db, channel_id, document, description, current_user)
     else:

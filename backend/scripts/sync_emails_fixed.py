@@ -37,7 +37,10 @@ async def sync_database():
 
     engine = create_async_engine(f"sqlite+aiosqlite:///{DB_PATH}")
     async_session = async_sessionmaker(engine, class_=AsyncSession)
-    domain = "40919.com"
+
+    # Try to load from env, default to 40919.com for backward compatibility if env not set
+    domain = os.getenv("INTERNAL_EMAIL_DOMAIN", "40919.com")
+    print(f"Using domain: {domain}")
 
     async with async_session() as session:
         # 1. Update User emails

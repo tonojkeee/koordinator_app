@@ -30,12 +30,14 @@ async def get_archive_contents(
     parent_id: Optional[int] = Query(None),
     unit_id: Optional[int] = Query(None),
     is_private: bool = Query(False),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Get contents of a folder (folders and files). Defaults to current user's unit if unit_id not specified."""
     target_unit_id = unit_id if unit_id is not None else current_user.unit_id
-    
+
     # If we are inside a folder, the unit_id should be inherited from the folder
     if parent_id:
         folder = await ArchiveService.get_folder_by_id(db, parent_id)
@@ -43,10 +45,12 @@ async def get_archive_contents(
             target_unit_id = folder.unit_id
 
     return await ArchiveService.get_folder_contents(
-        db, 
-        unit_id=target_unit_id, 
+        db,
+        unit_id=target_unit_id,
         parent_id=parent_id,
-        is_private=is_private
+        is_private=is_private,
+        skip=skip,
+        limit=limit
     )
 
 @router.post("/folders", response_model=ArchiveFolderResponse)

@@ -20,6 +20,7 @@ import PackageDetailsModal from './PackageDetailsModal';
 import api from '../../../api/client';
 import { zsspdService } from '../zsspdService';
 import { useAuthStore } from '../../../store/useAuthStore';
+import { useConfigStore } from '../../../store/useConfigStore';
 import { Avatar } from '../../../design-system';
 import { formatName, abbreviateRank } from '../../../utils/formatters';
 
@@ -39,6 +40,8 @@ const OutgoingTab: React.FC<OutgoingTabProps> = ({ isModalOpen, onClose }) => {
     const [files, setFiles] = useState<File[]>([]);
     const [selectedPackage, setSelectedPackage] = useState<ZsspdPackage | null>(null);
     const { user } = useAuthStore();
+    const { config } = useConfigStore();
+    const emailDomain = config.internal_email_domain || 'example.com';
     const isOperator = (user?.role as string) === 'operator' || user?.role === 'admin';
 
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -313,7 +316,7 @@ const OutgoingTab: React.FC<OutgoingTabProps> = ({ isModalOpen, onClose }) => {
                                                         key={u.id}
                                                         type="button"
                                                         onClick={() => {
-                                                            setRecipient(u.email || `${u.username}@40919.com`);
+                                                            setRecipient(u.email || `${u.username}@${emailDomain}`);
                                                             setShowSuggestions(false);
                                                         }}
                                                         className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 transition-colors text-left"
@@ -321,7 +324,7 @@ const OutgoingTab: React.FC<OutgoingTabProps> = ({ isModalOpen, onClose }) => {
                                                         <Avatar src={u.avatar_url} name={u.full_name || u.username} size="sm" />
                                                         <div className="flex flex-col overflow-hidden">
                                                             <span className="text-sm font-bold text-slate-700">{u.full_name || u.username}</span>
-                                                            <span className="text-xs text-slate-400 truncate">{u.email || `${u.username}@40919.com`}</span>
+                                                            <span className="text-xs text-slate-400 truncate">{u.email || `${u.username}@${emailDomain}`}</span>
                                                         </div>
                                                     </button>
                                                 ))}

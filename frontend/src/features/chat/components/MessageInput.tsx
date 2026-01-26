@@ -122,21 +122,57 @@ export const MessageInput = React.forwardRef<MessageInputHandle, MessageInputPro
     }, [typingUsers, currentTime]);
 
     return (
-        <div className="relative">
+        <div className="relative px-4 pb-4">
             {typingUsersList.length > 0 && (
-                <div className="absolute -top-8 left-4 flex items-center space-x-2 text-[10px] text-slate-400 font-medium">
-                    <span>{t('chat.typing')}</span>
+                <div className="absolute -top-6 left-6 flex items-center space-x-2 text-[11px] text-[#616161]">
+                    <span className="animate-pulse">●</span>
                     {typingUsersList.map((u, i) => (
-                        <span key={i} className="font-semibold text-slate-600">
+                        <span key={i} className="font-semibold">
                             {u.name}
                             {i < typingUsersList.length - 1 && ', '}
                         </span>
                     ))}
+                    <span>{t('chat.typing')}...</span>
                 </div>
             )}
 
-            <form onSubmit={handleSendMessage} className="flex items-center space-x-3">
-                <div className="flex-1 relative">
+            <form onSubmit={handleSendMessage} className="flex flex-col bg-white border border-[#E0E0E0] rounded-xl shadow-sm focus-within:ring-1 focus-within:ring-[#5B5FC7] focus-within:border-[#5B5FC7] transition-all">
+                {/* Toolbar */}
+                <div className="flex items-center px-2 py-1 border-b border-[#F0F0F0] gap-1">
+                    <button
+                        type="button"
+                        className="p-1.5 text-[#616161] hover:bg-[#F5F5F5] rounded-md transition-colors"
+                        title="Format"
+                    >
+                        <span className="font-bold text-xs">B</span>
+                    </button>
+                    <button
+                        type="button"
+                        className="p-1.5 text-[#616161] hover:bg-[#F5F5F5] rounded-md transition-colors"
+                        title="Italic"
+                    >
+                        <span className="italic text-xs font-serif">I</span>
+                    </button>
+                    <button
+                        type="button"
+                        className="p-1.5 text-[#616161] hover:bg-[#F5F5F5] rounded-md transition-colors"
+                        title="Underline"
+                    >
+                        <span className="underline text-xs">U</span>
+                    </button>
+                    <div className="w-px h-4 bg-[#E0E0E0] mx-1" />
+                    <button
+                        type="button"
+                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                        className={`p-1.5 text-[#616161] hover:bg-[#F5F5F5] rounded-md transition-colors ${showEmojiPicker ? 'bg-[#F0F0F0] text-[#5B5FC7]' : ''}`}
+                        title="Emoji"
+                        disabled={!isConnected}
+                    >
+                        <Smile size={16} strokeWidth={1.5} />
+                    </button>
+                </div>
+
+                <div className="relative">
                     <input
                         ref={inputRef}
                         type="text"
@@ -144,40 +180,41 @@ export const MessageInput = React.forwardRef<MessageInputHandle, MessageInputPro
                         onChange={handleInputChange}
                         placeholder={t('chat.placeholder')}
                         disabled={!isConnected}
-                        className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all text-sm font-medium placeholder:text-slate-400 disabled:opacity-50"
+                        className="w-full px-4 py-3 bg-transparent focus:outline-none text-sm text-[#242424] placeholder:text-[#888888] disabled:opacity-50"
+                        autoComplete="off"
                     />
-                    <button
-                        type="button"
-                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors disabled:opacity-50"
-                        disabled={!isConnected}
-                    >
-                        <Smile size={20} />
-                    </button>
 
                     {showEmojiPicker && (
                         <div
                             ref={emojiPickerRef}
-                            className="absolute bottom-16 right-0 z-50"
+                            className="absolute bottom-full left-0 mb-2 z-50 shadow-xl rounded-lg border border-[#E0E0E0]"
                         >
                             <EmojiPicker
                                 onEmojiClick={onEmojiClick}
-                                theme={Theme.AUTO}
-                                emojiStyle={EmojiStyle.GOOGLE}
-                                getEmojiUrl={(unified) => `/emoji/${unified}.png`}
+                                theme={Theme.LIGHT}
+                                emojiStyle={EmojiStyle.NATIVE}
                                 searchPlaceholder={t('chat.searchEmoji')}
+                                width={300}
+                                height={350}
+                                previewConfig={{ showPreview: false }}
                             />
                         </div>
                     )}
                 </div>
 
-                <button
-                    type="submit"
-                    disabled={!isConnected || !inputMessage.trim()}
-                    className="w-12 h-12 bg-indigo-600 text-white rounded-xl flex items-center justify-center transition-all hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed active:scale-95 shadow-lg shadow-indigo-200"
-                >
-                    <Send size={20} className="translate-x-px" />
-                </button>
+                <div className="flex justify-between items-center px-2 py-1.5">
+                    <div className="text-[10px] text-[#888888] px-2">
+                        {/* Hint or status could go here */}
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={!isConnected || !inputMessage.trim()}
+                        className="p-1.5 text-[#5B5FC7] hover:bg-[#EEF2FF] rounded-md transition-all disabled:text-[#BDBDBD] disabled:bg-transparent cursor-pointer disabled:cursor-not-allowed"
+                        title={t('chat.send')}
+                    >
+                        <Send size={18} strokeWidth={1.5} className="ml-0.5" />
+                    </button>
+                </div>
             </form>
         </div>
     );

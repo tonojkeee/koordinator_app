@@ -54,7 +54,7 @@ const LoginPage: React.FC = () => {
                 },
             });
 
-            const { access_token, refresh_token, csrf_token } = loginRes.data;
+            const { access_token, csrf_token } = loginRes.data;
 
             // Сохраняем CSRF токен из ответа логина - removed manual save
             if (csrf_token) {
@@ -68,7 +68,7 @@ const LoginPage: React.FC = () => {
                 },
             });
 
-            setAuth(userRes.data, access_token, refresh_token);
+            setAuth(userRes.data, access_token);
             navigate('/');
         } catch (err: unknown) {
             const error = err as AxiosError<{ detail: string }>;

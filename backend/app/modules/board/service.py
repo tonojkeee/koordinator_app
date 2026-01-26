@@ -42,21 +42,21 @@ class BoardService:
         pass 
 
     @staticmethod
-    async def get_owned_documents(db: AsyncSession, user_id: int) -> List[Document]:
-        query = select(Document).options(selectinload(Document.owner)).where(Document.owner_id == user_id).order_by(Document.created_at.desc())
+    async def get_owned_documents(db: AsyncSession, user_id: int, skip: int = 0, limit: int = 50) -> List[Document]:
+        query = select(Document).options(selectinload(Document.owner)).where(Document.owner_id == user_id).order_by(Document.created_at.desc()).offset(skip).limit(limit)
         result = await db.execute(query)
         return result.scalars().all()
 
     @staticmethod
-    async def get_shared_with_me_documents(db: AsyncSession, user_id: int) -> List[DocumentShare]:
+    async def get_shared_with_me_documents(db: AsyncSession, user_id: int, skip: int = 0, limit: int = 50) -> List[DocumentShare]:
         from app.modules.auth.models import User
         from app.modules.chat.models import Message, Channel, ChannelMember
-        
+
         query = select(DocumentShare).options(
             selectinload(DocumentShare.document).selectinload(Document.owner).selectinload(User.unit),
             selectinload(DocumentShare.recipient).selectinload(User.unit)
-        ).where(DocumentShare.recipient_id == user_id).order_by(DocumentShare.created_at.desc())
-        
+        ).where(DocumentShare.recipient_id == user_id).order_by(DocumentShare.created_at.desc()).offset(skip).limit(limit)
+
         result = await db.execute(query)
         shares = result.scalars().all()
         
@@ -104,12 +104,74 @@ class BoardService:
         return shares
 
     @staticmethod
-    async def share_document(db: AsyncSession, document_id: int, recipient_id: int, channel_id: int, sender_user: User):
+    async def bulk_share_document(
+        db: AsyncSession,
+        document_id: int,
+        recipient_ids: List[int],
+        channel_ids_map: dict[int, int],
+        sender_user: User
+    ) -> List[DocumentShare]:
+        """
+        Bulk share document with recipients and publish events.
+        """
+        # 1. Filter out existing shares
+        query = select(DocumentShare.recipient_id).where(
+            DocumentShare.document_id == document_id,
+            DocumentShare.recipient_id.in_(recipient_ids)
+        )
+        existing_result = await db.execute(query)
+        existing_recipient_ids = set(existing_result.scalars().all())
+
+        new_recipient_ids = [rid for rid in recipient_ids if rid not in existing_recipient_ids]
+
+        if not new_recipient_ids:
+            return []
+
+        # 2. Bulk Insert
+        new_shares = [
+            DocumentShare(document_id=document_id, recipient_id=rid)
+            for rid in new_recipient_ids
+        ]
+        db.add_all(new_shares)
+        await db.commit()
+
+        # 3. Get document details for event (once)
+        doc = await BoardService.get_document_by_id(db, document_id)
+        if not doc:
+            return []
+
+        # 4. Publish events
+        from app.core.events import event_bus
+        from datetime import datetime, timezone
+
+        events = []
+        for rid in new_recipient_ids:
+            event = DocumentSharedEvent(
+                document_id=document_id,
+                document_title=doc.title,
+                document_path=doc.file_path,
+                sender_id=sender_user.id,
+                recipient_id=rid,
+                sender_username=sender_user.username,
+                sender_full_name=sender_user.full_name,
+                sender_avatar_url=sender_user.avatar_url,
+                channel_id=channel_ids_map.get(rid, 0), # Fallback 0 if issue
+                created_at=datetime.now(timezone.utc).isoformat()
+            )
+            events.append(event)
+
+        # Publish all events (asyncio gather could be used if event_bus.publish was slow,
+        # but usually it's just scheduling a task)
+        for event in events:
+            await event_bus.publish(event)
+
+        return new_shares
+
+    @staticmethod
+    async def share_document(db: AsyncSession, document_id: int, recipient_id: int, channel_id: Optional[int] = None, sender_user: Optional[User] = None, notify: bool = True):
         """
         Share document with recipient.
-
-        Now publishes DocumentSharedEvent instead of returning share directly.
-        Chat module subscribes to this event and handles channel/message creation.
+        If notify is True, publishes DocumentSharedEvent.
         """
         # Check if already shared
         query = select(DocumentShare).options(
@@ -129,30 +191,31 @@ class BoardService:
         await db.commit()
         await db.refresh(share)
 
-        # Reload to get relationships and publish event
-        query = select(DocumentShare).options(
-            selectinload(DocumentShare.document).selectinload(Document.owner).selectinload(User.unit),
-            selectinload(DocumentShare.recipient).selectinload(User.unit),
-            ).where(DocumentShare.id == share.id)
-        result = await db.execute(query)
-        share = result.scalars().first()
+        if notify and sender_user and channel_id:
+            # Reload to get relationships and publish event
+            query = select(DocumentShare).options(
+                selectinload(DocumentShare.document).selectinload(Document.owner).selectinload(User.unit),
+                selectinload(DocumentShare.recipient).selectinload(User.unit),
+                ).where(DocumentShare.id == share.id)
+            result = await db.execute(query)
+            share = result.scalars().first()
 
-        # Publish event for chat module to handle
-        from app.core.events import event_bus
-        from datetime import datetime, timezone
-        event = DocumentSharedEvent(
-            document_id=document_id,
-            document_title=share.document.title,
-            document_path=share.document.file_path,
-            sender_id=sender_user.id,
-            recipient_id=recipient_id,
-            sender_username=sender_user.username,
-            sender_full_name=sender_user.full_name,
-            sender_avatar_url=sender_user.avatar_url,
-            channel_id=channel_id,
-            created_at=datetime.now(timezone.utc).isoformat()
-        )
-        await event_bus.publish(event)
+            # Publish event for chat module to handle
+            from app.core.events import event_bus
+            from datetime import datetime, timezone
+            event = DocumentSharedEvent(
+                document_id=document_id,
+                document_title=share.document.title,
+                document_path=share.document.file_path,
+                sender_id=sender_user.id,
+                recipient_id=recipient_id,
+                sender_username=sender_user.username,
+                sender_full_name=sender_user.full_name,
+                sender_avatar_url=sender_user.avatar_url,
+                channel_id=channel_id,
+                created_at=datetime.now(timezone.utc).isoformat()
+            )
+            await event_bus.publish(event)
 
         return share
 

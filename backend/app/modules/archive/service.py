@@ -43,10 +43,16 @@ class ArchiveService:
         db: AsyncSession,
         unit_id: Optional[int] = None,
         parent_id: Optional[int] = None,
-        is_private: bool = False
+        is_private: bool = False,
+        skip: int = 0,
+        limit: int = 100
     ) -> Dict[str, Any]:
         """Get contents of a folder. If parent_id is None and unit_id is provided, get root of that unit."""
-        # Get folders
+        # Get folders (usually we want all folders, or maybe page them too? Let's page them separately or just unlimited folders?)
+        # Convention: Show all folders, page files. Or page both.
+        # Let's simple page both for now, but usually folders are first.
+        # Let's just limit files for now, as folders are navigation.
+
         folder_stmt = (
             select(ArchiveFolder)
             .where(and_(
@@ -60,7 +66,7 @@ class ArchiveService:
         folder_result = await db.execute(folder_stmt)
         folders = folder_result.scalars().all()
 
-        # Get files
+        # Get files with pagination
         file_stmt = (
             select(ArchiveFile)
             .where(and_(
@@ -70,15 +76,17 @@ class ArchiveService:
             ))
             .options(joinedload(ArchiveFile.owner), joinedload(ArchiveFile.unit))
             .order_by(ArchiveFile.created_at.desc())
+            .offset(skip)
+            .limit(limit)
         )
         file_result = await db.execute(file_stmt)
         files = file_result.scalars().all()
 
-        # Add names to response objects manually if needed, 
+        # Add names to response objects manually if needed,
         # but pydantic schemas will handle it if relationship names match
         for f in folders:
             f.owner_name = f.owner.full_name if f.owner else "System"
-        
+
         for f in files:
             f.owner_name = f.owner.full_name if f.owner else "System"
             f.unit_name = f.unit.name if f.unit else "Unknown"
@@ -106,10 +114,15 @@ class ArchiveService:
         # Save file to disk with sanitized filename
         safe_filename = f"{datetime.now().timestamp()}_{sanitize_filename(file.filename or 'unnamed')}"
         file_path = os.path.join(unit_dir, safe_filename)
-        
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-            
+
+        import asyncio
+
+        def _save_file():
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+
+        await asyncio.to_thread(_save_file)
+
         # Create DB record
         db_file = ArchiveFile(
             title=title,
@@ -149,43 +162,77 @@ class ArchiveService:
         file_record = await ArchiveService.get_file_by_id(db, file_id)
         if not file_record:
             return False
-            
-        # Delete from disk with safe path validation
-        try:
-            safe_path = safe_file_operation(file_record.file_path, UPLOAD_DIR)
-            if os.path.exists(safe_path):
-                os.remove(safe_path)
-        except ValueError as e:
-            logger.error(f"Path traversal detected in delete_file: {e}")
-            # Continue with DB deletion even if file deletion fails
-        except Exception as e:
-            logger.error(f"Error deleting file from disk: {e}")
-            
+
+        # Delete from disk with safe path validation (async)
+        import asyncio
+
+        def _delete_physical():
+            try:
+                safe_path = safe_file_operation(file_record.file_path, UPLOAD_DIR)
+                if os.path.exists(safe_path):
+                    os.remove(safe_path)
+            except ValueError as e:
+                logger.error(f"Path traversal detected in delete_file: {e}")
+            except Exception as e:
+                logger.error(f"Error deleting file from disk: {e}")
+
+        await asyncio.to_thread(_delete_physical)
+
         # Delete from DB
         await db.delete(file_record)
         await db.commit()
         return True
 
     @staticmethod
+    async def get_recursive_folder_ids(db: AsyncSession, folder_id: int) -> List[int]:
+        """Get all descendant folder IDs using CTE"""
+        from sqlalchemy import literal
+
+        # Base case: the folder itself
+        cte = select(ArchiveFolder.id).where(ArchiveFolder.id == folder_id).cte(name="folder_hierarchy", recursive=True)
+
+        # Recursive step: children of folders in CTE
+        child = select(ArchiveFolder.id).join(cte, ArchiveFolder.parent_id == cte.c.id)
+        cte = cte.union_all(child)
+
+        result = await db.execute(select(cte.c.id))
+        return list(result.scalars().all())
+
+    @staticmethod
     async def delete_folder(db: AsyncSession, folder_id: int) -> bool:
-        folder = await ArchiveService.get_folder_by_id(db, folder_id)
-        if not folder:
+        """Delete a folder and all its contents recursively"""
+        import asyncio
+        from sqlalchemy import delete
+
+        # 1. Get all folder IDs in the hierarchy
+        folder_ids = await ArchiveService.get_recursive_folder_ids(db, folder_id)
+        if not folder_ids:
             return False
 
-        # Recursive delete subfolders and files
-        stmt_files = select(ArchiveFile).where(ArchiveFile.folder_id == folder_id)
+        # 2. Get all files in these folders
+        stmt_files = select(ArchiveFile).where(ArchiveFile.folder_id.in_(folder_ids))
         res_files = await db.execute(stmt_files)
         files = res_files.scalars().all()
-        for f in files:
-            await ArchiveService.delete_file(db, f.id)
 
-        stmt_folders = select(ArchiveFolder).where(ArchiveFolder.parent_id == folder_id)
-        res_folders = await db.execute(stmt_folders)
-        subfolders = res_folders.scalars().all()
-        for sub in subfolders:
-            await ArchiveService.delete_folder(db, sub.id)
+        # 3. Delete physical files (in thread pool to avoid blocking)
+        async def delete_physical_files():
+            for f in files:
+                try:
+                    safe_path = safe_file_operation(f.file_path, UPLOAD_DIR)
+                    if os.path.exists(safe_path):
+                        os.remove(safe_path)
+                except Exception as e:
+                    logger.error(f"Error deleting file {f.id} from disk: {e}")
 
-        await db.delete(folder)
+        await asyncio.to_thread(delete_physical_files)
+
+        # 4. Delete files from DB
+        if files:
+            await db.execute(delete(ArchiveFile).where(ArchiveFile.id.in_([f.id for f in files])))
+
+        # 5. Delete folders from DB
+        await db.execute(delete(ArchiveFolder).where(ArchiveFolder.id.in_(folder_ids)))
+
         await db.commit()
         return True
 
@@ -270,38 +317,41 @@ class ArchiveService:
         # Batch load all files and folders to avoid N+1 queries
         file_ids = [item_id for item_id, item_type in zip(item_ids, item_types) if item_type == 'file']
         folder_ids = [item_id for item_id, item_type in zip(item_ids, item_types) if item_type == 'folder']
-        
-        # Load all files at once
-        files_dict = {}
+
+        from sqlalchemy import update
+
+        # Bulk update files
         if file_ids:
-            stmt = select(ArchiveFile).where(ArchiveFile.id.in_(file_ids))
-            res = await db.execute(stmt)
-            files_dict = {f.id: f for f in res.scalars().all()}
-        
-        # Load all folders at once
-        folders_dict = {}
+            await db.execute(
+                update(ArchiveFile)
+                .where(ArchiveFile.id.in_(file_ids))
+                .values(
+                    folder_id=target_folder_id,
+                    unit_id=target_unit_id,
+                    is_private=is_private
+                )
+            )
+
+        # Update folders one by one because we need to recursively update children
+        # Optimizing this would require a CTE query which is complex for now,
+        # but we can at least optimize the top level move.
         if folder_ids:
-            stmt = select(ArchiveFolder).where(ArchiveFolder.id.in_(folder_ids))
-            res = await db.execute(stmt)
-            folders_dict = {f.id: f for f in res.scalars().all()}
-        
-        # Update items
-        for item_id, item_type in zip(item_ids, item_types):
-            if item_type == 'file':
-                file = files_dict.get(item_id)
-                if file:
-                    file.folder_id = target_folder_id
-                    file.unit_id = target_unit_id
-                    file.is_private = is_private
-            else:
-                folder = folders_dict.get(item_id)
-                if folder:
-                    folder.parent_id = target_folder_id
-                    folder.unit_id = target_unit_id
-                    folder.is_private = is_private
-                    # Recursively update all children unit_id and is_private
-                    await ArchiveService._update_folder_children_context(db, item_id, target_unit_id, is_private)
-        
+            # 1. Update top-level folders properties
+            await db.execute(
+                update(ArchiveFolder)
+                .where(ArchiveFolder.id.in_(folder_ids))
+                .values(
+                    parent_id=target_folder_id,
+                    unit_id=target_unit_id,
+                    is_private=is_private
+                )
+            )
+
+            # 2. Recursively update children context
+            # We still iterate here, but at least we saved queries on the items themselves
+            for folder_id in folder_ids:
+                await ArchiveService._update_folder_children_context(db, folder_id, target_unit_id, is_private)
+
         await db.commit()
         return True
 

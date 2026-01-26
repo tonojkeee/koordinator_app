@@ -31,27 +31,29 @@ class WebSocketManager:
     def __init__(self) -> None:
         # channel_id -> list of (websocket, user_id) tuples
         self.active_connections: Dict[int, List[Tuple[WebSocket, int]]] = {}
-        # channel_id -> set of user_ids (for quick unique count)
-        self.channel_users: Dict[int, Set[int]] = {}
         # user_id -> list of websockets (for global user notifications)
         self.user_connections: Dict[int, List[WebSocket]] = {}
         # Local cache for session starts (synced with Redis)
         self._local_session_starts: Dict[int, datetime] = {}
-        
+
     @property
     def session_starts(self) -> Dict[int, datetime]:
         """Get session starts (for backward compatibility)"""
         return self._local_session_starts
-        
+
     async def init_redis(self, redis_url: Optional[str] = None) -> None:
         """Initialize Redis connection and subscribe to channels"""
         await redis_manager.connect(redis_url)
-        
+
         if redis_manager.is_available:
             # Clear stale online users from previous server instance
+            # Note: In a multi-worker setup without shared Redis persistence, this might clear valid users
+            # if workers restart one by one. But usually Redis is persistent.
+            # ideally we only clear our own keys, but here keys are shared.
+            # For robustness in simple deployments:
             await redis_manager.delete("ws:online_users")
             logger.info("WebSocket manager: Cleared stale online users from Redis")
-            
+
             # Subscribe to broadcast channels
             await redis_manager.subscribe("ws:broadcast:all", self._handle_redis_broadcast_all)
             await redis_manager.subscribe("ws:broadcast:presence", self._handle_redis_presence)
@@ -59,21 +61,21 @@ class WebSocketManager:
             logger.info("WebSocket manager: Redis pub/sub initialized")
         else:
             logger.info("WebSocket manager: Using local-only mode (no Redis)")
-            
+
     async def _handle_redis_broadcast_all(self, message: dict) -> None:
         """Handle broadcast messages from other workers"""
         exclude_user_id = message.pop("_exclude_user_id", None)
         await self._local_broadcast_to_all_users(message, exclude_user_id)
-        
+
     async def _handle_redis_presence(self, message: dict) -> None:
         """Handle presence updates from other workers"""
         await self._local_broadcast_to_all_users(message)
-    
+
     async def connect(self, websocket: WebSocket, channel_id: int, user_id: int, is_member: bool = True) -> None:
         """
         Connect a websocket to a channel and broadcast presence.
         Accepts with compression support when available.
-        
+
         Args:
             websocket: WebSocket connection
             channel_id: Channel ID
@@ -84,39 +86,30 @@ class WebSocketManager:
         user_id = int(user_id)
         # Accept with default compression if client supports it
         await websocket.accept()
-        
+
         if channel_id not in self.active_connections:
             self.active_connections[channel_id] = []
-            self.channel_users[channel_id] = set()
-        
+
         # Only count members in online count, not preview users
         if is_member:
-            # Check if this user is already connected to this channel
-            existing_connections = [
-                (ws, uid) for ws, uid in self.active_connections[channel_id]
-                if uid == user_id
-            ]
-            
-            # If user already has connections, don't add to channel_users again
-            if not existing_connections:
-                self.channel_users[channel_id].add(user_id)
-                logger.debug(f"Member {user_id} added to channel {channel_id} users set")
-            else:
-                logger.debug(f"Member {user_id} already in channel {channel_id}, not adding to users set")
+            # Add to Redis set (idempotent)
+            # This handles both Redis mode and local fallback (via RedisManager)
+            await redis_manager.sadd(f"ws:channel:{channel_id}:users", str(user_id))
+            logger.debug(f"Member {user_id} added to channel {channel_id} set")
         else:
             logger.debug(f"Preview user {user_id} connected to channel {channel_id}, not counted in online")
-        
+
         self.active_connections[channel_id].append((websocket, user_id))
-        
-        logger.debug(f"User {user_id} connected to channel {channel_id} (member: {is_member}). Total connections: {len(self.active_connections[channel_id])}, unique members online: {len(self.channel_users[channel_id])}")
-        
+
+        logger.debug(f"User {user_id} connected to channel {channel_id} (member: {is_member}). Total connections: {len(self.active_connections[channel_id])}")
+
         # Broadcast presence update to all users in channel
         online_count = await self.get_online_count(channel_id)
         await self.broadcast_to_channel(channel_id, {
             "type": "presence",
             "online_count": online_count
         })
-    
+
     async def connect_user(self, websocket: WebSocket, user_id: int) -> None:
         """Connect a websocket to a user's global notification stream"""
         user_id = int(user_id)
@@ -157,30 +150,33 @@ class WebSocketManager:
         """Disconnect a websocket from a channel and broadcast presence"""
         channel_id = int(channel_id)
         user_id = int(user_id)
-        
+
         if channel_id in self.active_connections:
             # Remove this specific websocket-user tuple
             self.active_connections[channel_id] = [
                 (ws, uid) for ws, uid in self.active_connections[channel_id]
                 if ws != websocket
             ]
-            
+
             # Check if this user still has other connections to this channel
             remaining_user_connections = any(
                 uid == user_id for ws, uid in self.active_connections[channel_id]
             )
-            if not remaining_user_connections and channel_id in self.channel_users:
-                self.channel_users[channel_id].discard(user_id)
+
+            if not remaining_user_connections:
+                # Remove from Redis set (or local fallback)
+                await redis_manager.srem(f"ws:channel:{channel_id}:users", str(user_id))
                 logger.debug(f"User {user_id} fully disconnected from channel {channel_id}")
-            
-            logger.debug(f"Channel {channel_id} after disconnect: {len(self.active_connections[channel_id])} connections, {len(self.channel_users.get(channel_id, set()))} unique users")
-            
+
+            logger.debug(f"Channel {channel_id} after disconnect: {len(self.active_connections[channel_id])} connections")
+
             # Clean up empty channel lists
             if not self.active_connections[channel_id]:
                 del self.active_connections[channel_id]
-                if channel_id in self.channel_users:
-                    del self.channel_users[channel_id]
-            
+                # Also consider clearing the redis key if we knew it was empty globally,
+                # but scard is cheap so we can leave it (it will just be empty set)
+                # Ideally we'd expire it.
+
             # Broadcast presence update (global count)
             online_count = await self.get_online_count(channel_id)
             await self.broadcast_to_channel(channel_id, {
@@ -226,7 +222,7 @@ class WebSocketManager:
         """Forcefully disconnect all WebSocket connections for a user (logout)"""
         user_id = int(user_id)
         logger.info(f"Disconnecting all sessions for user {user_id}")
-        
+
         # 1. Disconnect from global connections
         if user_id in self.user_connections:
             connections = list(self.user_connections[user_id])
@@ -235,7 +231,7 @@ class WebSocketManager:
                     await ws.close(code=1000, reason="User logged out")
                 except Exception:
                     pass
-        
+
         # 2. Disconnect from channel connections
         for channel_id, connections in list(self.active_connections.items()):
             for ws, uid in list(connections):
@@ -244,41 +240,51 @@ class WebSocketManager:
                         await ws.close(code=1000, reason="User logged out")
                     except Exception:
                         pass
-        
+
         # 3. Force cleanup (don't wait for natural disconnect events)
         if user_id in self.user_connections:
             del self.user_connections[user_id]
-        
-        for channel_id in list(self.channel_users.keys()):
-            if user_id in self.channel_users[channel_id]:
-                self.channel_users[channel_id].discard(user_id)
-                # Broadcast updated presence to channel
-                online_count = await self.get_online_count(channel_id)
-                await self.broadcast_to_channel(channel_id, {
-                    "type": "presence",
-                    "online_count": online_count
-                })
-        
+
+        # Remove from all channel sets in Redis
+        # We don't easily know which channels the user was in without iterating active_connections
+        # But since we iterate active_connections above, we can track it.
+        channels_to_update = set()
+
+        for channel_id, connections in list(self.active_connections.items()):
+            user_in_channel = any(uid == user_id for _, uid in connections)
+            if user_in_channel:
+                channels_to_update.add(channel_id)
+                # Remove from redis
+                await redis_manager.srem(f"ws:channel:{channel_id}:users", str(user_id))
+
+        # Broadcast updates to affected channels
+        for channel_id in channels_to_update:
+            online_count = await self.get_online_count(channel_id)
+            await self.broadcast_to_channel(channel_id, {
+                "type": "presence",
+                "online_count": online_count
+            })
+
         # 4. Broadcast offline status
         if redis_manager.is_available:
             await redis_manager.srem("ws:online_users", str(user_id))
-            
+
         await self.broadcast_to_all_users({
             "type": "user_presence",
             "user_id": user_id,
             "status": "offline"
         })
-        
+
         # 5. Clear session data
         self._local_session_starts.pop(user_id, None)
         await redis_manager.clear_session_start(user_id)
-        
+
         logger.info(f"All sessions disconnected for user {user_id}")
 
     async def kick_user(self, user_id: int):
         """Forcefully disconnect all WebSocket connections for a user"""
         user_id = int(user_id)
-        
+
         # 1. Kick from global connections
         if user_id in self.user_connections:
             connections = list(self.user_connections[user_id])
@@ -287,7 +293,7 @@ class WebSocketManager:
                     await ws.close(code=4003, reason="Account disabled")
                 except Exception:
                     pass
-        
+
         # 2. Kick from channel connections
         for channel_id, connections in list(self.active_connections.items()):
             for ws, uid in list(connections):
@@ -296,17 +302,10 @@ class WebSocketManager:
                         await ws.close(code=4003, reason="Account disabled")
                     except Exception:
                         pass
-    
+
     async def get_online_count(self, channel_id: int) -> int:
         """Get number of unique online users in a channel (globally if Redis is available)"""
-        # Note: Actual global channel user tracking would require another Redis set per channel
-        # For now, we use local count but global user_presence events keep the UI synced
-        # To be fully multi-worker correct, we should use a global set:
-        # if redis_manager.is_available:
-        #     return await redis_manager.scard(f"ws:channel:{channel_id}:users")
-        
-        count = len(self.channel_users.get(channel_id, set()))
-        return count
+        return await redis_manager.scard(f"ws:channel:{channel_id}:users")
     
     async def broadcast_to_channel(self, channel_id: int, message: dict, exclude_websocket: WebSocket = None):
         """

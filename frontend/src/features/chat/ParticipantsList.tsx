@@ -79,11 +79,11 @@ const ParticipantsList: React.FC<ParticipantsListProps> = ({ channelId, onMentio
     }
 
     return (
-        <div className={`flex flex-col h-full bg-slate-50/5 backdrop-blur-xl border-l border-white/40 shadow-[-4px_0_24px_-8px_rgba(0,0,0,0.08)] ${className}`}>
-            <div className="p-6 border-b border-white/10">
-                <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 flex items-center justify-between">
+        <div className={`flex flex-col h-full bg-white border-l border-[#E0E0E0] ${className}`}>
+            <div className="p-4 border-b border-[#E0E0E0]">
+                <h3 className="text-xs font-bold text-[#616161] uppercase tracking-wide mb-3 flex items-center justify-between">
                     {t('chat.selectUsers')}
-                    <span className="px-2 py-0.5 bg-indigo-100 text-indigo-600 rounded-lg text-[10px] font-bold shadow-sm">{members?.length || 0}</span>
+                    <span className="px-1.5 py-0.5 bg-[#F0F0F0] text-[#616161] rounded text-[10px] font-bold">{members?.length || 0}</span>
                 </h3>
                 <div className="relative group">
                     <input
@@ -91,18 +91,18 @@ const ParticipantsList: React.FC<ParticipantsListProps> = ({ channelId, onMentio
                         placeholder={t('common.search')}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full h-11 pl-10 pr-4 bg-white/40 border border-white/60 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-semibold placeholder:text-slate-400 group-hover:bg-white/60 shadow-sm"
+                        className="w-full h-9 pl-9 pr-3 bg-[#F5F5F5] border border-transparent rounded-md text-sm focus:outline-none focus:bg-white focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7] transition-all placeholder:text-[#888888] text-[#242424]"
                     />
-                    <Search className="absolute left-3.5 top-3 text-slate-400 group-hover:text-indigo-500 transition-colors" size={16} />
+                    <Search className="absolute left-3 top-2.5 text-[#888888] group-focus-within:text-[#5B5FC7] transition-colors" size={14} />
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-3 space-y-1">
+            <div className="flex-1 overflow-y-auto p-2 space-y-0.5 custom-scrollbar">
                 {filteredMembers.map(member => (
                     <div
                         key={member.id}
                         onClick={() => onMention(member.username)}
-                        className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-white/60 hover:shadow-sm transition-all group cursor-pointer border border-transparent hover:border-white/50"
+                        className="w-full flex items-center justify-between p-2 rounded-md hover:bg-[#F5F5F5] transition-colors group cursor-pointer"
                     >
                         <div className="flex items-center space-x-3 min-w-0">
                             <div className="relative">
@@ -111,29 +111,22 @@ const ParticipantsList: React.FC<ParticipantsListProps> = ({ channelId, onMentio
                                     name={member.full_name || member.username}
                                     size="sm"
                                     status={member.is_online ? 'online' : undefined}
-                                    className="shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-500 ring-2 ring-transparent group-hover:ring-white"
+                                    className="shrink-0"
                                 />
                             </div>
                             <div className="flex flex-col min-w-0">
-                                <span className="text-[13px] font-black text-slate-800 group-hover:text-indigo-600 transition-colors flex items-center whitespace-pre-wrap break-words leading-tight">
-                                    {member.rank && <span className="text-slate-400 mr-1 font-bold">{abbreviateRank(member.rank)}</span>}
-                                    {formatName(member.full_name, member.username)}
+                                <span className="text-[13px] font-semibold text-[#242424] group-hover:text-[#5B5FC7] transition-colors flex items-center truncate">
+                                    {member.rank && <span className="text-[#616161] mr-1.5 text-[10px] font-bold">{abbreviateRank(member.rank)}</span>}
+                                    <span className="truncate">{formatName(member.full_name, member.username)}</span>
                                     {member.is_owner && (
-                                        <>
-                                            <OwnerIndicator size="sm" className="ml-2" />
-                                            <span className="text-[10px] text-amber-600 font-bold ml-1">({t('chat.owner')})</span>
-                                        </>
+                                        <OwnerIndicator size="sm" className="ml-1.5" />
                                     )}
                                 </span>
-                                <div className="flex items-center space-x-2 min-w-0 mt-0.5">
-                                    <span className="text-[10px] text-slate-400 font-black uppercase tracking-wider opacity-60 truncate">@{member.username}</span>
+                                <div className="flex items-center space-x-2 min-w-0">
                                     {member.is_online ? (
-                                        <div className="flex items-center">
-                                            <div className="w-1 h-1 bg-emerald-500 rounded-full mr-1" />
-                                            <span className="text-[9px] text-emerald-500 font-black uppercase tracking-widest">{t('chat.online')}</span>
-                                        </div>
-                                    ) : member.last_seen && (
-                                        <span className="text-[9px] text-slate-400 shrink-0 truncate font-bold uppercase tracking-wider">
+                                        <span className="text-[10px] text-green-600 font-medium">{t('chat.online')}</span>
+                                    ) : member.last_seen ? (
+                                        <span className="text-[10px] text-[#888888] truncate">
                                             {(() => {
                                                 try {
                                                     const isoStr = member.last_seen.includes('Z') ? member.last_seen : `${member.last_seen}Z`;
@@ -148,6 +141,8 @@ const ParticipantsList: React.FC<ParticipantsListProps> = ({ channelId, onMentio
                                                 }
                                             })()}
                                         </span>
+                                    ) : (
+                                        <span className="text-[10px] text-[#888888]">{t('chat.offline')}</span>
                                     )}
                                 </div>
                             </div>
@@ -157,19 +152,19 @@ const ParticipantsList: React.FC<ParticipantsListProps> = ({ channelId, onMentio
                             <button
                                 onClick={(e) => handleMessage(e, member.id)}
                                 disabled={createDmMutation.isPending}
-                                className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-white rounded-2xl transition-all opacity-0 group-hover:opacity-100 shadow-xl shadow-indigo-500/10 border border-transparent hover:border-indigo-100/50"
+                                className="w-8 h-8 flex items-center justify-center text-[#888888] hover:text-[#5B5FC7] hover:bg-white rounded-md transition-all opacity-0 group-hover:opacity-100 border border-transparent hover:border-[#E0E0E0] shadow-sm"
                                 title={t('chat.sendMessage')}
                             >
-                                <MessageSquare size={18} />
+                                <MessageSquare size={16} strokeWidth={1.5} />
                             </button>
                         )}
                     </div>
                 ))}
 
                 {filteredMembers.length === 0 && (
-                    <div className="p-8 text-center flex flex-col items-center opacity-50">
-                        <Search size={32} className="text-slate-300 mb-2" />
-                        <p className="text-slate-400 text-xs font-semibold">{t('common.noResults')}</p>
+                    <div className="p-8 text-center flex flex-col items-center opacity-60">
+                        <Search size={24} className="text-[#BDBDBD] mb-2" />
+                        <p className="text-[#888888] text-xs">{t('common.noResults')}</p>
                     </div>
                 )}
             </div>

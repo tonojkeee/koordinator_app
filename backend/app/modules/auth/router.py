@@ -181,6 +181,17 @@ async def login(
     )
     refresh_token = create_refresh_token(data={"sub": user.id})
 
+    # Set Refresh Token in HttpOnly Cookie
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=settings.use_https,
+        samesite="lax",
+        max_age=settings.refresh_token_expire_days * 24 * 60 * 60,
+        path="/api/auth/refresh" # Restrict to refresh endpoint
+    )
+
     # Generate and set CSRF token cookie
     csrf_token = CSRFProtection.generate_token()
     response.set_cookie(
@@ -192,12 +203,12 @@ async def login(
         max_age=settings.access_token_expire_minutes * 60,  # Match access token lifetime
         path="/"
     )
-    
+
     return {
-        "access_token": access_token, 
-        "refresh_token": refresh_token, 
+        "access_token": access_token,
+        # "refresh_token": refresh_token, # Do not return in body
         "token_type": "bearer",
-        "csrf_token": csrf_token  # Also return in response for client to use
+        "csrf_token": csrf_token
     }
 
 
@@ -218,50 +229,79 @@ async def logout(
         secure=settings.use_https
     )
 
+    # Clear refresh token cookie
+    response.delete_cookie(
+        key="refresh_token",
+        path="/api/auth/refresh",
+        samesite="lax",
+        secure=settings.use_https
+    )
+
     return {"message": get_text("auth.logged_out")}
 
 
 @router.post("/refresh", response_model=Token)
 async def refresh_token(
     response: Response,
-    token_data: RefreshTokenRequest,
+    request: Request,
+    token_data: Optional[RefreshTokenRequest] = None,
     db: AsyncSession = Depends(get_db)
 ):
     """Get new access token using refresh token"""
-    payload = decode_access_token(token_data.refresh_token)
+    # Try to get from body first (backward compatibility), then cookie
+    refresh_token = token_data.refresh_token if token_data and token_data.refresh_token else request.cookies.get("refresh_token")
+
+    if not refresh_token:
+         raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=get_text("auth.invalid_refresh_token"),
+        )
+
+    payload = decode_access_token(refresh_token)
     if payload is None or payload.get("type") != "refresh":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=get_text("auth.invalid_refresh_token"),
         )
-    
+
     user_id = payload.get("sub")
     if user_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=get_text("auth.invalid_refresh_token"),
         )
-    
+
     user = await UserService.get_user_by_id(db, user_id=int(user_id))
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=get_text("auth.user_not_found"),
         )
-    
+
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=get_text("auth.account_blocked"),
             headers={"X-Account-Blocked": "true"}
         )
-    
+
     access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
     access_token = create_access_token(
         data={"sub": user.id}, expires_delta=access_token_expires
     )
     # We also return a new refresh token (refresh token rotation)
     new_refresh_token = create_refresh_token(data={"sub": user.id})
+
+    # Set new Refresh Token in HttpOnly Cookie
+    response.set_cookie(
+        key="refresh_token",
+        value=new_refresh_token,
+        httponly=True,
+        secure=settings.use_https,
+        samesite="lax",
+        max_age=settings.refresh_token_expire_days * 24 * 60 * 60,
+        path="/api/auth/refresh"
+    )
 
     # Regenerate CSRF token on refresh
     csrf_token = CSRFProtection.generate_token()
@@ -274,10 +314,10 @@ async def refresh_token(
         max_age=settings.access_token_expire_minutes * 60,
         path="/"
     )
-    
+
     return {
-        "access_token": access_token, 
-        "refresh_token": new_refresh_token, 
+        "access_token": access_token,
+        # "refresh_token": new_refresh_token, # Do not return in body
         "token_type": "bearer",
         "csrf_token": csrf_token
     }

@@ -144,7 +144,7 @@ async def seed_test_users(session: AsyncSession, units_map: dict) -> None:
     
     # Use the configured internal email domain
     email_domain = settings.internal_email_domain
-    
+
     test_users_data = [
         {
             "username": "ivanov",
@@ -193,7 +193,7 @@ async def seed_test_users(session: AsyncSession, units_map: dict) -> None:
         },
         {
             "username": "telegraf",
-            "email": "telegraf@40919.com",
+            "email": f"telegraf@{email_domain}",
             "full_name": "Телеграфист (Экспедитор)",
             "role": "operator",
             "unit": "Служба связи",

@@ -568,16 +568,19 @@ class AdminService:
     async def get_email_settings(db: AsyncSession):
         """Get current email configuration and statistics"""
         from app.modules.email.models import EmailAccount, EmailMessage
-        
+        from app.core.config import get_settings
+
+        settings = get_settings()
+
         # Get current settings using SystemSettingService
-        internal_domain = await SystemSettingService.get_value(db, "internal_email_domain", "40919.com")
+        internal_domain = await SystemSettingService.get_value(db, "internal_email_domain", settings.internal_email_domain)
         smtp_host = await SystemSettingService.get_value(db, "email_smtp_host", "127.0.0.1")
         smtp_port = await SystemSettingService.get_value(db, "email_smtp_port", 2525)
-        
+
         # Get statistics
         total_accounts = await db.scalar(select(func.count(EmailAccount.id)))
         total_messages = await db.scalar(select(func.count(EmailMessage.id)))
-        
+
         return {
             "internal_email_domain": internal_domain,
             "smtp_host": smtp_host,
@@ -613,11 +616,14 @@ class AdminService:
         from app.modules.email.models import EmailAccount, EmailMessage, EmailFolder, EmailAttachment
         from app.modules.auth.models import User
         from sqlalchemy import delete
-        
+        from app.core.config import get_settings
+
+        settings = get_settings()
+
         try:
             # Get current domain setting using SystemSettingService
-            new_domain = await SystemSettingService.get_value(db, "internal_email_domain", "40919.com")
-            
+            new_domain = await SystemSettingService.get_value(db, "internal_email_domain", settings.internal_email_domain)
+
             # Get all users
             result = await db.execute(select(User))
             all_users = result.scalars().all()

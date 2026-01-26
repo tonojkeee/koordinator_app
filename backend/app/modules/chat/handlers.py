@@ -239,6 +239,54 @@ async def register_event_handlers(event_bus: EventBus) -> None:
     """
     from app.modules.board.events import DocumentSharedEvent
     from app.modules.chat.events import InvitationCreated
+    from app.modules.auth.events import UserCreated
 
     await event_bus.subscribe(DocumentSharedEvent, handle_document_shared)
     await event_bus.subscribe(InvitationCreated, handle_invitation_created)
+    await event_bus.subscribe(UserCreated, handle_user_created)
+
+
+async def handle_user_created(event) -> None:
+    """
+    Handle UserCreated event.
+    Creates a system notifications channel for the new user.
+    """
+    from app.core.database import AsyncSessionLocal
+    from app.modules.chat.service import ChatService
+    import logging
+
+    logger = logging.getLogger(__name__)
+    logger.info(f"Creating notifications channel for new user {event.username} (ID: {event.user_id})")
+
+    async with AsyncSessionLocal() as db:
+        try:
+            # Check if exists (idempotency)
+            # using UserService.get_or_create logic but implementing locally or via ChatService
+            # We added create_notifications_channel to ChatService
+
+            # First check if it exists to avoid error
+            from app.modules.chat.models import Channel, ChannelMember
+            from sqlalchemy import select, and_
+
+            stmt = (
+                select(Channel)
+                .join(ChannelMember, ChannelMember.channel_id == Channel.id)
+                .where(
+                    Channel.name == "notifications",
+                    Channel.is_system == True,
+                    ChannelMember.user_id == event.user_id
+                )
+            )
+            result = await db.execute(stmt)
+            existing = result.scalar_one_or_none()
+
+            if existing:
+                logger.info(f"Notifications channel already exists for user {event.user_id}")
+                return
+
+            await ChatService.create_notifications_channel(db, event.user_id)
+            logger.info(f"Successfully created notifications channel for user {event.user_id}")
+
+        except Exception as e:
+            logger.error(f"Failed to create notifications channel for user {event.username}: {e}")
+

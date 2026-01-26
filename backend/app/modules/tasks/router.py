@@ -55,25 +55,27 @@ async def create_task(
             deadline=task_in.deadline,
             status=TaskStatus.IN_PROGRESS
         )
-        db.add(new_task)
         created_tasks.append(new_task)
 
+    db.add_all(created_tasks)
     await db.commit()
-    
+
     # Refresh to get IDs and relationships
     task_ids = [t.id for t in created_tasks]
     result = await db.execute(
         select(Task)
         .where(Task.id.in_(task_ids))
         .options(
-            selectinload(Task.issuer).selectinload(User.unit), 
+            selectinload(Task.issuer).selectinload(User.unit),
             selectinload(Task.assignee).selectinload(User.unit)
         )
     )
     res_tasks = result.scalars().all()
 
-    # Broadcast notifications
-    for task in res_tasks:
+    # Broadcast notifications in parallel
+    import asyncio
+
+    async def notify_assignee(task):
         if task.assignee_id != current_user.id:
             # Send event
             await TaskEventHandlers.on_task_created(
@@ -90,6 +92,10 @@ async def create_task(
                 "title": task.title,
                 "issuer_name": current_user.full_name or current_user.username
             })
+
+    # Execute all notifications concurrently
+    if res_tasks:
+        await asyncio.gather(*[notify_assignee(task) for task in res_tasks])
 
     return res_tasks
 

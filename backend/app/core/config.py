@@ -62,12 +62,13 @@ class Settings(BaseSettings):
     cors_origins: str = os.getenv("CORS_ORIGINS", "")
     
     # Email
-    internal_email_domain: str = "40919.com"
+    internal_email_domain: str = os.getenv("INTERNAL_EMAIL_DOMAIN", "example.com")
 
     # Seeding / Initial Setup
     seed_test_data: bool = os.getenv("SEED_TEST_DATA", "false").lower() == "true"
     admin_username: str = os.getenv("ADMIN_USERNAME", "admin")
-    admin_email: str = os.getenv("ADMIN_EMAIL", f"admin@{os.getenv('INTERNAL_EMAIL_DOMAIN', '40919.com')}")
+    # Use generic default for admin email if not provided
+    admin_email: str = os.getenv("ADMIN_EMAIL", f"admin@{os.getenv('INTERNAL_EMAIL_DOMAIN', 'example.com')}")
     admin_password: str = os.getenv("ADMIN_PASSWORD", "admin")  # Default, should be changed
     
     def __init__(self, **kwargs) -> None:

@@ -46,7 +46,7 @@ from app.modules.admin.service import SystemSettingService
 from app.modules.chat.models import ChannelMember, Channel, Message, MessageReaction
 from app.modules.chat.websocket import manager
 from app.modules.chat.validators import sanitize_message_content, validate_emoji, parse_mentions
-from app.modules.chat.enrichers import enrich_channel
+from app.modules.chat.enrichers import enrich_channel, bulk_enrich_channels
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
@@ -251,7 +251,7 @@ async def get_my_channels(
 ):
     """Get all channels for current user"""
     channels = await ChatService.get_user_channels(db, current_user.id)
-    return [await enrich_channel(db, c, current_user.id) for c in channels]
+    return await bulk_enrich_channels(db, channels, current_user.id)
 
 
 @router.get("/channels/{channel_id}", response_model=ChannelResponse)
@@ -316,7 +316,7 @@ async def get_channel_messages(
     # Batch load users and documents to avoid N+1 queries
     user_ids = {msg.user_id for msg in messages if msg.user_id}
     document_ids = {msg.document_id for msg in messages if msg.document_id}
-    
+
     # Load all users at once
     users_dict = {}
     if user_ids:
@@ -324,7 +324,7 @@ async def get_channel_messages(
             select(User).where(User.id.in_(user_ids)).options(defer(User.hashed_password))
         )
         users_dict = {user.id: user for user in users_result.scalars().all()}
-    
+
     # Load all documents at once
     documents_dict = {}
     if document_ids:
@@ -333,12 +333,12 @@ async def get_channel_messages(
             select(Document).where(Document.id.in_(document_ids))
         )
         documents_dict = {doc.id: doc for doc in docs_result.scalars().all()}
-    
+
     # Enrich messages with user info and document info
     result = []
     for msg in messages:
         user = users_dict.get(msg.user_id)
-        
+
         doc_info = {"is_document_deleted": False}
         if msg.document_id:
             doc = documents_dict.get(msg.document_id)
@@ -347,9 +347,9 @@ async def get_channel_messages(
                 doc_info["file_path"] = doc.file_path
             else:
                 doc_info["is_document_deleted"] = True
-        
+
         from app.modules.chat.schemas import ReactionResponse
-        
+
         result.append(MessageWithUser(
             id=msg.id,
             channel_id=msg.channel_id,
@@ -374,7 +374,7 @@ async def get_channel_messages(
             reply_count=getattr(msg, "reply_count", 0),
             parent=msg.parent_info if hasattr(msg, "parent_info") and msg.parent_info else None
         ))
-    
+
     return result
 
 

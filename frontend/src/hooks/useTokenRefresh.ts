@@ -7,13 +7,13 @@ import api from '../api/client';
  * Обновляет токен за 30 минут до истечения (access token живет 8 часов)
  */
 export const useTokenRefresh = () => {
-    const { token, refreshToken, setAuth, clearAuth } = useAuthStore();
+    const { token, setAuth, clearAuth } = useAuthStore();
     const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isRefreshingRef = useRef(false);
 
     useEffect(() => {
         // Если нет токенов, ничего не делаем
-        if (!token || !refreshToken) {
+        if (!token) {
             return;
         }
 
@@ -26,16 +26,15 @@ export const useTokenRefresh = () => {
             isRefreshingRef.current = true;
 
             try {
-                const response = await api.post('/auth/refresh', {
-                    refresh_token: refreshToken
-                });
+                // Refresh token is in HttpOnly cookie
+                const response = await api.post('/auth/refresh');
 
-                const { access_token, refresh_token } = response.data;
+                const { access_token } = response.data;
 
                 // Получаем текущего пользователя
                 const currentUser = useAuthStore.getState().user;
                 if (currentUser) {
-                    setAuth(currentUser, access_token, refresh_token);
+                    setAuth(currentUser, access_token);
                 }
 
                 console.log('Token refreshed successfully');
@@ -55,7 +54,7 @@ export const useTokenRefresh = () => {
         // Запускаем первое обновление через 7.5 часов
         refreshTimerRef.current = setTimeout(() => {
             refreshAccessToken();
-            
+
             // Затем обновляем каждые 7.5 часов
             refreshTimerRef.current = setInterval(refreshAccessToken, REFRESH_INTERVAL);
         }, REFRESH_INTERVAL);
@@ -67,5 +66,5 @@ export const useTokenRefresh = () => {
                 clearInterval(refreshTimerRef.current);
             }
         };
-    }, [token, refreshToken, setAuth, clearAuth]);
+    }, [token, setAuth, clearAuth]);
 };

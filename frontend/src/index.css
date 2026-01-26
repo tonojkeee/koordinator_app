@@ -4,24 +4,24 @@
 @import "tailwindcss";
 
 @theme {
-  --font-inter: "Inter", sans-serif;
-  --color-teams-bg: #F5F5F5;
-  --color-teams-sidebar: #2D2F3F;
+  --font-inter: "Segoe UI", "Inter", sans-serif;
+  --color-teams-bg: #F0F0F0;
+  --color-teams-sidebar: #2D2D2D;
 }
 
 :root {
-  --primary: 262 83% 58%;
-  --primary-foreground: 210 20% 98%;
-  --background: 220 33% 98%;
-  --foreground: 224 71% 4%;
+  --primary: 238 48% 57%; /* #5B5FC7 */
+  --primary-foreground: 0 0% 100%;
+  --background: 220 14% 96%;
+  --foreground: 0 0% 14%;
   --card: 0 0% 100%;
-  --card-foreground: 224 71% 4%;
+  --card-foreground: 0 0% 14%;
   --popover: 0 0% 100%;
-  --popover-foreground: 224 71% 4%;
+  --popover-foreground: 0 0% 14%;
   --border: 220 13% 91%;
   --input: 220 13% 91%;
-  --ring: 262 83% 58%;
-  --radius: 0.75rem;
+  --ring: 238 48% 57%;
+  --radius: 0.5rem;
 }
 
 .dark {

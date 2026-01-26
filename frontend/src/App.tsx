@@ -1,12 +1,13 @@
-import { HashRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient } from '@tanstack/react-query';
 import { useAuthStore } from './store/useAuthStore';
+import { useConfigStore } from './store/useConfigStore';
 import { useEffect } from 'react';
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './components/layout/MainLayout';
 import { ToastProvider } from './design-system';
-import { useDocumentViewer } from './features/board/store/useDocumentViewer';
 import { useTokenRefresh } from './hooks/useTokenRefresh';
+import { useElectronListeners } from './hooks/useElectron';
 
 // Features
 import LoginPage from './features/auth/LoginPage';
@@ -73,17 +74,16 @@ const persister = createSyncStoragePersister({
 
 
 function AppContent() {
-  const navigate = useNavigate();
-  const closeViewer = useDocumentViewer(state => state.close);
-
   const { user, token, updateUser } = useAuthStore();
 
-  // Автоматическое обновление токена
+  // Custom hook for Electron listeners (deep links, shortcuts)
+  useElectronListeners();
+
+  // Auto-refresh token
   useTokenRefresh();
 
   useEffect(() => {
-    // Refresh user profile on app load to ensure latest data (like auto-generated email)
-    // is synced even if old data was persisted in localStorage
+    // Refresh user profile on app load
     if (token && user) {
       api.get('/auth/me')
         .then(res => {
@@ -94,65 +94,20 @@ function AppContent() {
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, updateUser]); // Only run on mount or if token changes
+  }, [token, updateUser]);
+
+  const { setConfig } = useConfigStore();
 
   useEffect(() => {
     // Fetch public config
     api.get('/auth/config').then(res => {
       const config = res.data;
+      setConfig(config);
       if (config.app_name) {
         document.title = config.app_name;
       }
     }).catch(err => console.error('Failed to fetch config:', err));
-  }, []);
-
-  useEffect(() => {
-    const electron = window.electron;
-    if (electron) {
-      // Handle deep links (gis-coordinator://...)
-      const PROTOCOL = 'gis-coordinator';
-      const cleanupOpenUrl = electron.onOpenUrl((url: string) => {
-        const path = url.replace(`${PROTOCOL}://`, '/');
-        navigate(path);
-      });
-
-      // System Tray / Global Shortcut: Quick Search
-      const cleanupTriggerSearch = electron.onTriggerSearch(() => {
-        // Navigate to archive or global search
-        navigate('/archive?search=true');
-      });
-
-      // System Tray: Quick Upload
-      const cleanupTriggerUpload = electron.onTriggerUpload(() => {
-        navigate('/archive?upload=true');
-      });
-
-      // System Notification Clicked
-      const cleanupNotificationClicked = electron.onNotificationClicked((data: Record<string, unknown>) => {
-        if (data && typeof data.url === 'string') {
-          navigate(data.url);
-        } else {
-          electron.focusWindow();
-        }
-      });
-
-      // Global keyboard shortcuts (local to app window)
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-          closeViewer();
-        }
-      };
-      window.addEventListener('keydown', handleKeyDown);
-
-      return () => {
-        window.removeEventListener('keydown', handleKeyDown);
-        if (cleanupOpenUrl) cleanupOpenUrl();
-        if (cleanupTriggerSearch) cleanupTriggerSearch();
-        if (cleanupTriggerUpload) cleanupTriggerUpload();
-        if (cleanupNotificationClicked) cleanupNotificationClicked();
-      };
-    }
-  }, [navigate, closeViewer]);
+  }, [setConfig]);
 
   return (
     <Routes>
@@ -190,47 +145,12 @@ function AppContent() {
   );
 }
 
-import { useState } from 'react';
 import ConnectionSetup from './components/ConnectionSetup';
 import api, { setBaseUrl } from './api/client';
-
-import { useConfigStore } from './store/useConfigStore';
+import { useAppConfig } from './hooks/useAppConfig';
 
 function App() {
-  const [isConfigLoaded, setIsConfigLoaded] = useState(false);
-  const { showSetup, setShowSetup, setServerUrl } = useConfigStore();
-
-  useEffect(() => {
-    const initConfig = async () => {
-      if (window.electron) {
-        try {
-          const config = await window.electron.getAppConfig();
-          if (config && config.serverUrl) {
-            console.log('🚀 App initializing with server URL:', config.serverUrl);
-            setBaseUrl(config.serverUrl);
-            setServerUrl(config.serverUrl);
-            setShowSetup(false);
-          } else {
-            console.log('⚠️ No server URL found in config, showing setup');
-            setShowSetup(true);
-          }
-        } catch (e) {
-          console.error('❌ Failed to load config', e);
-          setShowSetup(true);
-        }
-      } else {
-        // Fallback for web dev environments (Vite dev server)
-        const envUrl = import.meta.env.VITE_API_URL;
-        if (envUrl) {
-          setBaseUrl(envUrl);
-          setServerUrl(envUrl);
-        }
-      }
-      setIsConfigLoaded(true);
-    };
-
-    initConfig();
-  }, [setServerUrl, setShowSetup]);
+  const { isConfigLoaded, showSetup, setShowSetup, setServerUrl } = useAppConfig();
 
   const handleConfigured = (url: string) => {
     setBaseUrl(url);

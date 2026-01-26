@@ -79,8 +79,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     asyncio.create_task(manager.start_heartbeat())
 
     # Register event handlers
-    from app.modules.chat.handlers import register_event_handlers
-    await register_event_handlers(event_bus)
+    from app.modules.chat.handlers import register_event_handlers as register_chat_handlers
+    await register_chat_handlers(event_bus)
+
+    from app.modules.email.handlers import register_email_handlers
+    await register_email_handlers(event_bus)
+
+    from app.modules.auth.handlers import register_auth_handlers
+    await register_auth_handlers(event_bus)
 
     # Log startup info
     db_type = "MySQL" if settings.is_mysql else "SQLite"

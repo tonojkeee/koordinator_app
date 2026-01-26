@@ -12,6 +12,33 @@ class ChatService:
     """Service for chat operations"""
     
     @staticmethod
+    async def create_notifications_channel(db: AsyncSession, user_id: int) -> Channel:
+        """Create notifications channel for user"""
+        # Create notifications channel
+        notifications_channel = Channel(
+            name="notifications",
+            display_name="Уведомления",
+            description="Системные уведомления",
+            visibility="private",
+            created_by=user_id,
+            is_system=True  # Mark as system channel
+        )
+
+        db.add(notifications_channel)
+        await db.flush()  # Get the ID
+
+        # Add user as owner of the channel
+        channel_member = ChannelMember(
+            channel_id=notifications_channel.id,
+            user_id=user_id,
+            role="owner"
+        )
+
+        db.add(channel_member)
+        await db.commit()
+        return notifications_channel
+
+    @staticmethod
     async def create_channel(db: AsyncSession, channel_data: ChannelCreate, user_id: int) -> Channel:
         """Create a new channel"""
         channel = Channel(
@@ -77,6 +104,28 @@ class ChatService:
         return result.scalar_one_or_none()
     
     @staticmethod
+    async def get_or_create_notifications_channel(db: AsyncSession, user_id: int) -> Channel:
+        """Get or create notifications channel for user"""
+        # Check if notifications channel already exists for this user
+        stmt = (
+            select(Channel)
+            .join(ChannelMember, ChannelMember.channel_id == Channel.id)
+            .where(
+                Channel.name == "notifications",
+                Channel.is_system == True,
+                ChannelMember.user_id == user_id
+            )
+        )
+        result = await db.execute(stmt)
+        existing_channel = result.scalar_one_or_none()
+
+        if existing_channel:
+            return existing_channel
+
+        # Create new notifications channel
+        return await ChatService.create_notifications_channel(db, user_id)
+
+    @staticmethod
     async def get_user_channels(db: AsyncSession, user_id: int) -> List[Channel]:
         """Get all channels for a user:
         - Notifications channel (always first)
@@ -85,16 +134,21 @@ class ChatService:
         - DM channels where user is a member AND there is at least one message
         """
         from sqlalchemy import or_, exists
-        from app.modules.auth.service import UserService
-        
+
         # Ensure notifications channel exists for user
-        notifications_channel = await UserService.get_or_create_notifications_channel(db, user_id)
-        
+        notifications_channel = await ChatService.get_or_create_notifications_channel(db, user_id)
+
         # Subquery to check if channel has any messages
         message_exists = exists().where(Message.channel_id == Channel.id)
         
         result = await db.execute(
-            select(Channel, ChannelMember.is_pinned, ChannelMember.mute_until)
+            select(
+                Channel,
+                ChannelMember.is_pinned,
+                ChannelMember.mute_until,
+                ChannelMember.last_read_message_id,
+                ChannelMember.role
+            )
             .outerjoin(ChannelMember, and_(ChannelMember.channel_id == Channel.id, ChannelMember.user_id == user_id))
             .where(
                 or_(
@@ -123,19 +177,24 @@ class ChatService:
             .order_by(
                 # System channels (notifications) first
                 Channel.is_system.desc(),
-                func.coalesce(ChannelMember.is_pinned, False).desc(), 
+                func.coalesce(ChannelMember.is_pinned, False).desc(),
                 Channel.created_at.desc()
             )
         )
-        
-        channels = []
+
+        channels_with_member_info = []
         for row in result:
-            channel, is_pinned, mute_until = row
-            # Set temporary attributes for schema
-            channel.is_pinned = is_pinned or False
-            channel.mute_until = mute_until
-            channels.append(channel)
-        return channels
+            channel, is_pinned, mute_until, last_read, role = row
+            # Attach member info to channel instance for enricher
+            channel.current_user_member_info = {
+                "is_pinned": is_pinned or False,
+                "mute_until": mute_until,
+                "last_read_message_id": last_read,
+                "role": role,
+                "is_member": role is not None
+            }
+            channels_with_member_info.append(channel)
+        return channels_with_member_info
     
     @staticmethod
     async def get_channel_member_ids(db: AsyncSession, channel_id: int) -> List[int]:
@@ -206,7 +265,7 @@ class ChatService:
 
         result = await db.execute(
             select(
-                Message, 
+                Message,
                 reply_count_subquery.label("reply_count"),
                 ParentMsg,
                 ParentUser
@@ -215,6 +274,7 @@ class ChatService:
             .outerjoin(ParentUser, ParentMsg.user_id == ParentUser.id)
             .options(
                 selectinload(Message.user),
+                selectinload(Message.document),
                 selectinload(Message.reactions).selectinload(MessageReaction.user)
             )
             .where(Message.channel_id == channel_id) # Removed parent_id.is_(None) check to show all messages
@@ -257,7 +317,11 @@ class ChatService:
         """Get replies for a message thread"""
         result = await db.execute(
             select(Message)
-            .options(selectinload(Message.reactions).selectinload(MessageReaction.user))
+            .options(
+                selectinload(Message.user),
+                selectinload(Message.document),
+                selectinload(Message.reactions).selectinload(MessageReaction.user)
+            )
             .where(Message.parent_id == parent_id)
             .order_by(Message.created_at.asc())
         )

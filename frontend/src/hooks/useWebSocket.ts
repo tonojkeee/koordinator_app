@@ -31,23 +31,11 @@ const refreshTokenIfNeeded = async (token: string): Promise<string | null> => {
     console.log('🔄 Token expired, refreshing before channel WebSocket connect...');
 
     try {
-        const storage = localStorage.getItem('auth-storage');
-        if (!storage) return null;
-
-        const data = JSON.parse(storage);
-        const refreshToken = data.state?.refreshToken;
-
-        if (!refreshToken) {
-            console.error('❌ No refresh token available');
-            useAuthStore.getState().clearAuth();
-            return null;
-        }
-
         const apiBase = api.defaults.baseURL || import.meta.env.VITE_API_URL || '';
+        // Use fetch with credentials to send HttpOnly cookie
         const res = await fetch(`${apiBase}/auth/refresh`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ refresh_token: refreshToken }),
             credentials: 'include'
         });
 
@@ -57,17 +45,12 @@ const refreshTokenIfNeeded = async (token: string): Promise<string | null> => {
             return null;
         }
 
-        const { access_token, refresh_token: newRefreshToken } = await res.json();
-
-        // Update localStorage
-        data.state.token = access_token;
-        data.state.refreshToken = newRefreshToken;
-        localStorage.setItem('auth-storage', JSON.stringify(data));
+        const { access_token } = await res.json();
 
         // Update Zustand store
         const currentUser = useAuthStore.getState().user;
         if (currentUser) {
-            useAuthStore.getState().setAuth(currentUser, access_token, newRefreshToken);
+            useAuthStore.getState().setAuth(currentUser, access_token);
         }
 
         console.log('✅ Token refreshed successfully');

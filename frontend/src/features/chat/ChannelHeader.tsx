@@ -52,27 +52,27 @@ const ChannelHeader: React.FC<ChannelHeaderProps> = ({
 
   return (
     <>
-      <div className="shrink-0 border-b border-slate-200/50 bg-white/40 backdrop-blur-xl">
-        <div className="flex items-center justify-between px-6 h-16">
+      <div className="shrink-0 border-b border-[#E0E0E0] bg-white shadow-sm z-10">
+        <div className="flex items-center justify-between px-4 h-[60px]">
           {/* Left: Icon + Title */}
-          <div className="flex items-center gap-4 flex-1 min-w-0">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-lg shadow-indigo-500/30">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white bg-[#5B5FC7] shrink-0">
               {channel?.is_direct && channel.other_user ? (
-                <span className="text-sm font-bold uppercase">
+                <span className="text-xs font-bold uppercase">
                   {channel.other_user.full_name
                     ? channel.other_user.full_name.split(' ').map((n: string) => n[0]).join('')
                     : channel.other_user.username.slice(0, 2)
                   }
                 </span>
               ) : channel?.is_system ? (
-                <Settings size={20} />
+                <Settings size={18} />
               ) : (
-                <Hash size={20} />
+                <Hash size={18} />
               )}
             </div>
 
             <div className="flex-1 min-w-0">
-              <h2 className="text-base font-semibold text-slate-900 truncate flex items-center gap-2">
+              <h2 className="text-base font-bold text-[#242424] truncate flex items-center gap-2">
                 {channel?.is_direct && channel.other_user
                   ? formatName(channel.other_user.full_name, channel.other_user.username)
                   : channel?.display_name || channel?.name || `${t('chat.channel')} ${channel?.id}`
@@ -87,12 +87,12 @@ const ChannelHeader: React.FC<ChannelHeaderProps> = ({
                   <OwnerIndicator size="sm" tooltip={t('chat.youAreOwner')} />
                 )}
               </h2>
-              <div className="flex items-center gap-2 text-xs text-slate-500">
+              <div className="flex items-center gap-2 text-xs text-[#616161]">
                 <div className={`w-1.5 h-1.5 rounded-full ${channel?.is_direct
-                  ? (isDmPartnerOnline ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300')
-                  : (isConnected ? 'bg-emerald-500' : 'bg-rose-500')
+                  ? (isDmPartnerOnline ? 'bg-green-500 animate-pulse' : 'bg-slate-300')
+                  : (isConnected ? 'bg-green-500' : 'bg-rose-500')
                   }`} />
-                <span className="font-semibold">
+                <span className="font-medium">
                   {channel?.is_system ? (
                     t('chat.system_channel')
                   ) : channel?.is_direct ? (
@@ -117,52 +117,52 @@ const ChannelHeader: React.FC<ChannelHeaderProps> = ({
 
             <button
               onClick={() => setIsMuteModalOpen(true)}
-              className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isMuted
-                ? 'text-rose-500 hover:bg-rose-50'
-                : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+              className={`w-8 h-8 flex items-center justify-center rounded-md transition-all ${isMuted
+                ? 'text-[#C4314B] hover:bg-rose-50'
+                : 'text-[#616161] hover:text-[#5B5FC7] hover:bg-[#F5F5F5]'
                 }`}
               title={isMuted ? t('chat.notifications.unmute') : t('chat.notifications.mute')}
             >
-              {isMuted ? <BellOff size={18} /> : <Bell size={18} />}
+              {isMuted ? <BellOff size={18} strokeWidth={1.5} /> : <Bell size={18} strokeWidth={1.5} />}
             </button>
 
             {!channel?.is_system && (
               <button
                 onClick={handleExportChat}
-                className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all"
+                className="w-8 h-8 flex items-center justify-center text-[#616161] hover:text-[#5B5FC7] hover:bg-[#F5F5F5] rounded-md transition-all"
                 title={t('chat.export_history')}
               >
-                <Download size={18} />
+                <Download size={18} strokeWidth={1.5} />
               </button>
             )}
 
             <button
-              className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all"
+              className="w-8 h-8 flex items-center justify-center text-[#616161] hover:text-[#5B5FC7] hover:bg-[#F5F5F5] rounded-md transition-all"
               title={t('common.info')}
             >
-              <Info size={18} />
+              <Info size={18} strokeWidth={1.5} />
             </button>
 
             {channel && !channel.is_direct && !channel.is_system && (
               <button
                 onClick={() => setShowParticipants(!showParticipants)}
-                className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${showParticipants
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+                className={`w-8 h-8 flex items-center justify-center rounded-md transition-all ${showParticipants
+                  ? 'bg-[#E0E7FF] text-[#5B5FC7]'
+                  : 'text-[#616161] hover:text-[#5B5FC7] hover:bg-[#F5F5F5]'
                   }`}
                 title={t('chat.participants')}
               >
-                <Users size={18} />
+                <Users size={18} strokeWidth={1.5} />
               </button>
             )}
 
             {channel && !channel.is_direct && !channel.is_system && channel.is_member && !channel.is_owner && (
               <button
                 onClick={onLeaveChannel}
-                className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                className="w-8 h-8 flex items-center justify-center text-[#616161] hover:text-[#C4314B] hover:bg-rose-50 rounded-md transition-all"
                 title={t('chat.leave_channel')}
               >
-                <LogOut size={18} />
+                <LogOut size={18} strokeWidth={1.5} />
               </button>
             )}
           </div>

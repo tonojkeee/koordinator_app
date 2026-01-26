@@ -1,4 +1,17 @@
 import axios, { type AxiosResponse, type InternalAxiosRequestConfig, AxiosError } from 'axios';
+import { useAuthStore } from '../store/useAuthStore';
+
+// Helper to get CSRF token from cookies
+const getCsrfToken = (): string | null => {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'csrf_token') {
+            return decodeURIComponent(value);
+        }
+    }
+    return null;
+};
 
 const api = axios.create({
     baseURL: (import.meta.env.VITE_API_URL as string) || '/api',
@@ -9,58 +22,16 @@ export const setBaseUrl = (url: string): void => {
     api.defaults.baseURL = url;
 };
 
-interface TokenData {
-    token: string | null;
-    refreshToken: string | null;
-}
-
-// Helper to get tokens from auth-storage
-const getTokens = (): TokenData => {
-    try {
-        const storage = localStorage.getItem('auth-storage');
-        if (storage) {
-            const data = JSON.parse(storage);
-            return {
-                token: data.state?.token,
-                refreshToken: data.state?.refreshToken
-            };
-        }
-    } catch (e) {
-        console.error('Error parsing auth-storage', e);
-    }
-    return { token: null, refreshToken: null };
-};
-
-// Helper to get CSRF token from cookies
-const getCsrfToken = (): string | null => {
-    // More robust cookie parsing
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-        const [name, value] = cookie.trim().split('=');
-        if (name === 'csrf_token') {
-            const token = decodeURIComponent(value);
-            console.log('🔐 CSRF token from cookie:', token ? 'present' : 'missing');
-            return token;
-        }
-    }
-    console.log('🔐 CSRF token cookie not found');
-    console.log('🔐 Available cookies:', document.cookie);
-    return null;
-};
-
-// Helper to get CSRF token from cookies
+// Request Interceptor
 api.interceptors.request.use((config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-    // Base URL is managed globally via setBaseUrl and useConfigStore
-    // which are called in App.tsx during initialization and configuration.
+    const { token } = useAuthStore.getState();
 
-    const { token } = getTokens();
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
 
     // Include CSRF token for state-changing methods
     if (config.method && !['get', 'head', 'options'].includes(config.method.toLowerCase())) {
-        // Всегда используем токен из cookie, так как сервер сравнивает именно с ним
         const csrfToken = getCsrfToken();
         if (csrfToken) {
             config.headers['X-CSRF-Token'] = csrfToken;
@@ -72,6 +43,7 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig): InternalAxios
     return config;
 });
 
+// Response Interceptor - Handle Errors & Refresh
 interface FailedRequest {
     resolve: (token: string | null) => void;
     reject: (error: unknown) => void;
@@ -91,36 +63,38 @@ const processQueue = (error: unknown, token: string | null = null): void => {
     failedQueue = [];
 };
 
-// Add response interceptor to handle errors
 api.interceptors.response.use(
     (response: AxiosResponse): AxiosResponse => response,
     async (error: any): Promise<AxiosResponse> => {
         const axiosError = error as AxiosError;
+        const originalRequest = axiosError.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-        // Log 405 errors specifically to help debug "Method Not Allowed" issues
+        // Handle 405 Method Not Allowed
         if (axiosError.response?.status === 405) {
             console.error('❌ Method Not Allowed (405) error at:', axiosError.config?.url);
             console.error('Current baseURL:', axiosError.config?.baseURL);
-            console.error('Ensure the server is reachable and the URL is correct.');
         }
 
-        const originalRequest = axiosError.config as InternalAxiosRequestConfig & { _retry?: boolean };
-
+        // Handle 403 Forbidden (CSRF or Blocked)
         if (axiosError.response?.status === 403) {
             const detail = (axiosError.response.data as { detail?: string })?.detail;
+            const isBlocked = axiosError.response.headers['x-account-blocked'] === 'true';
 
-            // Handle CSRF token missing/invalid
+            // Account Blocked -> Force Logout
+            if (isBlocked) {
+                if (!originalRequest.url?.includes('/auth/login')) {
+                    useAuthStore.getState().clearAuth();
+                    window.location.href = '/login';
+                }
+                return Promise.reject(error);
+            }
+
+            // CSRF Retry
             if (detail === 'CSRF token missing' || detail === 'CSRF token invalid') {
                 if (!originalRequest._retry) {
                     originalRequest._retry = true;
                     try {
-                        // Fetch a new CSRF token
-                        const res = await api.get('/auth/csrf-token');
-                        if (res.data?.csrf_token) {
-                            // setCsrfToken(res.data.csrf_token);
-                            console.log('🔐 Got new CSRF token after 403 error');
-                        }
-                        // CSRF token is set in cookie, interceptor will pick it up on retry
+                        await api.get('/auth/csrf-token');
                         return api(originalRequest);
                     } catch (e) {
                         return Promise.reject(e);
@@ -128,24 +102,18 @@ api.interceptors.response.use(
                 }
             }
 
-            // Only force logout if the account is actually blocked (verified by header)
-            const isBlocked = axiosError.response.headers['x-account-blocked'] === 'true';
+            return Promise.reject(error);
+        }
 
-            if (isBlocked) {
-                // If it's a login attempt, don't redirect, just let the page handle the error
-                if (originalRequest.url?.includes('/auth/login')) {
-                    return Promise.reject(error);
-                }
-                localStorage.removeItem('auth-storage');
+        // Handle 401 Unauthorized (Token Refresh)
+        if (axiosError.response?.status === 401 && !originalRequest._retry) {
+            // Avoid infinite loop if refresh endpoint itself returns 401
+            if (originalRequest.url?.includes('/auth/refresh')) {
+                useAuthStore.getState().clearAuth();
                 window.location.href = '/login';
                 return Promise.reject(error);
             }
 
-            // Otherwise, it's a normal "Access Denied" for a specific resource, just reject
-            return Promise.reject(error);
-        }
-
-        if (axiosError.response?.status === 401 && !originalRequest._retry) {
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
                     failedQueue.push({ resolve, reject });
@@ -160,42 +128,35 @@ api.interceptors.response.use(
             originalRequest._retry = true;
             isRefreshing = true;
 
-            const { refreshToken } = getTokens();
+            const { user } = useAuthStore.getState();
 
-            if (refreshToken) {
-                try {
-                    const res = await axios.post(`${api.defaults.baseURL}/auth/refresh`, { refresh_token: refreshToken });
-                    const { access_token, refresh_token, csrf_token } = res.data;
+            try {
+                // Call refresh endpoint directly using axios to avoid interceptor loop
+                // Refresh token is now in HttpOnly cookie, so we don't need to pass it in body
+                const res = await axios.post(`${api.defaults.baseURL}/auth/refresh`,
+                    {}, // Empty body
+                    { withCredentials: true } // Important for cookies
+                );
 
-                    // Сохраняем новый CSRF токен
-                    if (csrf_token) {
-                        // setCsrfToken(csrf_token);
-                    }
+                const { access_token } = res.data;
 
-                    // Update localStorage manually so next requests get it
-                    const storage = JSON.parse(localStorage.getItem('auth-storage') || '{}');
-                    if (storage.state) {
-                        storage.state.token = access_token;
-                        storage.state.refreshToken = refresh_token;
-                        localStorage.setItem('auth-storage', JSON.stringify(storage));
-                    }
-
-                    processQueue(null, access_token);
-                    originalRequest.headers.Authorization = `Bearer ${access_token}`;
-                    return api(originalRequest);
-                } catch (refreshError) {
-                    processQueue(refreshError, null);
-                    localStorage.removeItem('auth-storage');
-                    window.location.href = '/login';
-                    return Promise.reject(refreshError);
-                } finally {
-                    isRefreshing = false;
+                if (user) {
+                    useAuthStore.getState().setAuth(user, access_token);
                 }
-            } else {
-                localStorage.removeItem('auth-storage');
+
+                processQueue(null, access_token);
+                originalRequest.headers.Authorization = `Bearer ${access_token}`;
+                return api(originalRequest);
+            } catch (refreshError) {
+                processQueue(refreshError, null);
+                useAuthStore.getState().clearAuth();
                 window.location.href = '/login';
+                return Promise.reject(refreshError);
+            } finally {
+                isRefreshing = false;
             }
         }
+
         return Promise.reject(error);
     }
 );

@@ -120,7 +120,7 @@ class UserResponse(UserBase):
 
 class Token(BaseModel):
     access_token: str
-    refresh_token: str
+    refresh_token: Optional[str] = None # Optional now as it might be in cookie
     token_type: str = "bearer"
     csrf_token: Optional[str] = None  # CSRF token for state-changing operations
 
@@ -134,4 +134,4 @@ class RoleUpdate(BaseModel):
 
 
 class RefreshTokenRequest(BaseModel):
-    refresh_token: str = Field(..., min_length=1)
+    refresh_token: Optional[str] = None # Optional, can come from cookie

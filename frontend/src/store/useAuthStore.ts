@@ -5,8 +5,7 @@ import type { User } from '../types';
 interface AuthState {
     user: User | null;
     token: string | null;
-    refreshToken: string | null;
-    setAuth: (user: User, token: string, refreshToken: string) => void;
+    setAuth: (user: User, token: string) => void;
     updateUser: (user: User) => void;
     clearAuth: () => void;
     logout: () => void;
@@ -18,10 +17,9 @@ export const useAuthStore = create<AuthState>()(
         (set): AuthState => ({
             user: null,
             token: null,
-            refreshToken: null,
             isAuthenticated: false,
-            setAuth: (user: User, token: string, refreshToken: string): void => {
-                set({ user, token, refreshToken, isAuthenticated: true });
+            setAuth: (user: User, token: string): void => {
+                set({ user, token, isAuthenticated: true });
             },
             updateUser: (user: User): void => {
                 set({ user });
@@ -29,7 +27,7 @@ export const useAuthStore = create<AuthState>()(
             clearAuth: (): void => {
                 // Принудительно закрываем все WebSocket соединения при выходе
                 console.log('🔌 Clearing auth - WebSocket connections will be closed');
-                set({ user: null, token: null, refreshToken: null, isAuthenticated: false });
+                set({ user: null, token: null, isAuthenticated: false });
             },
             logout: async (): Promise<void> => {
                 console.log('🚪 Starting logout process...');
@@ -72,9 +70,9 @@ export const useAuthStore = create<AuthState>()(
                     console.error('❌ Logout API call failed:', error);
                     // Продолжаем выход даже если API вызов не удался
                 }
-                
+
                 console.log('🔌 Logging out - WebSocket connections will be closed');
-                set({ user: null, token: null, refreshToken: null, isAuthenticated: false });
+                set({ user: null, token: null, isAuthenticated: false });
             },
         }),
         {
@@ -83,7 +81,6 @@ export const useAuthStore = create<AuthState>()(
             partialize: (state): Partial<AuthState> => ({
                 user: state.user,
                 token: state.token,
-                refreshToken: state.refreshToken,
                 isAuthenticated: state.isAuthenticated
             }),
         }
