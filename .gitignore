@@ -131,4 +131,4 @@ backend/certs/
 
 # Temporary files
 *.tmp
-*.temp
+*.temp.worktrees/
