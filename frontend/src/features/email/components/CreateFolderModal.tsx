@@ -48,7 +48,7 @@ const CreateFolderModal: React.FC<CreateFolderModalProps> = ({ isOpen, onClose, 
         >
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">
+                    <label className="block text-[10px] font-bold text-[#888888] uppercase tracking-widest mb-2 px-1">
                         {t('email.create_folder_modal.name_placeholder')}
                     </label>
                     <input
@@ -56,7 +56,7 @@ const CreateFolderModal: React.FC<CreateFolderModalProps> = ({ isOpen, onClose, 
                         value={folderName}
                         onChange={(e) => setFolderName(e.target.value)}
                         placeholder={t('email.create_folder_modal.name_placeholder')}
-                        className="w-full h-11 px-4 bg-slate-50/50 border border-slate-200 rounded-xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/40 transition-all placeholder:text-slate-400 placeholder:font-medium"
+                        className="w-full h-11 px-4 bg-[#F5F5F5] border border-[#E0E0E0] rounded-md text-sm font-semibold focus:outline-none focus:bg-white focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7] transition-all placeholder:text-[#888888]"
                         autoFocus
                     />
                 </div>

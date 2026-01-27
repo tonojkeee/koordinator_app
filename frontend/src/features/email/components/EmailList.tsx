@@ -52,14 +52,14 @@ const EmailList: React.FC<EmailListProps> = ({
 
     if (emails.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center p-12 text-slate-400 h-full">
-                <div className="text-xs font-black uppercase tracking-widest opacity-60">{t('email.list_no_emails')}</div>
+            <div className="flex flex-col items-center justify-center p-12 text-[#BDBDBD] h-full">
+                <div className="text-xs font-bold uppercase tracking-widest opacity-60">{t('email.list_no_emails')}</div>
             </div>
         );
     }
 
     return (
-        <div className="w-full flex flex-col divide-y divide-slate-100">
+        <div className="w-full flex flex-col divide-y divide-[#E0E0E0]">
             {sortedEmails.map(email => {
                 const isSelected = selectedEmailId === email.id;
                 const isUnread = !email.is_read;
@@ -149,11 +149,11 @@ const EmailList: React.FC<EmailListProps> = ({
                             onClick={() => onSelectEmail(email.id)}
                             className={`
                                 group relative flex flex-col p-4 cursor-pointer transition-all duration-200 border-l-4
-                                ${isSelected 
-                                    ? 'bg-indigo-50/50 border-indigo-600 shadow-sm z-10' 
-                                    : isUnread 
-                                        ? 'bg-white border-transparent hover:bg-slate-50' 
-                                        : 'bg-white border-transparent hover:bg-slate-50 opacity-80'}
+                                ${isSelected
+                                    ? 'bg-[#EEF2FF] border-[#5B5FC7] shadow-sm z-10'
+                                    : isUnread
+                                        ? 'bg-white border-transparent hover:bg-[#F5F5F5]'
+                                        : 'bg-white border-transparent hover:bg-[#F5F5F5] opacity-90'}
                             `}
                         >
                             <div className="flex justify-between items-start mb-1">
@@ -164,42 +164,42 @@ const EmailList: React.FC<EmailListProps> = ({
                                             {isSent ? <ArrowUpRight size={10} strokeWidth={3} /> : <ArrowDownLeft size={10} strokeWidth={3} />}
                                         </div>
                                     </div>
-                                    <span className={`text-sm truncate ${isUnread ? 'font-bold text-slate-900' : 'font-medium text-slate-600'}`}>
+                                    <span className={`text-sm truncate ${isUnread ? 'font-bold text-[#242424]' : 'font-medium text-[#616161]'}`}>
                                         {isSent ? `${t('email.list_to')}: ${email.to_address.split('@')[0]}` : email.from_address.split('@')[0]}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
-                                    {email.has_attachments && <Paperclip size={12} className="text-slate-400" />}
-                                    <span className={`text-[10px] tabular-nums ${isUnread ? 'text-indigo-600 font-bold' : 'text-slate-400 font-medium'}`}>
+                                    {email.has_attachments && <Paperclip size={12} className="text-[#888888]" />}
+                                    <span className={`text-[10px] tabular-nums ${isUnread ? 'text-[#5B5FC7] font-bold' : 'text-[#888888] font-medium'}`}>
                                         {dateStr}
                                     </span>
                                 </div>
                             </div>
 
-                            <div className={`text-[13px] truncate mb-1 ${isUnread ? 'font-bold text-slate-800' : 'font-semibold text-slate-600'}`}>
+                            <div className={`text-[13px] truncate mb-1 ${isUnread ? 'font-bold text-[#242424]' : 'font-semibold text-[#616161]'}`}>
                                 {email.subject || t('email.list_no_subject')}
                             </div>
 
-                            <div className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                            <div className="text-xs text-[#888888] line-clamp-2 leading-relaxed">
                                 {email.subject} - {t('email.details_no_preview')}
                             </div>
 
-                            <div className="absolute right-2 bottom-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur-sm p-1 rounded-md shadow-sm border border-slate-100">
+                            <div className="absolute right-2 bottom-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur-sm p-1 rounded-md shadow-sm border border-[#E0E0E0]">
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onToggleStar(email.id, email.is_starred); }}
-                                    className={`p-1.5 rounded hover:bg-slate-100 transition-colors ${email.is_starred ? 'text-amber-400' : 'text-slate-400'}`}
+                                    className={`p-1.5 rounded hover:bg-[#F5F5F5] transition-colors ${email.is_starred ? 'text-amber-400' : 'text-[#888888]'}`}
                                 >
                                     <Star size={14} fill={email.is_starred ? "currentColor" : "none"} />
                                 </button>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onToggleRead(email.id, email.is_read); }}
-                                    className={`p-1.5 rounded hover:bg-slate-100 transition-colors ${!email.is_read ? 'text-indigo-600' : 'text-slate-400'}`}
+                                    className={`p-1.5 rounded hover:bg-[#F5F5F5] transition-colors ${!email.is_read ? 'text-[#5B5FC7]' : 'text-[#888888]'}`}
                                 >
                                     <Mail size={14} fill={!email.is_read ? "currentColor" : "none"} />
                                 </button>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onDelete(email.id); }}
-                                    className="p-1.5 rounded hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors"
+                                    className="p-1.5 rounded hover:bg-rose-50 text-[#888888] hover:text-[#C4314B] transition-colors"
                                 >
                                     <Trash2 size={14} />
                                 </button>

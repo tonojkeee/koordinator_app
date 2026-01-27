@@ -51,7 +51,7 @@ export interface NotificationOptions {
     body?: string;
     icon?: string;
     tag?: string;
-    data?: any;
+    data?: unknown;
     subtitle?: string; // macOS only mostly, but good for context
     silent?: boolean;
     iconUrl?: string;

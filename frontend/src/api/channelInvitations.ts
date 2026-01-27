@@ -59,13 +59,13 @@ export const channelInvitationsApi = {
   // Принять или отклонить приглашение
   respondToInvitation: async (data: RespondInvitationRequest) => {
     if (data.action === 'accept') {
-      const response = await apiClient.post<any>(
+      const response = await apiClient.post<{ message: string; invitation: ChannelInvitation }>(
         '/chat/invitations/accept',
         { invitation_id: data.invitation_id }
       );
       return response.data;
     } else {
-      const response = await apiClient.post<any>(
+      const response = await apiClient.post<{ message: string }>(
         '/chat/invitations/decline',
         { invitation_id: data.invitation_id }
       );

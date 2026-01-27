@@ -193,7 +193,7 @@ const SettingsPage: React.FC = () => {
     ];
 
     return (
-        <div className="flex-1 overflow-y-auto bg-slate-50/50 animate-in fade-in duration-300">
+        <div className="flex-1 overflow-y-auto bg-[#F5F5F5] animate-in fade-in duration-300">
             {/* Header with Design System */}
             <div className="px-6 pt-4 pb-2 shrink-0 z-20 sticky top-0 pointer-events-none">
                 <Header
@@ -202,13 +202,13 @@ const SettingsPage: React.FC = () => {
                     icon={<SettingsIcon size={20} />}
                     iconColor="indigo"
                     sticky={false}
-                    className="pointer-events-auto"
+                    className="pointer-events-auto shadow-sm border border-[#E0E0E0] rounded-lg bg-white"
                 />
             </div>
 
 
             <div className="p-8 max-w-4xl">
-                <div className="flex items-center space-x-6 mb-12 p-6 bg-indigo-50 rounded-2xl border border-indigo-100">
+                <div className="flex items-center space-x-6 mb-8 p-6 bg-white rounded-lg border border-[#E0E0E0] shadow-sm">
                     <input
                         type="file"
                         ref={fileInputRef}
@@ -224,23 +224,23 @@ const SettingsPage: React.FC = () => {
                             src={user?.avatar_url}
                             name={user?.full_name || user?.username || ''}
                             size="xl"
-                            className="shadow-xl shadow-indigo-200"
+                            className="shadow-md"
                         />
                         <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <span className="text-[10px] font-black uppercase text-white tracking-widest">{t('settings.change')}</span>
+                            <span className="text-[10px] font-bold uppercase text-white tracking-widest">{t('settings.change')}</span>
                         </div>
                         {uploadMutation.isPending && (
                             <div className="absolute inset-0 bg-white/80 rounded-full flex items-center justify-center">
-                                <div className="w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                                <div className="w-8 h-8 border-2 border-[#5B5FC7] border-t-transparent rounded-full animate-spin" />
                             </div>
                         )}
                     </div>
                     <div>
-                        <h2 className="text-2xl font-bold text-gray-900">{user?.full_name || user?.username}</h2>
-                        <p className="text-gray-600">{user?.email}</p>
+                        <h2 className="text-2xl font-bold text-[#242424]">{user?.full_name || user?.username}</h2>
+                        <p className="text-[#616161]">{user?.email}</p>
                         <button
                             onClick={() => fileInputRef.current?.click()}
-                            className="mt-2 text-sm text-indigo-600 font-medium hover:text-indigo-700 active:scale-95 transition-transform"
+                            className="mt-2 text-sm text-[#5B5FC7] font-semibold hover:underline active:scale-95 transition-transform"
                         >
                             {t('settings.changePhoto')}
                         </button>
@@ -248,21 +248,21 @@ const SettingsPage: React.FC = () => {
 
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                     {sections.map((section) => (
                         <div
                             key={section.id}
                             onClick={section.onClick}
-                            className="flex items-center p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer group"
+                            className="flex items-center p-4 rounded-lg bg-white border border-[#E0E0E0] hover:bg-[#F5F5F5] hover:border-[#BDBDBD] transition-all cursor-pointer group shadow-sm"
                         >
-                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 group-hover:bg-white group-hover:shadow-sm transition-all">
-                                <section.icon size={20} />
+                            <div className="w-10 h-10 bg-[#F0F0F0] rounded-md flex items-center justify-center text-[#616161] group-hover:bg-white group-hover:text-[#5B5FC7] transition-colors">
+                                <section.icon size={20} strokeWidth={1.5} />
                             </div>
                             <div className="ml-4 flex-1">
-                                <h3 className="font-bold text-gray-900">{section.title}</h3>
-                                <p className="text-sm text-gray-500">{section.desc}</p>
+                                <h3 className="font-bold text-[#242424] text-sm">{section.title}</h3>
+                                <p className="text-xs text-[#616161]">{section.desc}</p>
                             </div>
-                            <div className="text-gray-300">
+                            <div className="text-[#BDBDBD] group-hover:text-[#5B5FC7] transition-colors">
                                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
@@ -279,8 +279,8 @@ const SettingsPage: React.FC = () => {
                     onClose={() => setActiveSection(null)}
                     title={
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600">
-                                <User size={24} />
+                            <div className="p-1.5 bg-[#EEF2FF] rounded-md text-[#5B5FC7]">
+                                <User size={20} strokeWidth={1.5} />
                             </div>
                             <span>{t('settings.account')}</span>
                         </div>
@@ -304,12 +304,12 @@ const SettingsPage: React.FC = () => {
                         </>
                     }
                 >
-                    <div className="space-y-8">
+                    <div className="space-y-6">
                         {/* Personal Information */}
                         <div className="space-y-4">
-                            <div className="flex items-center gap-2 mb-4 border-b border-gray-100 pb-2">
-                                <User size={16} className="text-gray-400" />
-                                <h3 className="font-bold text-gray-900 text-sm">{t('settings.personal_info')}</h3>
+                            <div className="flex items-center gap-2 mb-2 border-b border-[#E0E0E0] pb-2">
+                                <User size={16} className="text-[#888888]" />
+                                <h3 className="font-bold text-[#242424] text-xs uppercase tracking-wide">{t('settings.personal_info')}</h3>
                             </div>
 
                             <Input
@@ -339,10 +339,10 @@ const SettingsPage: React.FC = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Email</label>
-                                <div className="px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl font-medium text-gray-500 flex items-center justify-between">
-                                    <span className="text-sm">{user?.email}</span>
-                                    <span className="text-[9px] font-black uppercase text-indigo-400 tracking-widest bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-100/50">
+                                <label className="block text-xs font-bold text-[#616161] uppercase tracking-wide mb-1.5">Email</label>
+                                <div className="px-3 py-2 bg-[#F5F5F5] border border-[#E0E0E0] rounded-md font-medium text-[#616161] flex items-center justify-between text-sm">
+                                    <span>{user?.email}</span>
+                                    <span className="text-[10px] font-bold uppercase text-[#5B5FC7] tracking-wider bg-[#EEF2FF] px-2 py-0.5 rounded border border-[#E0E7FF]">
                                         {t('settings.email_system')}
                                     </span>
                                 </div>
@@ -351,9 +351,9 @@ const SettingsPage: React.FC = () => {
 
                         {/* Organizational Details */}
                         <div className="space-y-4">
-                            <div className="flex items-center gap-2 mb-4 border-b border-gray-100 pb-2">
-                                <Briefcase size={16} className="text-gray-400" />
-                                <h3 className="font-bold text-gray-900 text-sm">{t('settings.organization_info')}</h3>
+                            <div className="flex items-center gap-2 mb-2 border-b border-[#E0E0E0] pb-2">
+                                <Briefcase size={16} className="text-[#888888]" />
+                                <h3 className="font-bold text-[#242424] text-xs uppercase tracking-wide">{t('settings.organization_info')}</h3>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">

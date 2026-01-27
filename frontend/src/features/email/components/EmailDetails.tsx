@@ -78,7 +78,7 @@ const EmailDetails: React.FC<EmailDetailsProps> = ({ emailId, customFolders, onE
 
     if (loading) return (
         <div className="flex h-full items-center justify-center bg-white">
-            <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-[#5B5FC7] border-t-transparent rounded-full animate-spin" />
         </div>
     );
 
@@ -92,63 +92,63 @@ const EmailDetails: React.FC<EmailDetailsProps> = ({ emailId, customFolders, onE
     return (
         <div className="h-full flex flex-col bg-white overflow-hidden">
             {/* Action Bar */}
-            <div className="h-14 px-6 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
+            <div className="h-14 px-6 border-b border-[#E0E0E0] flex justify-between items-center bg-white shrink-0">
                 <div className="flex items-center gap-1">
                     <button
                         onClick={() => email && onReply(email)}
-                        className="flex items-center gap-2 px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-md transition-colors text-sm font-medium"
+                        className="flex items-center gap-2 px-3 py-1.5 text-[#616161] hover:bg-[#F5F5F5] rounded-md transition-colors text-sm font-medium"
                     >
-                        <Reply size={18} />
+                        <Reply size={18} strokeWidth={1.5} />
                         <span>{t('email.details_tooltip_reply')}</span>
                     </button>
                     <button
                         onClick={() => email && onForward(email)}
-                        className="flex items-center gap-2 px-3 py-1.5 text-slate-600 hover:bg-slate-100 rounded-md transition-colors text-sm font-medium"
+                        className="flex items-center gap-2 px-3 py-1.5 text-[#616161] hover:bg-[#F5F5F5] rounded-md transition-colors text-sm font-medium"
                     >
-                        <Forward size={18} />
+                        <Forward size={18} strokeWidth={1.5} />
                         <span>{t('email.details_tooltip_forward')}</span>
                     </button>
-                    <div className="w-px h-6 bg-slate-200 mx-2" />
+                    <div className="w-px h-6 bg-[#E0E0E0] mx-2" />
                     <button
                         onClick={() => updateEmail({ is_starred: !email.is_starred })}
-                        className={`p-1.5 rounded hover:bg-slate-100 transition-colors ${email.is_starred ? 'text-amber-400' : 'text-slate-400'}`}
+                        className={`p-1.5 rounded hover:bg-[#F5F5F5] transition-colors ${email.is_starred ? 'text-amber-400' : 'text-[#888888]'}`}
                         title={email.is_starred ? t('email.remove_from_favorites') : t('email.add_to_favorites')}
                     >
-                        <Star size={18} fill={email.is_starred ? "currentColor" : "none"} />
+                        <Star size={18} fill={email.is_starred ? "currentColor" : "none"} strokeWidth={1.5} />
                     </button>
                     <button
                         onClick={() => updateEmail({ is_important: !email.is_important })}
-                        className={`p-1.5 rounded hover:bg-slate-100 transition-colors ${email.is_important ? 'text-rose-500' : 'text-slate-400'}`}
+                        className={`p-1.5 rounded hover:bg-[#F5F5F5] transition-colors ${email.is_important ? 'text-[#C4314B]' : 'text-[#888888]'}`}
                         title={t('email.details_tooltip_important')}
                     >
-                        <AlertCircle size={18} fill={email.is_important ? "currentColor" : "none"} />
+                        <AlertCircle size={18} fill={email.is_important ? "currentColor" : "none"} strokeWidth={1.5} />
                     </button>
                     <button
                         onClick={() => onDelete(email.id)}
-                        className="p-1.5 rounded hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors"
+                        className="p-1.5 rounded hover:bg-rose-50 text-[#888888] hover:text-[#C4314B] transition-colors"
                         title={t('common.delete')}
                     >
-                        <Trash2 size={18} />
+                        <Trash2 size={18} strokeWidth={1.5} />
                     </button>
 
                     <div className="relative" ref={dropdownRef}>
                         <button
                             onClick={() => setIsMoveDropdownOpen(!isMoveDropdownOpen)}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors text-sm font-medium ${isMoveDropdownOpen ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600 hover:bg-slate-100'}`}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors text-sm font-medium ${isMoveDropdownOpen ? 'bg-[#EEF2FF] text-[#5B5FC7]' : 'text-[#616161] hover:bg-[#F5F5F5]'}`}
                             title={t('email.details_tooltip_move')}
                         >
-                            <FolderInput size={18} />
+                            <FolderInput size={18} strokeWidth={1.5} />
                             <span>{t('email.details_tooltip_move')}</span>
                         </button>
 
                         {isMoveDropdownOpen && (
-                            <div className="absolute top-full left-0 mt-1 w-56 bg-white rounded-lg shadow-xl border border-slate-200 z-50 py-1 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                                <div className="px-3 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
+                            <div className="absolute top-full left-0 mt-1 w-56 bg-white rounded-md shadow-lg border border-[#E0E0E0] z-50 py-1 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="px-3 py-2 text-[10px] font-bold text-[#888888] uppercase tracking-wider border-b border-[#F5F5F5]">
                                     {t('email.folders')}
                                 </div>
                                 <button
                                     onClick={() => handleMoveToFolder(null)}
-                                    className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                                    className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-[#242424] hover:bg-[#EEF2FF] hover:text-[#5B5FC7] transition-colors"
                                 >
                                     <span>{t('email.inbox')}</span>
                                     {email.folder_id === null && <Check size={14} />}
@@ -157,7 +157,7 @@ const EmailDetails: React.FC<EmailDetailsProps> = ({ emailId, customFolders, onE
                                     <button
                                         key={folder.id}
                                         onClick={() => handleMoveToFolder(folder.id)}
-                                        className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                                        className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-[#242424] hover:bg-[#EEF2FF] hover:text-[#5B5FC7] transition-colors"
                                     >
                                         <span className="truncate">{folder.name}</span>
                                         {email.folder_id === folder.id && <Check size={14} />}
@@ -169,11 +169,11 @@ const EmailDetails: React.FC<EmailDetailsProps> = ({ emailId, customFolders, onE
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <button className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-md">
-                        <Printer size={18} />
+                    <button className="p-1.5 text-[#888888] hover:bg-[#F5F5F5] rounded-md transition-colors">
+                        <Printer size={18} strokeWidth={1.5} />
                     </button>
-                    <button className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-md">
-                        <MoreHorizontal size={18} />
+                    <button className="p-1.5 text-[#888888] hover:bg-[#F5F5F5] rounded-md transition-colors">
+                        <MoreHorizontal size={18} strokeWidth={1.5} />
                     </button>
                 </div>
             </div>
@@ -181,32 +181,32 @@ const EmailDetails: React.FC<EmailDetailsProps> = ({ emailId, customFolders, onE
             {/* Email Content */}
             <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
                 <div className="max-w-4xl mx-auto">
-                    <h1 className="text-2xl font-bold text-slate-900 mb-8 leading-tight">
+                    <h1 className="text-2xl font-bold text-[#242424] mb-8 leading-tight">
                         {email.subject || t('email.details_no_subject')}
                     </h1>
 
                     <div className="flex items-start justify-between mb-8">
                         <div className="flex items-center gap-4">
-                            <Avatar name={email.from_address} size="md" className="ring-2 ring-slate-100" />
+                            <Avatar name={email.from_address} size="md" className="ring-2 ring-white" />
                             <div>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-base font-bold text-slate-900">{email.from_address}</span>
-                                    <span className="text-xs text-slate-400 font-medium">
+                                    <span className="text-base font-bold text-[#242424]">{email.from_address}</span>
+                                    <span className="text-xs text-[#888888] font-medium">
                                         &lt;{email.from_address}&gt;
                                     </span>
                                 </div>
-                                <div className="text-sm text-slate-500 mt-0.5">
+                                <div className="text-sm text-[#616161] mt-0.5">
                                     {t('email.details_header_to')} {email.to_address}
                                 </div>
                             </div>
                         </div>
-                        <div className="text-right text-sm text-slate-500 font-medium">
+                        <div className="text-right text-sm text-[#616161] font-medium">
                             <div>{dateStr}</div>
                             <div>{timeStr}</div>
                         </div>
                     </div>
 
-                    <div className="prose prose-slate max-w-none text-slate-800 leading-relaxed mb-12">
+                    <div className="prose prose-slate max-w-none text-[#242424] leading-relaxed mb-12">
                         {email.body_html ? (
                             <div dangerouslySetInnerHTML={{
                                 __html: DOMPurify.sanitize(email.body_html, {
@@ -221,28 +221,28 @@ const EmailDetails: React.FC<EmailDetailsProps> = ({ emailId, customFolders, onE
                     </div>
 
                     {email.attachments && email.attachments.length > 0 && (
-                        <div className="border-t border-slate-100 pt-8">
-                            <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
-                                <Paperclip size={16} className="text-slate-400" />
+                        <div className="border-t border-[#E0E0E0] pt-6">
+                            <h3 className="text-sm font-bold text-[#242424] mb-4 flex items-center gap-2">
+                                <Paperclip size={16} className="text-[#888888]" />
                                 {email.attachments.length} {t('email.details_attachment_plural')}
                             </h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {email.attachments.map(att => (
-                                    <div key={att.id} className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg hover:border-indigo-300 hover:bg-white transition-all cursor-pointer group">
-                                        <div className="w-10 h-10 bg-white rounded flex items-center justify-center shrink-0 border border-slate-200 text-slate-400 group-hover:text-indigo-600 transition-colors">
-                                            <FileText size={20} />
+                                    <div key={att.id} className="flex items-center gap-3 p-3 bg-white border border-[#E0E0E0] rounded-md hover:border-[#5B5FC7] hover:bg-[#F5F5F5] transition-all cursor-pointer group shadow-sm">
+                                        <div className="w-10 h-10 bg-white rounded flex items-center justify-center shrink-0 border border-[#E0E0E0] text-[#888888] group-hover:text-[#5B5FC7] transition-colors">
+                                            <FileText size={20} strokeWidth={1.5} />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <div className="text-sm font-bold text-slate-700 truncate">{att.filename}</div>
-                                            <div className="text-[10px] font-bold text-slate-400">{Math.round(att.file_size / 1024)} {t('common.kb')}</div>
+                                            <div className="text-sm font-semibold text-[#242424] truncate">{att.filename}</div>
+                                            <div className="text-[10px] font-bold text-[#888888]">{Math.round(att.file_size / 1024)} {t('common.kb')}</div>
                                         </div>
                                         <a
                                             href={`/api/email/attachments/${att.id}/download`}
-                                            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-all opacity-0 group-hover:opacity-100"
+                                            className="p-2 text-[#888888] hover:text-[#5B5FC7] hover:bg-[#EEF2FF] rounded transition-all opacity-0 group-hover:opacity-100"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
-                                            <Download size={18} />
+                                            <Download size={18} strokeWidth={1.5} />
                                         </a>
                                     </div>
                                 ))}

@@ -93,158 +93,96 @@ const RegisterPage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-900 p-4">
-            {/* Background elements */}
-            <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse pointer-events-none" />
-            <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-rose-600/10 rounded-full blur-[120px] animate-pulse pointer-events-none" />
+        <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[#F0F0F0]">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-[#F0F0F0]" style={{ backgroundImage: 'radial-gradient(#E0E0E0 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
-            <div className="w-full max-w-4xl bg-slate-800/50 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col sm:flex-row relative z-10 animate-in">
-
-                {/* Left Panel (Visual) */}
-                <div className="hidden sm:flex w-1/2 bg-slate-900/40 relative flex-col items-center justify-center p-12 text-center border-r border-white/5">
-                    <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-500 via-transparent to-transparent" />
-
-                    <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                        <div className="absolute -top-[20%] -left-[20%] w-[140%] h-[140%] border-[40px] border-indigo-500/10 rounded-full blur-3xl" />
-                        <div className="absolute bottom-[20%] right-[20%] w-[20%] h-[20%] bg-indigo-500/20 rounded-full blur-2xl" />
+            <div className="w-full max-w-md bg-white border border-[#E0E0E0] rounded-lg shadow-xl relative z-10 p-8 m-4">
+                <div className="text-center mb-8">
+                    <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-lg bg-[#5B5FC7] mb-4 shadow-sm">
+                        <img src="/icon.png" alt="Logo" className="w-8 h-8 object-contain brightness-0 invert" />
                     </div>
-
-                    <div className="relative z-10 flex flex-col items-center">
-                        <div className="relative group/logo mb-8 cursor-default">
-                            {/* Always rotating elegant ring */}
-                            <div className="absolute inset-0 flex items-center justify-center opacity-60">
-                                <div
-                                    className="w-[100px] h-[100px] rounded-3xl animate-spin-slow border border-indigo-500/30"
-                                    style={{
-                                        background: 'conic-gradient(from 0deg, transparent, rgba(99,102,241,0.3), transparent)',
-                                        animationDuration: '10s'
-                                    }}
-                                />
-                            </div>
-
-                            {/* Always pulsing subtle glow */}
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-24 h-24 rounded-3xl bg-indigo-500/10 animate-pulse" />
-                            </div>
-
-                            {/* Logo Container */}
-                            <div className="relative w-24 h-24 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl flex items-center justify-center p-5 shadow-2xl transition-all duration-500 hover:scale-105 hover:shadow-indigo-500/20">
-                                {/* Inner subtle glow */}
-                                <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-indigo-500/10 to-transparent opacity-50" />
-
-                                <img
-                                    src="/icon.png"
-                                    alt="GIS Coordinator"
-                                    className="w-full h-full object-contain drop-shadow-lg"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="animate-in slide-in-from-bottom-8 fade-in duration-700 delay-150">
-                            <h2 className="text-4xl font-bold text-white mb-4 tracking-tight">{t('auth.getStarted')}</h2>
-                            <p className="text-slate-400 mb-10 max-w-xs mx-auto leading-relaxed">
-                                {t('auth.registerPrompt')}
-                            </p>
-                        </div>
-
-                        <div className="space-y-4 animate-in slide-in-from-bottom-8 fade-in duration-700 delay-300">
-                            <span className="text-indigo-400 text-[10px] font-bold uppercase tracking-widest block opacity-80">{t('auth.haveAccount')}</span>
-                            <Link
-                                to="/login"
-                                className="inline-block px-10 py-3.5 border border-white/20 bg-white/5 backdrop-blur-md rounded-2xl text-white font-bold hover:bg-white/10 hover:border-white/40 hover:scale-105 transition-all duration-300 shadow-xl"
-                            >
-                                {t('auth.loginButton')}
-                            </Link>
-                        </div>
-                    </div>
+                    <h2 className="text-2xl font-bold text-[#242424]">
+                        {t('auth.createAccount') || 'Create Account'}
+                    </h2>
+                    <p className="mt-2 text-sm text-[#616161]">
+                        {t('auth.registerPrompt')}
+                    </p>
                 </div>
 
-                {/* Right Panel (Form) */}
-                <div className="w-full sm:w-1/2 p-8 sm:p-12 bg-slate-800/80 flex flex-col justify-center">
-                    <div className="text-center sm:text-left mb-8">
-                        <div className="sm:hidden mx-auto h-16 w-16 flex items-center justify-center rounded-2xl bg-indigo-600 mb-6 shadow-lg">
-                            <img src="/icon.png" alt="Logo" className="w-10 h-10 object-contain brightness-0 invert" />
+                <form className="space-y-5" onSubmit={handleSubmit}>
+                    {error && (
+                        <div className="bg-[#C4314B]/10 border border-[#C4314B]/20 p-3 rounded-md flex items-start space-x-3 text-[#C4314B]">
+                            <AlertCircle className="shrink-0" size={18} />
+                            <p className="text-sm font-medium">{error}</p>
                         </div>
-                        <h2 className="text-3xl font-bold text-white tracking-tight text-center sm:text-left">
-                            {t('auth.createAccount') || 'Create Account'}
-                        </h2>
-                        <p className="mt-2 text-slate-400 text-sm sm:hidden text-center">
-                            {t('auth.haveAccountShort') || 'Already have an account?'}{' '}
-                            <Link to="/login" className="text-indigo-400 font-bold hover:underline">
-                                {t('auth.loginLink')}
-                            </Link>
-                        </p>
+                    )}
+
+                    <div className="space-y-4">
+                        <FormGroup
+                            label={t('common.username')}
+                            name="username"
+                            value={formData.username}
+                            onChange={handleChange}
+                            placeholder="johndoe"
+                            required
+                            icon={<User className="h-5 w-5" />}
+                        />
+                        <FormGroup
+                            label={t('common.fullNameOptional')}
+                            name="full_name"
+                            value={formData.full_name}
+                            onChange={handleChange}
+                            placeholder="John Doe"
+                            icon={<Type className="h-5 w-5" />}
+                        />
+                        <FormGroup
+                            label={t('common.password')}
+                            name="password"
+                            type="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            placeholder="••••••••"
+                            required
+                            icon={<Lock className="h-5 w-5" />}
+                            isPassword
+                        />
+                        <FormGroup
+                            label={t('auth.confirmPassword') || 'Confirm Password'}
+                            name="confirmPassword"
+                            type="password"
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
+                            placeholder="••••••••"
+                            required
+                            icon={<Lock className="h-5 w-5" />}
+                            isPassword
+                        />
                     </div>
 
-                    <form className="space-y-5" onSubmit={handleSubmit}>
-                        {error && (
-                            <div className="bg-rose-500/10 border border-rose-500/20 p-3 rounded-xl flex items-start space-x-3 text-rose-400 animate-in">
-                                <AlertCircle className="shrink-0" size={18} />
-                                <p className="text-sm font-semibold">{error}</p>
-                            </div>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full h-10 flex items-center justify-center bg-[#5B5FC7] text-white text-sm font-bold rounded-md hover:bg-[#4f52b2] active:scale-[0.98] transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+                    >
+                        {loading ? (
+                            <Loader2 className="animate-spin" size={18} />
+                        ) : (
+                            <span className="flex items-center space-x-2">
+                                <span>{t('auth.registerButton')}</span>
+                                <ShieldCheck size={16} />
+                            </span>
                         )}
+                    </button>
+                </form>
 
-                        <div className="grid grid-cols-1 gap-5">
-                            <div className="space-y-3">
-                                <FormGroup
-                                    label={t('common.username')}
-                                    name="username"
-                                    value={formData.username}
-                                    onChange={handleChange}
-                                    placeholder="johndoe"
-                                    required
-                                    icon={<User className="h-4 w-4 sm:h-5 sm:w-5" />}
-                                />
-                                <FormGroup
-                                    label={t('common.fullNameOptional')}
-                                    name="full_name"
-                                    value={formData.full_name}
-                                    onChange={handleChange}
-                                    placeholder="John Doe"
-                                    icon={<Type className="h-4 w-4 sm:h-5 sm:w-5" />}
-                                />
-                                <FormGroup
-                                    label={t('common.password')}
-                                    name="password"
-                                    type="password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    placeholder="••••••••"
-                                    required
-                                    icon={<Lock className="h-4 w-4 sm:h-5 sm:w-5" />}
-                                    isPassword
-                                />
-                                <FormGroup
-                                    label={t('auth.confirmPassword') || 'Confirm Password'}
-                                    name="confirmPassword"
-                                    type="password"
-                                    value={formData.confirmPassword}
-                                    onChange={handleChange}
-                                    placeholder="••••••••"
-                                    required
-                                    icon={<Lock className="h-4 w-4 sm:h-5 sm:w-5" />}
-                                    isPassword
-                                />
-                            </div>
-                        </div>
-
-                        <div className="pt-2 flex flex-col space-y-3">
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full h-11 flex items-center justify-center bg-indigo-600 text-white text-base font-bold rounded-xl hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-50"
-                            >
-                                {loading ? (
-                                    <Loader2 className="animate-spin" size={20} />
-                                ) : (
-                                    <span className="flex items-center space-x-2">
-                                        <span>{t('auth.registerButton')}</span>
-                                        <ShieldCheck size={18} />
-                                    </span>
-                                )}
-                            </button>
-                        </div>
-                    </form>
+                <div className="mt-6 text-center">
+                    <p className="text-sm text-[#616161]">
+                        {t('auth.haveAccount')}{' '}
+                        <Link to="/login" className="text-[#5B5FC7] font-bold hover:underline">
+                            {t('auth.loginButton')}
+                        </Link>
+                    </p>
                 </div>
             </div>
         </div>
@@ -269,12 +207,12 @@ const FormGroup = ({ label, name, type = "text", value, onChange, placeholder, r
 
     return (
         <div>
-            <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block ml-1">
+            <label className="block text-xs font-bold text-[#616161] uppercase tracking-wide mb-1.5">
                 {label}
             </label>
             <div className="relative group">
                 {icon && (
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#888888] group-focus-within:text-[#5B5FC7] transition-colors">
                         {icon}
                     </div>
                 )}
@@ -282,7 +220,7 @@ const FormGroup = ({ label, name, type = "text", value, onChange, placeholder, r
                     name={name}
                     type={inputType}
                     required={required}
-                    className={`w-full h-10 sm:h-11 bg-slate-900/50 border border-slate-700/50 rounded-lg sm:rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-sm ${icon ? 'pl-10' : 'px-4'} ${isPassword ? 'pr-10' : 'pr-4'}`}
+                    className={`w-full h-10 bg-[#F5F5F5] border border-transparent rounded-md text-[#242424] placeholder-[#888888] focus:outline-none focus:bg-white focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7] transition-all text-sm ${icon ? 'pl-10' : 'px-4'} ${isPassword ? 'pr-10' : 'pr-4'}`}
                     placeholder={placeholder}
                     value={value}
                     onChange={onChange}
@@ -291,9 +229,9 @@ const FormGroup = ({ label, name, type = "text", value, onChange, placeholder, r
                     <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-white transition-colors focus:outline-none"
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#888888] hover:text-[#5B5FC7] transition-colors focus:outline-none"
                     >
-                        {showPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
+                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
                 )}
             </div>

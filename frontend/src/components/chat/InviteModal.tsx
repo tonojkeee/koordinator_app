@@ -42,8 +42,9 @@ export const InviteModal: React.FC<InviteModalProps> = ({
 
       onInviteSent?.();
       handleClose();
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Ошибка при отправке приглашения');
+    } catch (err: unknown) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setError((err as any).response?.data?.detail || 'Ошибка при отправке приглашения');
     } finally {
       setIsLoading(false);
     }

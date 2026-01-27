@@ -53,9 +53,10 @@ export const InvitationsList: React.FC<InvitationsListProps> = ({ onAccept }) =>
         queryClient.invalidateQueries({ queryKey: ['channel'] });
         onAccept?.();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error responding to invitation:', error);
-      alert(error.response?.data?.detail || 'Ошибка при обработке приглашения');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      alert((error as any).response?.data?.detail || 'Ошибка при обработке приглашения');
     } finally {
       setResponding(null);
     }

@@ -37,7 +37,7 @@ function InviteModal({ isOpen, onClose, channelName, onInvite }: InviteModalProp
       });
 
       return filtered.slice(0, 10); // Limit to 10 results
-    } catch (error) {
+    } catch {
       return [];
     }
   };
@@ -74,10 +74,10 @@ function InviteModal({ isOpen, onClose, channelName, onInvite }: InviteModalProp
       onClose={handleClose}
       title={
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">
+          <h2 className="text-lg font-bold text-[#242424]">
             {t('chat.invite_to_channel')}
           </h2>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-[#616161] mt-0.5">
             {channelName}
           </p>
         </div>
@@ -89,6 +89,7 @@ function InviteModal({ isOpen, onClose, channelName, onInvite }: InviteModalProp
             variant="secondary"
             onClick={handleClose}
             fullWidth
+            className="font-semibold"
           >
             {t('common.cancel')}
           </Button>
@@ -97,17 +98,18 @@ function InviteModal({ isOpen, onClose, channelName, onInvite }: InviteModalProp
             onClick={handleInvite}
             disabled={selectedUsers.length === 0 || isLoading}
             fullWidth
+            className="font-semibold"
           >
             {isLoading ? t('common.loading') : t('chat.send_invitation')}
           </Button>
         </>
       }
     >
-      <div className="space-y-6">
+      <div className="space-y-5">
         {/* Error message */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-            <p className="text-sm text-red-600">{error}</p>
+          <div className="bg-[#C4314B]/10 border border-[#C4314B]/20 rounded-md p-3">
+            <p className="text-sm text-[#C4314B] font-medium">{error}</p>
           </div>
         )}
 

@@ -98,7 +98,7 @@ const TasksPage: React.FC = () => {
         (activeTab === 'completed' && isCompletedLoading);
 
     return (
-        <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden animate-in fade-in duration-300">
+        <div className="flex-1 flex flex-col bg-[#F5F5F5] overflow-hidden animate-in fade-in duration-300">
             {/* Header */}
             <div className="px-6 pt-4 pb-2 shrink-0 z-20 sticky top-0 pointer-events-none">
                 <Header
@@ -114,19 +114,19 @@ const TasksPage: React.FC = () => {
                         {
                             id: 'received',
                             label: t('tasks.tabs.received'),
-                            icon: <ListTodo size={13} />,
+                            icon: <ListTodo size={16} strokeWidth={1.5} />,
                             badge: receivedTasks?.length || 0,
                         },
                         {
                             id: 'issued',
                             label: t('tasks.tabs.issued'),
-                            icon: <Send size={13} />,
+                            icon: <Send size={16} strokeWidth={1.5} />,
                             badge: issuedTasks?.length || 0,
                         },
                         {
                             id: 'completed',
                             label: t('tasks.tabs.completed'),
-                            icon: <CheckCircle2 size={13} />,
+                            icon: <CheckCircle2 size={16} strokeWidth={1.5} />,
                             badge: completedTasks?.length || 0,
                         },
                     ]}
@@ -144,21 +144,21 @@ const TasksPage: React.FC = () => {
                     }
                     tabsActions={
                         activeTab === 'completed' ? (
-                            <div className="flex bg-slate-100/50 p-1 rounded-xl border border-slate-200/50 animate-in fade-in zoom-in-95 duration-200">
+                            <div className="flex bg-white p-1 rounded-md border border-[#E0E0E0] animate-in fade-in zoom-in-95 duration-200 shadow-sm">
                                 <button
                                     onClick={() => setCompletedFilter('my_execution')}
-                                    className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all ${completedFilter === 'my_execution'
-                                        ? 'bg-white text-slate-900 shadow-sm'
-                                        : 'text-slate-400 hover:text-slate-600'
+                                    className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wide transition-all ${completedFilter === 'my_execution'
+                                        ? 'bg-[#5B5FC7] text-white shadow-sm'
+                                        : 'text-[#616161] hover:bg-[#F5F5F5]'
                                         }`}
                                 >
                                     {t('tasks.filter.my_execution')}
                                 </button>
                                 <button
                                     onClick={() => setCompletedFilter('my_orders')}
-                                    className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all ${completedFilter === 'my_orders'
-                                        ? 'bg-white text-slate-900 shadow-sm'
-                                        : 'text-slate-400 hover:text-slate-600'
+                                    className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wide transition-all ${completedFilter === 'my_orders'
+                                        ? 'bg-[#5B5FC7] text-white shadow-sm'
+                                        : 'text-[#616161] hover:bg-[#F5F5F5]'
                                         }`}
                                 >
                                     {t('tasks.filter.my_orders')}
@@ -167,7 +167,7 @@ const TasksPage: React.FC = () => {
                         ) : undefined
                     }
                     sticky={false}
-                    className="pointer-events-auto"
+                    className="pointer-events-auto shadow-sm border border-[#E0E0E0] rounded-lg bg-white"
                 />
             </div>
 
@@ -175,11 +175,11 @@ const TasksPage: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-6 scrollbar-hide">
                 {isLoading ? (
                     <div className="flex justify-center pt-20">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#5B5FC7]"></div>
                     </div>
                 ) : currentTasks.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-slate-400 opacity-60">
-                        <CheckCircle2 size={48} className="mb-4 text-slate-300" />
+                    <div className="flex flex-col items-center justify-center h-full text-[#BDBDBD] opacity-80">
+                        <CheckCircle2 size={48} className="mb-4 text-[#E0E0E0]" strokeWidth={1} />
                         <p className="text-sm font-semibold">{t('tasks.empty.title')}</p>
                     </div>
                 ) : (

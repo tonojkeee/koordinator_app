@@ -57,17 +57,17 @@ const RenameModal: React.FC<{
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose} />
-            <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl relative animate-in zoom-in-95 duration-300">
-                <h3 className="text-xl font-bold text-slate-900 mb-5 flex items-center">
-                    <div className="w-9 h-9 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 mr-3">
-                        <Edit2 size={18} />
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose} />
+            <div className="bg-white rounded-lg w-full max-w-md p-6 shadow-xl relative animate-in zoom-in-95 duration-200 border border-[#E0E0E0]">
+                <h3 className="text-lg font-bold text-[#242424] mb-5 flex items-center gap-3">
+                    <div className="w-8 h-8 bg-[#EEF2FF] rounded-md flex items-center justify-center text-[#5B5FC7]">
+                        <Edit2 size={18} strokeWidth={1.5} />
                     </div>
                     {t('archive.rename')}
                 </h3>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">
+                        <label className="block text-xs font-bold text-[#616161] uppercase tracking-wide mb-2 ml-1">
                             {t('archive.newName')}
                         </label>
                         <input
@@ -75,7 +75,7 @@ const RenameModal: React.FC<{
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all outline-none font-medium"
+                            className="w-full px-4 py-3 bg-[#F5F5F5] border border-transparent rounded-md focus:bg-white focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7] transition-all outline-none font-medium text-[#242424]"
                             placeholder={t('archive.enterName')}
                         />
                     </div>
@@ -83,14 +83,14 @@ const RenameModal: React.FC<{
                         <button
                             type="submit"
                             disabled={!name.trim() || name === item.name}
-                            className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-lg shadow-indigo-200 disabled:opacity-50 disabled:shadow-none"
+                            className="w-full py-3 bg-[#5B5FC7] text-white rounded-md font-bold hover:bg-[#4f52b2] active:scale-[0.98] transition-all shadow-sm disabled:opacity-50 disabled:shadow-none"
                         >
                             {t('common.save')}
                         </button>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="w-full py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 active:scale-[0.98] transition-all"
+                            className="w-full py-3 bg-white border border-[#E0E0E0] text-[#616161] rounded-md font-bold hover:bg-[#F5F5F5] active:scale-[0.98] transition-all"
                         >
                             {t('common.cancel')}
                         </button>
@@ -123,25 +123,25 @@ const PropertiesModal: React.FC<{
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose} />
-            <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl relative animate-in zoom-in-95 duration-300">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose} />
+            <div className="bg-white rounded-lg w-full max-w-md p-6 shadow-xl relative animate-in zoom-in-95 duration-200 border border-[#E0E0E0]">
                 <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-bold text-slate-900 flex items-center">
-                        <div className="w-9 h-9 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 mr-3">
-                            <Info size={18} />
+                    <h3 className="text-lg font-bold text-[#242424] flex items-center gap-3">
+                        <div className="w-8 h-8 bg-[#EEF2FF] rounded-md flex items-center justify-center text-[#5B5FC7]">
+                            <Info size={18} strokeWidth={1.5} />
                         </div>
                         {t('archive.properties')}
                     </h3>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 transition-colors">
-                        <X size={18} />
+                    <button onClick={onClose} className="p-2 hover:bg-[#F5F5F5] rounded-md text-[#616161] transition-colors">
+                        <X size={18} strokeWidth={1.5} />
                     </button>
                 </div>
 
-                <div className="space-y-3.5">
+                <div className="space-y-4">
                     {details.map((detail, idx) => (
                         <div key={idx} className="flex flex-col space-y-1">
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{detail.label}</span>
-                            <span className="text-slate-700 text-sm font-medium break-all">{detail.value}</span>
+                            <span className="text-[10px] font-bold text-[#888888] uppercase tracking-wider">{detail.label}</span>
+                            <span className="text-[#242424] text-sm font-medium break-all select-text">{detail.value}</span>
                         </div>
                     ))}
                 </div>
@@ -149,7 +149,7 @@ const PropertiesModal: React.FC<{
                 <div className="mt-8">
                     <button
                         onClick={onClose}
-                        className="w-full py-3.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 active:scale-[0.98] transition-all shadow-xl shadow-slate-200"
+                        className="w-full py-3 bg-[#F5F5F5] text-[#242424] border border-[#E0E0E0] rounded-md font-bold hover:bg-[#E0E0E0] active:scale-[0.98] transition-all"
                     >
                         {t('common.close')}
                     </button>
@@ -194,13 +194,13 @@ const CreateFolderModal: React.FC<{
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
-            <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white w-full max-w-sm rounded-lg shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 border border-[#E0E0E0]">
                 <div className="px-6 py-6">
-                    <div className="w-14 h-14 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500 mx-auto mb-4">
-                        <FolderPlus size={28} />
+                    <div className="w-12 h-12 bg-[#FFF4E5] rounded-md flex items-center justify-center text-[#D97706] mx-auto mb-4">
+                        <FolderPlus size={24} strokeWidth={1.5} />
                     </div>
-                    <h3 className="text-xl font-black text-slate-900 tracking-tight mb-6 text-center">
+                    <h3 className="text-lg font-bold text-[#242424] tracking-tight mb-6 text-center">
                         {t('archive.createFolder')}
                     </h3>
                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -209,7 +209,7 @@ const CreateFolderModal: React.FC<{
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-amber-500/20 text-slate-900 font-bold text-center placeholder:text-slate-300 transition-all underline-offset-4"
+                            className="w-full px-4 py-3 bg-[#F5F5F5] border border-transparent rounded-md focus:bg-white focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7] text-[#242424] font-medium text-center placeholder-[#888888] transition-all outline-none"
                             placeholder={t('archive.folderNamePlaceholder')}
                             required
                         />
@@ -217,14 +217,14 @@ const CreateFolderModal: React.FC<{
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="flex-1 px-6 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-all"
+                                className="flex-1 px-4 py-3 bg-white border border-[#E0E0E0] text-[#616161] rounded-md font-bold hover:bg-[#F5F5F5] transition-all"
                             >
                                 {t('common.cancel')}
                             </button>
                             <button
                                 type="submit"
                                 disabled={isLoading || !name}
-                                className="flex-1 px-6 py-4 bg-amber-500 text-white rounded-2xl font-bold hover:bg-amber-600 active:scale-95 disabled:opacity-50 transition-all shadow-lg shadow-amber-200"
+                                className="flex-1 px-4 py-3 bg-[#D97706] text-white rounded-md font-bold hover:bg-[#B45309] active:scale-[0.98] disabled:opacity-50 transition-all shadow-sm"
                             >
                                 {isLoading ? '...' : t('common.create')}
                             </button>
@@ -392,19 +392,19 @@ const UploadArchiveModal: React.FC<{
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
-            <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white w-full max-w-lg rounded-lg shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 border border-[#E0E0E0]">
                 <div className="px-6 py-6">
                     <div className="flex items-center justify-between mb-6">
                         <div>
-                            <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                            <h3 className="text-lg font-bold text-[#242424] tracking-tight">
                                 {isFolder ? t('archive.upload_folder_modal_title') : t('archive.uploadModal.title')}
                             </h3>
-                            <p className="text-xs text-slate-500 font-medium">
+                            <p className="text-xs text-[#616161] font-medium mt-1">
                                 {isFolder ? t('archive.files_count', { count: folderData.files.length }) : t('archive.uploadModal.subtitle')}
                             </p>
                         </div>
-                        <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
+                        <button onClick={onClose} className="p-1.5 text-[#616161] hover:text-[#242424] hover:bg-[#F5F5F5] rounded-md transition-all">
                             <Plus className="rotate-45" size={20} />
                         </button>
                     </div>
@@ -413,12 +413,12 @@ const UploadArchiveModal: React.FC<{
                         {isFolder ? (
                             <>
                                 {/* Folder info */}
-                                <div className="bg-amber-50 rounded-xl p-5 border-2 border-amber-100">
+                                <div className="bg-[#FFF4E5] rounded-md p-4 border border-[#FFEDD5]">
                                     <div className="flex items-center space-x-3 mb-2">
-                                        <FolderIcon size={20} className="text-amber-500" />
-                                        <span className="font-bold text-slate-900">{folderData.folderName}</span>
+                                        <FolderIcon size={20} className="text-[#D97706]" strokeWidth={1.5} />
+                                        <span className="font-bold text-[#242424]">{folderData.folderName}</span>
                                     </div>
-                                    <p className="text-xs text-slate-600">
+                                    <p className="text-xs text-[#D97706]">
                                         {t('archive.folder_structure_info', { count: folderData.files.length })}
                                     </p>
                                 </div>
@@ -426,13 +426,13 @@ const UploadArchiveModal: React.FC<{
                                 {/* Progress */}
                                 {isUploading && (
                                     <div className="space-y-2">
-                                        <div className="flex justify-between text-xs font-medium text-slate-600">
+                                        <div className="flex justify-between text-xs font-medium text-[#616161]">
                                             <span>{t('archive.uploading')}</span>
                                             <span>{uploadProgress.current} / {uploadProgress.total}</span>
                                         </div>
-                                        <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                                        <div className="w-full bg-[#E0E0E0] rounded-full h-1.5 overflow-hidden">
                                             <div
-                                                className="bg-indigo-600 h-full transition-all duration-300"
+                                                className="bg-[#5B5FC7] h-full transition-all duration-300"
                                                 style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
                                             />
                                         </div>
@@ -442,39 +442,39 @@ const UploadArchiveModal: React.FC<{
                         ) : (
                             <>
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{t('archive.uploadModal.fileLabel')}</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-wide text-[#616161] ml-1">{t('archive.uploadModal.fileLabel')}</label>
                                     <label className="block w-full cursor-pointer group">
-                                        <div className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center transition-all ${file ? 'border-indigo-200 bg-indigo-50/30' : 'border-slate-200 hover:border-indigo-400 hover:bg-slate-50'}`}>
-                                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition-colors ${file ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-500'}`}>
-                                                <Plus size={24} />
+                                        <div className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center transition-all ${file ? 'border-[#5B5FC7]/50 bg-[#EEF2FF]' : 'border-[#E0E0E0] hover:border-[#5B5FC7] hover:bg-[#F5F5F5]'}`}>
+                                            <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-3 transition-colors ${file ? 'bg-white text-[#5B5FC7]' : 'bg-[#F0F0F0] text-[#888888] group-hover:bg-white group-hover:text-[#5B5FC7]'}`}>
+                                                <Plus size={24} strokeWidth={1.5} />
                                             </div>
-                                            <span className={`text-sm text-center font-bold ${file ? 'text-indigo-600' : 'text-slate-500 group-hover:text-indigo-600'}`}>
+                                            <span className={`text-sm text-center font-bold ${file ? 'text-[#5B5FC7]' : 'text-[#616161] group-hover:text-[#5B5FC7]'}`}>
                                                 {file ? file.name : t('archive.uploadModal.dropzone')}
                                             </span>
-                                            {file && <span className="text-[10px] text-indigo-400 mt-1">{formatSize(file.size)}</span>}
+                                            {file && <span className="text-[10px] text-[#5B5FC7] mt-1">{formatSize(file.size)}</span>}
                                             <input type="file" className="hidden" onChange={handleFileChange} />
                                         </div>
                                     </label>
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{t('archive.uploadModal.nameLabel')}</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-wide text-[#616161] ml-1">{t('archive.uploadModal.nameLabel')}</label>
                                     <input
                                         type="text"
                                         value={title}
                                         onChange={(e) => setTitle(e.target.value)}
-                                        className="w-full h-11 px-4 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500/10 text-slate-900 font-bold placeholder:text-slate-300 transition-all text-sm"
+                                        className="w-full h-10 px-4 bg-[#F5F5F5] border border-transparent rounded-md focus:bg-white focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7] text-[#242424] font-medium placeholder-[#888888] transition-all text-sm outline-none"
                                         placeholder={t('archive.name_placeholder')}
                                         required
                                     />
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">{t('archive.uploadModal.descLabel')}</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-wide text-[#616161] ml-1">{t('archive.uploadModal.descLabel')}</label>
                                     <textarea
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
-                                        className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-indigo-500/10 text-slate-900 font-medium placeholder:text-slate-300 transition-all min-h-[90px] resize-none text-sm"
+                                        className="w-full px-4 py-3 bg-[#F5F5F5] border border-transparent rounded-md focus:bg-white focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7] text-[#242424] font-medium placeholder-[#888888] transition-all min-h-[90px] resize-none text-sm outline-none"
                                         placeholder={t('archive.description_placeholder')}
                                     />
                                 </div>
@@ -486,14 +486,14 @@ const UploadArchiveModal: React.FC<{
                                 type="button"
                                 onClick={onClose}
                                 disabled={isUploading}
-                                className="flex-1 h-11 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-all disabled:opacity-50 text-sm"
+                                className="flex-1 h-10 bg-white border border-[#E0E0E0] text-[#616161] rounded-md font-bold hover:bg-[#F5F5F5] transition-all disabled:opacity-50 text-sm"
                             >
                                 {t('common.cancel')}
                             </button>
                             <button
                                 type="submit"
                                 disabled={(!file && !isFolder) || (!title && !isFolder) || isUploading}
-                                className="flex-[2] h-11 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 active:scale-95 disabled:opacity-50 disabled:active:scale-100 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center text-sm"
+                                className="flex-[2] h-10 bg-[#5B5FC7] text-white rounded-md font-bold hover:bg-[#4f52b2] active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 transition-all shadow-sm flex items-center justify-center text-sm"
                             >
                                 {isUploading ? t('archive.uploading') : (isFolder ? t('archive.upload_folder_button') : t('archive.uploadModal.submit'))}
                             </button>

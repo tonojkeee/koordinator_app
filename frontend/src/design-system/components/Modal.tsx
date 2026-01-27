@@ -168,7 +168,7 @@ export const Modal = React.memo<ModalProps>(({
       <div
         ref={modalRef}
         className={cn(
-          'bg-white rounded-2xl shadow-2xl relative animate-in zoom-in-95 duration-300',
+          'bg-white rounded-lg shadow-xl relative animate-in zoom-in-95 duration-200 border border-[#E0E0E0]',
           // Use responsive size classes
           responsiveSizeClasses[size],
           // Responsive max height to prevent overflow on mobile
@@ -181,12 +181,12 @@ export const Modal = React.memo<ModalProps>(({
       >
         {/* Header */}
         {(title || showCloseButton) && (
-          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-100">
+          <div className="flex items-center justify-between p-4 border-b border-[#E0E0E0]">
             {title && (
               typeof title === 'string' ? (
                 <h2
                   id="modal-title"
-                  className="text-base sm:text-lg font-black text-slate-900"
+                  className="text-lg font-bold text-[#242424]"
                 >
                   {title}
                 </h2>
@@ -199,24 +199,24 @@ export const Modal = React.memo<ModalProps>(({
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                className="p-1.5 hover:bg-[#F5F5F5] rounded-md transition-colors"
                 aria-label="Close modal"
                 type="button"
               >
-                <X className="w-5 h-5 text-slate-500" />
+                <X className="w-5 h-5 text-[#616161]" />
               </button>
             )}
           </div>
         )}
 
         {/* Content */}
-        <div className="p-4 sm:p-6">
+        <div className="p-4 sm:p-5">
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 p-4 sm:p-6 border-t border-slate-100">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 p-4 bg-[#F5F5F5]/50 border-t border-[#E0E0E0]">
             {footer}
           </div>
         )}

@@ -578,16 +578,18 @@ const MainLayout: React.FC = () => {
     useEffect(() => {
         if (!window.electron) return;
 
-        const removeHandler = window.electron.onNotificationClicked((data: any) => {
-            if (data.type === 'chat' && data.channel_id) {
-                navigate(`/chat/${data.channel_id}`);
-            } else if (data.type === 'task') {
+        const removeHandler = window.electron.onNotificationClicked((data: Record<string, unknown>) => {
+            const payload = data as { type: string; channel_id?: number };
+            if (payload.type === 'chat' && payload.channel_id) {
+                navigate(`/chat/${payload.channel_id}`);
+            } else if (payload.type === 'task') {
                 navigate('/tasks');
-            } else if (data.type === 'email') {
+            } else if (payload.type === 'email') {
                 navigate('/email');
             }
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const removeActionHandler = (window.electron as any).onNotificationAction?.((payload: { action: string; data: any }) => {
             if (payload.action === 'view' && payload.data) {
                 const data = payload.data;
@@ -668,7 +670,7 @@ const MainLayout: React.FC = () => {
     const systemNotice = systemSettings?.system_notice;
 
     return (
-        <div className="flex h-screen overflow-hidden bg-teams-bg">
+        <div className="flex h-screen overflow-hidden bg-[#F0F0F0]">
             {/* Connectivity Banner */}
             {isOffline ? (
                 <div className="fixed top-0 inset-x-0 bg-amber-500 text-white px-4 py-1.5 text-center text-xs font-black tracking-[0.15em] uppercase shadow-lg border-b border-white/10 z-[101] animate-in slide-in-from-top-full duration-500 flex items-center justify-center gap-3">
@@ -676,7 +678,7 @@ const MainLayout: React.FC = () => {
                     <span>{t('layout.banner_offline')}</span>
                 </div>
             ) : !isConnected ? (
-                <div className="fixed top-0 inset-x-0 bg-indigo-600 text-white px-4 py-1.5 text-center text-xs font-black tracking-[0.15em] uppercase shadow-lg border-b border-white/10 z-[101] animate-in slide-in-from-top-full duration-500 flex items-center justify-center gap-3">
+                <div className="fixed top-0 inset-x-0 bg-[#5B5FC7] text-white px-4 py-1.5 text-center text-xs font-black tracking-[0.15em] uppercase shadow-lg border-b border-white/10 z-[101] animate-in slide-in-from-top-full duration-500 flex items-center justify-center gap-3">
                     <div className="w-2 h-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     <span>{t('layout.banner_connecting')}</span>
                 </div>
@@ -684,15 +686,15 @@ const MainLayout: React.FC = () => {
 
             {/* System Notice Banner */}
             {systemNotice && (
-                <div className="fixed top-0 inset-x-0 bg-gradient-to-r from-red-500/90 to-rose-600/90 backdrop-blur-md text-white px-4 py-1.5 text-center text-xs font-bold tracking-wide shadow-lg border-b border-white/10 z-[100] animate-in slide-in-from-top-full duration-500 whitespace-nowrap overflow-hidden text-ellipsis">
+                <div className="fixed top-0 inset-x-0 bg-gradient-to-r from-[#C4314B]/90 to-rose-600/90 backdrop-blur-md text-white px-4 py-1.5 text-center text-xs font-bold tracking-wide shadow-lg border-b border-white/10 z-[100] animate-in slide-in-from-top-full duration-500 whitespace-nowrap overflow-hidden text-ellipsis">
                     {systemNotice}
                 </div>
             )}
 
             <SidebarNav />
 
-            <div className="flex-1 flex min-w-0 flex-col md:ml-[68px]">
-                <main className="flex-1 relative h-full">
+            <div className="flex-1 flex min-w-0 flex-col md:ml-[68px] bg-[#F5F5F5]">
+                <main className="flex-1 relative h-full shadow-[inset_1px_0_0_0_rgba(0,0,0,0.05)]">
                     <Outlet />
                 </main>
             </div>

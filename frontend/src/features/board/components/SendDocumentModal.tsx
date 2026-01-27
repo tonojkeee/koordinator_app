@@ -90,17 +90,17 @@ const SendDocumentModal: React.FC<SendDocumentModalProps> = ({ isOpen, onClose, 
             title={t('board.send_modal.title')}
             size="md"
         >
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <p className="text-sm text-slate-500 font-medium -mt-2">
-                    {t('board.send_modal.to')}: {channelName ? `${t('board.send_modal.to_all')} ${channelName}` : recipientNames.join(', ')}
+            <form onSubmit={handleSubmit} className="space-y-5">
+                <p className="text-sm text-[#616161] font-medium -mt-1">
+                    {t('board.send_modal.to')}: <span className="font-bold text-[#242424]">{channelName ? `${t('board.send_modal.to_all')} ${channelName}` : recipientNames.join(', ')}</span>
                 </p>
 
                 <div
                     onClick={() => fileInputRef.current?.click()}
-                    className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all ${
+                    className={`border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer transition-all ${
                         file
-                            ? 'border-indigo-500 bg-indigo-50/30'
-                            : 'border-slate-200 hover:border-indigo-400 hover:bg-slate-50'
+                            ? 'border-[#5B5FC7] bg-[#EEF2FF]'
+                            : 'border-[#E0E0E0] hover:border-[#5B5FC7] hover:bg-[#F5F5F5]'
                     }`}
                 >
                     <input
@@ -111,17 +111,17 @@ const SendDocumentModal: React.FC<SendDocumentModalProps> = ({ isOpen, onClose, 
                     />
                     {file ? (
                         <div className="flex flex-col items-center">
-                            <div className="w-14 h-14 bg-white rounded-xl shadow-lg shadow-indigo-500/10 flex items-center justify-center text-indigo-600 mb-3">
-                                <File size={28} />
+                            <div className="w-12 h-12 bg-white rounded-lg shadow-sm flex items-center justify-center text-[#5B5FC7] mb-2">
+                                <File size={24} strokeWidth={1.5} />
                             </div>
-                            <span className="text-sm font-bold text-slate-900 truncate max-w-[200px]">{file.name}</span>
+                            <span className="text-sm font-bold text-[#242424] truncate max-w-[200px]">{file.name}</span>
                         </div>
                     ) : (
                         <>
-                            <div className="w-14 h-14 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 mb-3">
-                                <Upload size={28} />
+                            <div className="w-12 h-12 bg-[#F0F0F0] rounded-lg flex items-center justify-center text-[#616161] mb-2">
+                                <Upload size={24} strokeWidth={1.5} />
                             </div>
-                            <p className="text-sm font-bold text-slate-700">{t('board.send_modal.select_file')}</p>
+                            <p className="text-sm font-bold text-[#242424]">{t('board.send_modal.select_file')}</p>
                         </>
                     )}
                 </div>
@@ -140,7 +140,7 @@ const SendDocumentModal: React.FC<SendDocumentModalProps> = ({ isOpen, onClose, 
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder={t('board.send_modal.comment_placeholder')}
-                    rows={4}
+                    rows={3}
                     fullWidth
                 />
 

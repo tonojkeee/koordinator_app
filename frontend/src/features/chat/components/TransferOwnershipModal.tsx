@@ -76,18 +76,18 @@ const TransferOwnershipModal: React.FC<TransferOwnershipModalProps> = ({
         
         {isLoading ? (
           <div className="flex justify-center py-8">
-            <Loader2 className="animate-spin text-indigo-600" size={24} />
+            <Loader2 className="animate-spin text-[#5B5FC7]" size={24} />
           </div>
         ) : members && members.length > 0 ? (
-          <div className="max-h-80 overflow-y-auto space-y-2">
+          <div className="max-h-80 overflow-y-auto space-y-1 custom-scrollbar">
             {members.map(member => (
               <div
                 key={member.id}
                 onClick={() => setSelectedUserId(member.id)}
-                className={`flex items-center space-x-3 p-3 rounded-xl cursor-pointer transition-all ${
+                className={`flex items-center space-x-3 p-3 rounded-md cursor-pointer transition-all ${
                   selectedUserId === member.id
-                    ? 'bg-indigo-50 border border-indigo-200'
-                    : 'hover:bg-slate-50'
+                    ? 'bg-[#EEF2FF] border border-[#5B5FC7]'
+                    : 'hover:bg-[#F5F5F5] border border-transparent'
                 }`}
               >
                 <Avatar
@@ -98,24 +98,24 @@ const TransferOwnershipModal: React.FC<TransferOwnershipModalProps> = ({
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center">
-                    <span className="text-sm font-medium text-slate-800 truncate">
-                      {member.rank && <span className="text-slate-400 mr-1 font-bold">{abbreviateRank(member.rank)}</span>}
+                    <span className="text-sm font-semibold text-[#242424] truncate">
+                      {member.rank && <span className="text-[#616161] mr-1 font-bold">{abbreviateRank(member.rank)}</span>}
                       {formatName(member.full_name, member.username)}
                     </span>
                     {member.id === currentOwnerId && (
                       <OwnerIndicator size="sm" className="ml-2" />
                     )}
                   </div>
-                  <span className="text-xs text-slate-500">@{member.username}</span>
+                  <span className="text-xs text-[#888888]">@{member.username}</span>
                 </div>
                 {selectedUserId === member.id && (
-                  <Crown className="text-indigo-600" size={20} fill="currentColor" />
+                  <Crown className="text-[#5B5FC7]" size={20} fill="currentColor" />
                 )}
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 text-slate-500">
+          <div className="text-center py-8 text-[#888888]">
             <p>{t('chat.transferOwnership.noEligibleMembers')}</p>
           </div>
         )}

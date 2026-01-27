@@ -58,12 +58,13 @@ export const TextArea = React.memo<TextAreaProps>(({
         id={textareaId}
         rows={rows}
         className={cn(
-          'w-full px-5 py-4 bg-slate-50 border-2 rounded-2xl',
-          'font-medium text-slate-900 placeholder:text-slate-400',
+          'w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-md',
+          'font-normal text-[#242424] placeholder:text-[#888888] text-sm',
           'transition-all outline-none resize-y',
-          'focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-100',
-          error && 'border-rose-500 focus:border-rose-500 focus:ring-rose-100',
-          !error && 'border-slate-100',
+          'focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7]',
+          'hover:border-[#888888]',
+          error && 'border-[#C4314B] focus:border-[#C4314B] focus:ring-[#C4314B]/20',
+          !error && 'border-[#E0E0E0]',
           className
         )}
         {...props}

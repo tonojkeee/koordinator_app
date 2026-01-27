@@ -22,7 +22,7 @@ const ZsspdPage: React.FC = () => {
     ] as const;
 
     return (
-        <div className="flex-1 flex flex-col bg-slate-50/50 overflow-hidden animate-in">
+        <div className="flex-1 flex flex-col bg-[#F5F5F5] overflow-hidden animate-in">
             {/* Header with Design System */}
             <div className="px-6 pt-4 pb-2 shrink-0 z-20 sticky top-0 pointer-events-none">
                 <Header
@@ -33,7 +33,7 @@ const ZsspdPage: React.FC = () => {
                     tabs={tabs.map(tab => ({
                         id: tab.id,
                         label: tab.label,
-                        icon: <tab.icon size={13} />
+                        icon: <tab.icon size={16} strokeWidth={1.5} />
                     }))}
                     activeTab={activeTab}
                     onTabChange={(tabId) => setActiveTab(tabId as 'outgoing' | 'incoming' | 'archive')}
@@ -50,12 +50,12 @@ const ZsspdPage: React.FC = () => {
                         )
                     }
                     sticky={false}
-                    className="pointer-events-auto"
+                    className="pointer-events-auto shadow-sm border border-[#E0E0E0] rounded-lg bg-white"
                 />
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto px-8 pb-8 pt-4 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto px-6 pb-8 pt-4 custom-scrollbar">
                 <div className="w-full">
                     {activeTab === 'outgoing' && (
                         <OutgoingTab
@@ -64,17 +64,17 @@ const ZsspdPage: React.FC = () => {
                         />
                     )}
                     {activeTab === 'incoming' && (
-                        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[2.5rem] border border-slate-200 outline outline-4 outline-slate-50 -outline-offset-1">
-                            <ArrowDownLeft className="w-16 h-16 text-slate-200 mb-4" />
-                            <h3 className="text-lg font-bold text-slate-400">
+                        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-lg border border-[#E0E0E0] shadow-sm">
+                            <ArrowDownLeft className="w-16 h-16 text-[#E0E0E0] mb-4" strokeWidth={1} />
+                            <h3 className="text-lg font-bold text-[#888888]">
                                 {t('zsspd.no_incoming_packages')}
                             </h3>
                         </div>
                     )}
                     {activeTab === 'archive' && (
-                        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[2.5rem] border border-slate-200 outline outline-4 outline-slate-50 -outline-offset-1">
-                            <Archive className="w-16 h-16 text-slate-200 mb-4" />
-                            <h3 className="text-lg font-bold text-slate-400">
+                        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-lg border border-[#E0E0E0] shadow-sm">
+                            <Archive className="w-16 h-16 text-[#E0E0E0] mb-4" strokeWidth={1} />
+                            <h3 className="text-lg font-bold text-[#888888]">
                                 {t('zsspd.archive_empty')}
                             </h3>
                         </div>

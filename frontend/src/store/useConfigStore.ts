@@ -4,7 +4,7 @@ interface AppConfig {
     app_name?: string;
     app_version?: string;
     internal_email_domain?: string;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 interface ConfigState {

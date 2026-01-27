@@ -26,10 +26,11 @@ export const InvitationActions: React.FC<InvitationActionsProps> = ({
 
   // Подписываемся на обновления статуса приглашений через WebSocket
   useGlobalWebSocket(token, {
-    onMessageReceived: useCallback((data: any) => {
+    onMessageReceived: useCallback((data: unknown) => {
+      const msg = data as { type: string; invitation_id: number; status: string };
       // Обрабатываем изменения статуса приглашений
-      if (data.type === 'invitation_status_changed' && data.invitation_id === invitationId) {
-        const newStatus = data.status as 'accepted' | 'declined' | 'cancelled';
+      if (msg.type === 'invitation_status_changed' && msg.invitation_id === invitationId) {
+        const newStatus = msg.status as 'accepted' | 'declined' | 'cancelled';
         
         // Обновляем глобальный реестр
         invitationStatusRegistry.set(invitationId, newStatus);
@@ -82,15 +83,16 @@ export const InvitationActions: React.FC<InvitationActionsProps> = ({
       } else {
         console.log('Приглашение отклонено');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error responding to invitation:', error);
-      
+
       // ОТКАТ: если ошибка, возвращаем предыдущее состояние
       setStatus(null);
       invitationStatusRegistry.delete(invitationId);
-      
+
       // Показываем ошибку пользователю
-      const errorMessage = error.response?.data?.detail || 'Ошибка при обработке приглашения';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const errorMessage = (error as any).response?.data?.detail || 'Ошибка при обработке приглашения';
       alert(errorMessage);
     } finally {
       setResponding(null);

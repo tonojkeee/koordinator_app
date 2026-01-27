@@ -39,15 +39,16 @@ export const EmailSettingsTab: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'email-settings'] });
-      addToast({ 
-        type: 'success', 
-        title: t('common.success'), 
-        message: t('admin.email.domainUpdated') 
+      addToast({
+        type: 'success',
+        title: t('common.success'),
+        message: t('admin.email.domainUpdated')
       });
       setNewDomain('');
     },
-    onError: (error: any) => {
-      const message = error?.response?.data?.detail || t('admin.email.updateFailed');
+    onError: (error: unknown) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const message = (error as any)?.response?.data?.detail || t('admin.email.updateFailed');
       addToast({ type: 'error', title: t('common.error'), message });
     }
   });
@@ -59,14 +60,15 @@ export const EmailSettingsTab: React.FC = () => {
     onSuccess: (response) => {
       const data: RecreateResponse = response.data;
       queryClient.invalidateQueries({ queryKey: ['admin', 'email-settings'] });
-      addToast({ 
-        type: 'success', 
-        title: t('common.success'), 
-        message: data.message 
+      addToast({
+        type: 'success',
+        title: t('common.success'),
+        message: data.message
       });
     },
-    onError: (error: any) => {
-      const message = error?.response?.data?.detail || t('admin.email.recreateFailed');
+    onError: (error: unknown) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const message = (error as any)?.response?.data?.detail || t('admin.email.recreateFailed');
       addToast({ type: 'error', title: t('common.error'), message });
     }
   });

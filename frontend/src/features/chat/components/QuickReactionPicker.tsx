@@ -84,12 +84,12 @@ export const QuickReactionPicker: React.FC<QuickReactionPickerProps> = ({
                 ${className}
             `}
         >
-            <div className="flex items-center gap-0.5 px-2 py-1.5 bg-white/95 backdrop-blur-xl rounded-full shadow-xl shadow-slate-200/50 border border-slate-200/60">
+            <div className="flex items-center gap-1 px-2 py-1.5 bg-white rounded-md shadow-lg border border-[#E0E0E0]">
                 {QUICK_REACTIONS.map((emoji) => (
                     <button
                         key={emoji}
                         onClick={(e) => handleReaction(e, emoji)}
-                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 hover:scale-125 active:scale-95 transition-all duration-150"
+                        className="w-7 h-7 flex items-center justify-center rounded hover:bg-[#F5F5F5] hover:scale-110 active:scale-95 transition-all duration-150"
                         title={emoji}
                     >
                         <span className="text-lg leading-none select-none">{emoji}</span>
@@ -98,7 +98,7 @@ export const QuickReactionPicker: React.FC<QuickReactionPickerProps> = ({
 
                 {onOpenFullPicker && (
                     <>
-                        <div className="w-px h-5 bg-slate-200 mx-1" />
+                        <div className="w-px h-5 bg-[#E0E0E0] mx-1" />
                         <button
                             onClick={(e) => {
                                 e.preventDefault();
@@ -106,10 +106,10 @@ export const QuickReactionPicker: React.FC<QuickReactionPickerProps> = ({
                                 onOpenFullPicker();
                                 onClose();
                             }}
-                            className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
+                            className="w-7 h-7 flex items-center justify-center rounded text-[#616161] hover:text-[#5B5FC7] hover:bg-[#F0F0F0] transition-all"
                             title="More reactions"
                         >
-                            <Plus size={18} />
+                            <Plus size={16} strokeWidth={1.5} />
                         </button>
                     </>
                 )}
@@ -119,11 +119,11 @@ export const QuickReactionPicker: React.FC<QuickReactionPickerProps> = ({
             <div
                 className={`
                     absolute left-1/2 -translate-x-1/2 w-0 h-0
-                    border-l-[8px] border-l-transparent
-                    border-r-[8px] border-r-transparent
+                    border-l-[6px] border-l-transparent
+                    border-r-[6px] border-r-transparent
                     ${position === 'top'
-                        ? 'top-full border-t-[8px] border-t-white/95'
-                        : 'bottom-full border-b-[8px] border-b-white/95'
+                        ? 'top-full border-t-[6px] border-t-white drop-shadow-sm'
+                        : 'bottom-full border-b-[6px] border-b-white drop-shadow-sm'
                     }
                 `}
             />

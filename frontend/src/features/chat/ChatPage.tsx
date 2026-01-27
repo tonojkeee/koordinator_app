@@ -545,10 +545,7 @@ const ChatPage: React.FC = () => {
     });
 
     const muteUntil = channel?.mute_until;
-    const isMuted = React.useMemo(() => {
-        if (!muteUntil) return false;
-        return new Date(muteUntil) > new Date();
-    }, [muteUntil]);
+    const isMuted = muteUntil ? new Date(muteUntil) > new Date() : false;
 
     const handleMute = (duration: '1h' | '8h' | '24h' | 'forever' | null) => {
         if (!channelId) return;
@@ -628,6 +625,7 @@ const ChatPage: React.FC = () => {
     useEffect(() => {
         if (channel && channel.id === Number(channelId)) {
             // Initialize once
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setInitialLastReadId(prev => (prev === null ? channel.last_read_message_id : prev));
         }
     }, [channel, channelId]);
@@ -645,6 +643,7 @@ const ChatPage: React.FC = () => {
             }, 3000);
             return () => clearTimeout(timer);
         } else {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsUnreadBannerVisible(true);
         }
     }, [initialLastReadId, channelId]);
@@ -706,11 +705,6 @@ const ChatPage: React.FC = () => {
         if (diffHours < 24) return t('chat.hoursAgo', { count: diffHours });
         if (diffDays < 7) return t('chat.daysAgo', { count: diffDays });
         return date.toLocaleDateString(i18n.language === 'ru' ? 'ru-RU' : 'en-US');
-    };
-
-    const highlightWords: Record<string, string[]> = {
-        ru: [t('common.appName').toLowerCase().replace(/[«»]/g, ''), t('chat.keywords.interaction'), t('chat.keywords.system'), t('chat.keywords.gis')],
-        en: ['coordinator', 'interaction', 'system', 'gis']
     };
 
     const dmPartner = channel?.other_user;
@@ -779,7 +773,7 @@ const ChatPage: React.FC = () => {
                 api.post(`/chat/channels/${channelId}/read`).catch(() => { });
             }
         };
-    }, [channelId]); // Only trigger on channel change
+    }, [channelId, markReadMutation]); // Only trigger on channel change
 
     const {
         data: historyData,
@@ -1273,7 +1267,7 @@ const ChatPage: React.FC = () => {
             } else {
                 await api.post(`/chat/messages/${messageId}/reactions?emoji=${encodeURIComponent(emoji)}`);
             }
-        } catch (error) {
+        } catch {
             // Ошибка при добавлении/удалении реакции
         }
     };
@@ -1500,7 +1494,7 @@ const ChatPage: React.FC = () => {
                                                 const isFirstInGroup = !prevMsg || prevMsg.user_id !== msg.user_id || showDateSeparator || showUnreadSeparator;
                                                 const isLastInGroup = !nextMsg || nextMsg.user_id !== msg.user_id || (nextMsg && new Date(nextMsg.created_at).toDateString() !== msgDate);
 
-                                                const msgGroupClass = isFirstInGroup && isLastInGroup ? 'msg-single' : isFirstInGroup ? 'msg-first' : isLastInGroup ? 'msg-last' : 'msg-middle';
+                                                const msgGroupClass = isFirstInGroup && isLastInGroup ? 'rounded-md' : isFirstInGroup ? 'rounded-t-md rounded-b-[2px]' : isLastInGroup ? 'rounded-b-md rounded-t-[2px]' : 'rounded-[2px]';
 
                                                 const contextOptions: ContextMenuOption[] = [
                                                     {
@@ -1796,55 +1790,41 @@ const ChatPage: React.FC = () => {
                         </div>
                     </div>
                 ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center animate-in bg-gradient-to-br from-indigo-50/20 via-white to-purple-50/20 backdrop-blur-3xl p-8 overflow-y-auto">
-                        <div className="relative mb-16 group">
-                            <div className="absolute inset-0 bg-indigo-500/20 blur-[100px] rounded-full scale-150 animate-pulse pointer-events-none" />
-                            <div className="absolute inset-0 bg-purple-500/20 blur-[100px] rounded-full scale-110 animate-pulse [animation-delay:-2s] pointer-events-none" />
-
+                    <div className="flex-1 flex flex-col items-center justify-center animate-in bg-[#F5F5F5] p-8 overflow-y-auto">
+                        <div className="relative mb-12 group">
                             <div className="relative">
-                                <div className="w-52 h-52 bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-600 rounded-3xl shadow-[0_32px_80px_-16px_rgba(79,70,229,0.4)] flex items-center justify-center group-hover:scale-105 group-hover:-rotate-3 transition-all duration-1000 ring-4 ring-white/10">
-                                    <MessageSquare className="w-24 h-24 text-white drop-shadow-2xl" />
+                                <div className="w-40 h-40 bg-white rounded-full shadow-lg flex items-center justify-center group-hover:scale-105 transition-all duration-500">
+                                    <MessageSquare className="w-20 h-20 text-[#5B5FC7]" strokeWidth={1.5} />
                                 </div>
-                                <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-white rounded-3xl shadow-2xl flex items-center justify-center group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform duration-700 delay-100 ring-4 ring-indigo-50/50">
-                                    <div className="w-18 h-18 bg-indigo-50 rounded-3xl flex items-center justify-center">
-                                        <Send className="w-10 h-10 text-indigo-600 animate-bounce" />
-                                    </div>
+                                <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-[#5B5FC7] rounded-full shadow-md flex items-center justify-center border-4 border-[#F5F5F5]">
+                                    <Send className="w-8 h-8 text-white" />
                                 </div>
                             </div>
                         </div>
 
-                        <div className="text-center space-y-8 max-w-3xl mb-20 px-4">
-                            <h2 className="text-6xl md:text-7xl font-black tracking-tighter text-slate-900 leading-[0.95] [text-wrap:balance]">
-                                {t('chat.welcomeTitle').split(' ').map((word, i, arr) => (
-                                    <React.Fragment key={i}>
-                                        {highlightWords[i18n.language as keyof typeof highlightWords]?.includes(word.toLowerCase().replace(/[«»]/g, '')) ? (
-                                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 drop-shadow-sm">
-                                                {word}
-                                            </span>
-                                        ) : word}
-                                        {i < arr.length - 1 ? ' ' : ''}
-                                    </React.Fragment>
-                                ))}
+                        <div className="text-center space-y-4 max-w-2xl mb-16 px-4">
+                            <h2 className="text-4xl font-bold tracking-tight text-[#242424]">
+                                {t('chat.welcomeTitle')}
                             </h2>
-                            <p className="text-xl text-slate-500 font-bold leading-relaxed max-w-xl mx-auto opacity-70">
+                            <p className="text-lg text-[#616161] leading-relaxed">
                                 {t('chat.welcomeDescription')}
                             </p>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 w-full max-w-3xl px-4 animate-in delay-500">
-                            <div className="p-10 rounded-3xl bg-white/40 border border-white shadow-2xl shadow-indigo-500/5 backdrop-blur-3xl hover:bg-white hover:scale-[1.02] hover:-translate-y-1 hover:shadow-indigo-500/10 transition-all duration-700 group/tip flex flex-col items-center sm:items-start text-center sm:text-left ring-1 ring-white/50">
-                                <div className="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-6 group-hover/tip:scale-110 group-hover/tip:rotate-6 transition-transform duration-700 shadow-sm border border-indigo-100/50">
-                                    <Hash size={32} />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-3xl px-4 animate-in delay-200">
+                            <div className="p-6 rounded-xl bg-white shadow-sm border border-[#E0E0E0] hover:shadow-md transition-all duration-300 group/tip flex flex-col items-center sm:items-start text-center sm:text-left">
+                                <div className="w-12 h-12 rounded-lg bg-[#EEF2FF] text-[#5B5FC7] flex items-center justify-center mb-4 group-hover/tip:scale-110 transition-transform duration-300">
+                                    <Hash size={24} />
                                 </div>
-                                <h3 className="font-black text-slate-900 text-xl mb-3 tracking-tight">{t('chat.welcome_tip_1_title')}</h3>
-                                <p className="text-base text-slate-400 font-bold leading-relaxed">{t('chat.welcome_tip_1_desc')}</p>
+                                <h3 className="font-bold text-[#242424] text-lg mb-2">{t('chat.welcome_tip_1_title')}</h3>
+                                <p className="text-sm text-[#616161] leading-relaxed">{t('chat.welcome_tip_1_desc')}</p>
                             </div>
-                            <div className="p-10 rounded-3xl bg-white/40 border border-white shadow-2xl shadow-purple-500/5 backdrop-blur-3xl hover:bg-white hover:scale-[1.02] hover:-translate-y-1 hover:shadow-purple-500/10 transition-all duration-700 group/tip flex flex-col items-center sm:items-start text-center sm:text-left ring-1 ring-white/50">
-                                <div className="w-16 h-16 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mb-6 group-hover/tip:scale-110 group-hover/tip:-rotate-6 transition-transform duration-700 shadow-sm border border-purple-100/50">
-                                    <FileText size={32} />
+                            <div className="p-6 rounded-xl bg-white shadow-sm border border-[#E0E0E0] hover:shadow-md transition-all duration-300 group/tip flex flex-col items-center sm:items-start text-center sm:text-left">
+                                <div className="w-12 h-12 rounded-lg bg-[#EEF2FF] text-[#5B5FC7] flex items-center justify-center mb-4 group-hover/tip:scale-110 transition-transform duration-300">
+                                    <FileText size={24} />
                                 </div>
-                                <h3 className="font-black text-slate-900 text-xl mb-3 tracking-tight">{t('chat.welcome_tip_2_title')}</h3>
-                                <p className="text-base text-slate-400 font-bold leading-relaxed">{t('chat.welcome_tip_2_desc')}</p>
+                                <h3 className="font-bold text-[#242424] text-lg mb-2">{t('chat.welcome_tip_2_title')}</h3>
+                                <p className="text-sm text-[#616161] leading-relaxed">{t('chat.welcome_tip_2_desc')}</p>
                             </div>
                         </div>
                     </div>

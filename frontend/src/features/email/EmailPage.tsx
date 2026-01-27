@@ -213,24 +213,24 @@ const EmailPage: React.FC = () => {
 
     return (
         <div className="flex flex-col h-full w-full bg-white overflow-hidden min-h-0">
-            <header className="h-12 border-b border-slate-200 flex items-center px-4 bg-white shrink-0">
+            <header className="h-14 border-b border-[#E0E0E0] flex items-center px-4 bg-white shrink-0 shadow-sm z-10">
                 <div className="flex items-center gap-3 mr-8">
-                    <div className="w-6 h-6 bg-indigo-600 rounded flex items-center justify-center">
-                        <Mail size={14} className="text-white" />
+                    <div className="w-8 h-8 bg-[#5B5FC7] rounded-lg flex items-center justify-center shadow-sm">
+                        <Mail size={18} className="text-white" strokeWidth={1.5} />
                     </div>
-                    <span className="text-sm font-black uppercase tracking-widest text-slate-800">{t('email.title')}</span>
+                    <span className="text-sm font-bold text-[#242424] uppercase tracking-wide">{t('email.title')}</span>
                 </div>
             </header>
 
-            <header className="h-12 border-b border-slate-200 flex items-center px-4 bg-[#F5F5F7] shrink-0 gap-4">
+            <header className="h-12 border-b border-[#E0E0E0] flex items-center px-4 bg-[#F5F5F5] shrink-0 gap-3">
                 <button
                     onClick={() => { setComposerData({}); setIsComposerOpen(true); }}
-                    className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-200/50 rounded text-sm font-bold text-indigo-600 transition-colors"
+                    className="flex items-center gap-2 px-3 py-1.5 hover:bg-white/60 rounded-md text-sm font-bold text-[#5B5FC7] transition-all border border-transparent hover:border-[#E0E0E0] hover:shadow-sm"
                 >
-                    <Plus size={18} />
+                    <Plus size={16} strokeWidth={2} />
                     <span>{t('email.new_message')}</span>
                 </button>
-                <div className="w-px h-4 bg-slate-300 mx-1" />
+                <div className="w-px h-4 bg-[#E0E0E0] mx-1" />
                 <button
                     onClick={async () => {
                         try {
@@ -242,26 +242,26 @@ const EmailPage: React.FC = () => {
                             addToast({ type: 'error', title: t('common.error'), message: t('email.toast_mark_read_error') });
                         }
                     }}
-                    className="flex items-center gap-2 px-3 py-1.5 hover:bg-slate-200/50 rounded text-sm font-medium text-slate-600"
+                    className="flex items-center gap-2 px-3 py-1.5 hover:bg-white/60 rounded-md text-sm font-medium text-[#616161] hover:text-[#242424] transition-all border border-transparent hover:border-[#E0E0E0]"
                 >
-                    <Mail size={16} />
+                    <Mail size={16} strokeWidth={1.5} />
                     <span>{t('email.mark_all_read')}</span>
                 </button>
                 <button
                     onClick={handleUndo}
                     disabled={!lastAction}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm font-medium transition-colors ${lastAction ? 'hover:bg-slate-200/50 text-slate-600' : 'text-slate-300 cursor-not-allowed'}`}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all border border-transparent ${lastAction ? 'hover:bg-white/60 hover:text-[#242424] text-[#616161] hover:border-[#E0E0E0]' : 'text-[#BDBDBD] cursor-not-allowed'}`}
                 >
-                    <RefreshCw size={16} />
+                    <RefreshCw size={16} strokeWidth={1.5} />
                     <span>{t('email.undo')}</span>
                 </button>
             </header>
 
             <div className="flex-1 flex overflow-hidden min-h-0">
-                <aside className="w-64 flex-shrink-0 border-r border-slate-200 bg-[#F5F5F7] flex flex-col">
-                    <div className="flex-1 overflow-y-auto px-2 space-y-6 pt-4">
+                <aside className="w-64 flex-shrink-0 border-r border-[#E0E0E0] bg-[#F5F5F5] flex flex-col">
+                    <div className="flex-1 overflow-y-auto px-3 space-y-6 pt-4 custom-scrollbar">
                         <section>
-                            <div className="px-3 mb-1 text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('email.favorites')}</div>
+                            <div className="px-2 mb-2 text-[10px] font-bold text-[#888888] uppercase tracking-wider">{t('email.favorites')}</div>
                             <div className="space-y-0.5">
                                 {systemFolders.filter(f => favorites.includes(f.id)).map((folder) => {
                                     const isActive = selectedFolder === folder.id;
@@ -314,23 +314,23 @@ const EmailPage: React.FC = () => {
                                         <ContextMenu key={`fav-${folder.id}`} options={contextOptions}>
                                             <button
                                                 onClick={() => setSelectedFolder(folder.id)}
-                                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group ${isActive
-                                                    ? 'bg-white shadow-sm text-indigo-700 font-bold ring-1 ring-slate-200'
-                                                    : 'text-slate-600 hover:bg-slate-200/50'
+                                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all group ${isActive
+                                                    ? 'bg-white shadow-sm text-[#5B5FC7] font-bold border border-[#E0E0E0]'
+                                                    : 'text-[#616161] hover:bg-[#E0E0E0]/50 hover:text-[#242424]'
                                                     }`}
                                             >
-                                                <folder.icon size={18} className={isActive ? 'text-indigo-600' : 'text-slate-500'} />
+                                                <folder.icon size={18} className={isActive ? 'text-[#5B5FC7]' : 'text-[#888888] group-hover:text-[#616161]'} strokeWidth={1.5} />
                                                 <span className="flex-1 text-left truncate">{folder.name}</span>
                                                 <div className="flex items-center gap-2">
                                                     {folder.unread_count > 0 && (
-                                                        <span className="text-[10px] font-black text-slate-500 shrink-0">{folder.unread_count}</span>
+                                                        <span className="text-[10px] font-bold text-[#5B5FC7] bg-[#EEF2FF] px-1.5 py-0.5 rounded-full shrink-0">{folder.unread_count}</span>
                                                     )}
                                                     <div
                                                         onClick={(e) => toggleFavorite(e, folder.id)}
                                                         className="opacity-0 group-hover:opacity-100 text-amber-400 hover:text-amber-500 transition-all p-1 shrink-0"
                                                         title={t('email.remove_from_favorites')}
                                                     >
-                                                        <Star size={12} fill="currentColor" />
+                                                        <Star size={12} fill="currentColor" strokeWidth={1.5} />
                                                     </div>
                                                 </div>
                                             </button>
@@ -365,24 +365,25 @@ const EmailPage: React.FC = () => {
                                         <ContextMenu key={`fav-custom-${folder.id}`} options={contextOptions}>
                                             <button
                                                 onClick={() => setSelectedFolder(folder.id.toString())}
-                                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group ${isActive
-                                                    ? 'bg-white shadow-sm text-amber-700 font-bold ring-1 ring-slate-200'
-                                                    : 'text-slate-600 hover:bg-slate-200/50'
+                                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all group ${isActive
+                                                    ? 'bg-white shadow-sm text-[#5B5FC7] font-bold border border-[#E0E0E0]'
+                                                    : 'text-[#616161] hover:bg-[#E0E0E0]/50 hover:text-[#242424]'
                                                     }`}
                                             >
-                                                <Folder size={18} className={isActive ? 'text-amber-500' : 'text-slate-500'} />
+                                                <Folder size={18} className={isActive ? 'text-[#5B5FC7]' : 'text-[#888888] group-hover:text-[#616161]'} strokeWidth={1.5} />
                                                 <span className="flex-1 text-left truncate">{folder.name}</span>
                                                 <div className="flex items-center gap-2">
-                                                    {/* Custom folders also have unread_count from API */}
-                                                    {(folder as any).unread_count > 0 && (
-                                                        <span className="text-[10px] font-black text-slate-500 shrink-0">{(folder as any).unread_count}</span>
+                                                    {folder.unread_count && folder.unread_count > 0 && (
+                                                        <span className="text-[10px] font-bold text-[#5B5FC7] bg-[#EEF2FF] px-1.5 py-0.5 rounded-full shrink-0">
+                                                            {folder.unread_count}
+                                                        </span>
                                                     )}
                                                     <div
                                                         onClick={(e) => toggleFavorite(e, folder.id.toString())}
                                                         className="opacity-0 group-hover:opacity-100 text-amber-400 hover:text-amber-500 transition-all p-1 shrink-0"
                                                         title={t('email.remove_from_favorites')}
                                                     >
-                                                        <Star size={12} fill="currentColor" />
+                                                        <Star size={12} fill="currentColor" strokeWidth={1.5} />
                                                     </div>
                                                 </div>
                                             </button>
@@ -393,14 +394,14 @@ const EmailPage: React.FC = () => {
                         </section>
 
                         <section>
-                            <div className="px-3 mb-1 flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <div className="px-2 mb-2 flex items-center justify-between text-[10px] font-bold text-[#888888] uppercase tracking-wider">
                                 <span>{t('email.folders')}</span>
                                 <button
                                     onClick={() => setIsCreateFolderOpen(true)}
-                                    className="text-slate-400 hover:text-indigo-600 transition-colors"
+                                    className="text-[#888888] hover:text-[#5B5FC7] hover:bg-[#E0E0E0] rounded p-0.5 transition-all"
                                     title={t('email.create_folder')}
                                 >
-                                    <Plus size={14} />
+                                    <Plus size={14} strokeWidth={2} />
                                 </button>
                             </div>
                             <div className="space-y-0.5">
@@ -456,23 +457,23 @@ const EmailPage: React.FC = () => {
 
                                             <button
                                                 onClick={() => setSelectedFolder(folder.id)}
-                                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group ${isActive
-                                                    ? 'bg-white shadow-sm text-indigo-700 font-bold ring-1 ring-slate-200'
-                                                    : 'text-slate-600 hover:bg-slate-200/50'
+                                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all group ${isActive
+                                                    ? 'bg-white shadow-sm text-[#5B5FC7] font-bold border border-[#E0E0E0]'
+                                                    : 'text-[#616161] hover:bg-[#E0E0E0]/50 hover:text-[#242424]'
                                                     }`}
                                             >
-                                                <folder.icon size={18} className={isActive ? 'text-indigo-600' : 'text-slate-500'} />
+                                                <folder.icon size={18} className={isActive ? 'text-[#5B5FC7]' : 'text-[#888888] group-hover:text-[#616161]'} strokeWidth={1.5} />
                                                 <span className="flex-1 text-left truncate">{folder.name}</span>
                                                 <div className="flex items-center gap-2">
                                                     {folder.unread_count > 0 && (
-                                                        <span className="text-[10px] font-black text-slate-500 shrink-0">{folder.unread_count}</span>
+                                                        <span className="text-[10px] font-bold text-[#5B5FC7] bg-[#EEF2FF] px-1.5 py-0.5 rounded-full shrink-0">{folder.unread_count}</span>
                                                     )}
                                                     <div
                                                         onClick={(e) => toggleFavorite(e, folder.id)}
-                                                        className={`transition-all p-1 shrink-0 ${isFav ? 'text-amber-400 opacity-100' : 'text-slate-300 opacity-0 group-hover:opacity-100 hover:text-slate-400'}`}
+                                                        className={`transition-all p-1 shrink-0 ${isFav ? 'text-amber-400 opacity-100' : 'text-[#BDBDBD] opacity-0 group-hover:opacity-100 hover:text-amber-400'}`}
                                                         title={isFav ? t('email.remove_from_favorites') : t('email.add_to_favorites')}
                                                     >
-                                                        <Star size={12} fill={isFav ? "currentColor" : "none"} />
+                                                        <Star size={12} fill={isFav ? "currentColor" : "none"} strokeWidth={1.5} />
                                                     </div>
                                                 </div>
                                             </button>
@@ -523,31 +524,33 @@ const EmailPage: React.FC = () => {
                                             <div className="relative group">
                                                 <button
                                                     onClick={() => setSelectedFolder(folder.id.toString())}
-                                                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors group ${isActive
-                                                        ? 'bg-white shadow-sm text-amber-700 font-bold ring-1 ring-slate-200'
-                                                        : 'text-slate-600 hover:bg-slate-200/50'
+                                                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all group ${isActive
+                                                        ? 'bg-white shadow-sm text-[#5B5FC7] font-bold border border-[#E0E0E0]'
+                                                        : 'text-[#616161] hover:bg-[#E0E0E0]/50 hover:text-[#242424]'
                                                         }`}
                                                 >
-                                                    <Folder size={18} className={isActive ? 'text-amber-500' : 'text-slate-500'} />
+                                                    <Folder size={18} className={isActive ? 'text-[#5B5FC7]' : 'text-[#888888] group-hover:text-[#616161]'} strokeWidth={1.5} />
                                                     <span className="flex-1 text-left truncate">{folder.name}</span>
                                                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                         <div
                                                             onClick={(e) => toggleFavorite(e, folder.id.toString())}
-                                                            className={`transition-all p-1 ${isFav ? 'text-amber-400 opacity-100' : 'text-slate-300 hover:text-slate-400'}`}
+                                                            className={`transition-all p-1 ${isFav ? 'text-amber-400 opacity-100' : 'text-[#BDBDBD] hover:text-amber-400'}`}
                                                             title={isFav ? t('email.remove_from_favorites') : t('email.add_to_favorites')}
                                                         >
-                                                            <Star size={12} fill={isFav ? "currentColor" : "none"} />
+                                                            <Star size={12} fill={isFav ? "currentColor" : "none"} strokeWidth={1.5} />
                                                         </div>
                                                         <div
                                                             onClick={(e) => handleDeleteFolder(e, folder.id)}
-                                                            className="text-slate-400 hover:text-rose-500 transition-all p-1"
+                                                            className="text-[#BDBDBD] hover:text-[#C4314B] transition-all p-1"
                                                             title={t('common.delete')}
                                                         >
-                                                            <Trash2 size={14} />
+                                                            <Trash2 size={14} strokeWidth={1.5} />
                                                         </div>
                                                     </div>
-                                                    {(folder as any).unread_count > 0 && (
-                                                        <span className="text-[10px] font-black text-slate-500 shrink-0 group-hover:hidden">{(folder as any).unread_count}</span>
+                                                    {folder.unread_count && folder.unread_count > 0 && (
+                                                        <span className="text-[10px] font-bold text-[#5B5FC7] bg-[#EEF2FF] px-1.5 py-0.5 rounded-full shrink-0 group-hover:hidden">
+                                                            {folder.unread_count}
+                                                        </span>
                                                     )}
                                                 </button>
                                             </div>
@@ -558,71 +561,71 @@ const EmailPage: React.FC = () => {
                         </section>
                     </div>
 
-                    <div className="p-4 border-t border-slate-200">
+                    <div className="p-4 border-t border-[#E0E0E0] bg-white">
                         <div className="flex items-center gap-3">
-                            <Avatar name={account?.email_address || t('common.unknown')} size="sm" />
+                            <Avatar name={account?.email_address || t('common.unknown')} size="sm" className="ring-2 ring-[#F5F5F5]" />
                             <div className="min-w-0 flex-1">
-                                <p className="text-xs font-bold text-slate-900 truncate">{account?.email_address}</p>
-                                <p className="text-[10px] text-slate-500 uppercase tracking-wider">{t('email.account')}</p>
+                                <p className="text-xs font-bold text-[#242424] truncate">{account?.email_address}</p>
+                                <p className="text-[10px] text-[#888888] uppercase tracking-wider font-semibold">{t('email.account')}</p>
                             </div>
-                            <button onClick={() => setIsAddressBookOpen(true)} className="text-slate-400 hover:text-indigo-600 transition-colors">
-                                <Book size={16} />
+                            <button onClick={() => setIsAddressBookOpen(true)} className="text-[#888888] hover:text-[#5B5FC7] hover:bg-[#F5F5F5] p-2 rounded-md transition-all">
+                                <Book size={18} strokeWidth={1.5} />
                             </button>
                         </div>
                     </div>
                 </aside>
 
                 {/* Column 2: Message List */}
-                <section className="w-[400px] flex-shrink-0 border-r border-slate-200 flex flex-col bg-white overflow-hidden">
-                    <header className="h-14 border-b border-slate-200 flex items-center justify-between px-4 shrink-0 bg-white sticky top-0 z-10">
+                <section className="w-[400px] flex-shrink-0 border-r border-[#E0E0E0] flex flex-col bg-white overflow-hidden shadow-[1px_0_0_0_rgba(0,0,0,0.05)] z-10">
+                    <header className="h-14 border-b border-[#E0E0E0] flex items-center justify-between px-4 shrink-0 bg-white sticky top-0 z-10">
                         <div className="flex items-center gap-2">
-                            <CheckSquare size={18} className="text-slate-400" />
-                            <ChevronDown size={14} className="text-slate-400" />
+                            <CheckSquare size={18} className="text-[#888888]" strokeWidth={1.5} />
+                            <ChevronDown size={14} className="text-[#888888]" strokeWidth={1.5} />
                         </div>
-                        <div className="flex items-center gap-4 text-sm font-bold">
+                        <div className="flex items-center gap-6 text-sm font-bold">
                             <button
                                 onClick={() => setActiveTab('focused')}
-                                className={`pb-4 pt-4 border-b-2 transition-colors relative ${activeTab === 'focused' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                                className={`pb-4 pt-4 border-b-2 transition-all relative ${activeTab === 'focused' ? 'border-[#5B5FC7] text-[#5B5FC7]' : 'border-transparent text-[#616161] hover:text-[#242424]'}`}
                             >
                                 {t('email.tabs.focused')}
                                 {emails.some(e => e.is_important && !e.is_read) && (
-                                    <span className="absolute top-3 -right-2 w-2 h-2 bg-indigo-600 rounded-full border-2 border-white" />
+                                    <span className="absolute top-3 -right-1.5 w-2 h-2 bg-[#5B5FC7] rounded-full border-2 border-white ring-1 ring-[#EEF2FF]" />
                                 )}
                             </button>
                             <button
                                 onClick={() => setActiveTab('other')}
-                                className={`pb-4 pt-4 border-b-2 transition-colors relative ${activeTab === 'other' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                                className={`pb-4 pt-4 border-b-2 transition-all relative ${activeTab === 'other' ? 'border-[#5B5FC7] text-[#5B5FC7]' : 'border-transparent text-[#616161] hover:text-[#242424]'}`}
                             >
                                 {t('email.tabs.other')}
                                 {emails.some(e => !e.is_important && !e.is_read) && (
-                                    <span className="absolute top-3 -right-2 w-2 h-2 bg-indigo-600 rounded-full border-2 border-white" />
+                                    <span className="absolute top-3 -right-1.5 w-2 h-2 bg-[#5B5FC7] rounded-full border-2 border-white ring-1 ring-[#EEF2FF]" />
                                 )}
                             </button>
                         </div>
                         <div className="flex items-center gap-2">
-                            <button className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-md">
-                                <Filter size={18} />
+                            <button className="p-1.5 text-[#616161] hover:bg-[#F5F5F5] hover:text-[#242424] rounded-md transition-colors">
+                                <Filter size={18} strokeWidth={1.5} />
                             </button>
                         </div>
                     </header>
 
-                    <div className="px-3 py-3 border-b border-slate-100 shrink-0">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                    <div className="px-3 py-3 border-b border-[#E0E0E0] shrink-0 bg-[#F5F5F5]">
+                        <div className="relative group">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#888888] group-focus-within:text-[#5B5FC7] transition-colors" size={16} />
                             <input
                                 type="text"
                                 placeholder={t('email.search_placeholder')}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-slate-100 border-none rounded-md pl-9 pr-4 py-1.5 text-sm focus:ring-1 focus:ring-indigo-500 placeholder:text-slate-400 transition-all"
+                                className="w-full bg-white border border-[#E0E0E0] rounded-md pl-9 pr-4 py-1.5 text-sm focus:outline-none focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7] text-[#242424] placeholder-[#888888] transition-all shadow-sm"
                             />
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto custom-scrollbar relative">
+                    <div className="flex-1 overflow-y-auto custom-scrollbar relative bg-white">
                         {loading && (
-                            <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-20 flex items-center justify-center">
-                                <RefreshCw size={24} className="text-indigo-600 animate-spin" />
+                            <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-20 flex items-center justify-center">
+                                <RefreshCw size={24} className="text-[#5B5FC7] animate-spin" />
                             </div>
                         )}
                         <EmailList
@@ -745,16 +748,15 @@ const EmailPage: React.FC = () => {
                             onDelete={handleDeleteMessage}
                         />
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-slate-50/30">
-                            <div className="w-24 h-24 bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 flex items-center justify-center mb-6">
-                                <Mail size={40} className="text-slate-200" />
+                        <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-[#F5F5F5]">
+                            <div className="w-24 h-24 bg-white rounded-full shadow-sm border border-[#E0E0E0] flex items-center justify-center mb-6">
+                                <Mail size={40} className="text-[#BDBDBD]" strokeWidth={1} />
                             </div>
-                            <h3 className="text-xl font-bold text-slate-800 mb-2">{t('email.select_message')}</h3>
-                            <p className="text-slate-500 max-w-xs">{t('email.select_message_description')}</p>
+                            <h3 className="text-xl font-bold text-[#242424] mb-2">{t('email.select_message')}</h3>
+                            <p className="text-[#616161] max-w-xs">{t('email.select_message_description')}</p>
                         </div>
                     )}
                 </main>
-
             </div>
 
             {/* Modals */}

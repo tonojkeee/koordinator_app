@@ -26,16 +26,16 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-md focus:ring-indigo-500/20 active:scale-95',
-        secondary: 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md focus:ring-slate-500/20 active:scale-95',
-        danger: 'bg-red-600 hover:bg-red-700 text-white shadow-sm hover:shadow-md focus:ring-red-500/20 active:scale-95',
-        ghost: 'hover:bg-slate-100 text-slate-700 focus:ring-slate-500/20 active:scale-95',
-        outline: 'border border-slate-300 hover:border-slate-400 text-slate-700 hover:bg-slate-50 focus:ring-slate-500/20 active:scale-95',
+        primary: 'bg-[#5B5FC7] hover:bg-[#4f52b2] text-white shadow-sm hover:shadow focus:ring-[#5B5FC7]/20 active:scale-[0.98]',
+        secondary: 'bg-white hover:bg-[#F5F5F5] text-[#242424] border border-[#E0E0E0] hover:border-[#BDBDBD] shadow-sm hover:shadow focus:ring-[#5B5FC7]/20 active:scale-[0.98]',
+        danger: 'bg-[#C4314B] hover:bg-[#a3283e] text-white shadow-sm hover:shadow focus:ring-[#C4314B]/20 active:scale-[0.98]',
+        ghost: 'hover:bg-[#EBEBEB] text-[#424242] hover:text-[#242424] focus:ring-[#5B5FC7]/20 active:scale-[0.98]',
+        outline: 'border border-[#E0E0E0] hover:border-[#BDBDBD] text-[#242424] hover:bg-[#F5F5F5] focus:ring-[#5B5FC7]/20 active:scale-[0.98]',
       },
       size: {
-        sm: 'px-3 h-8 text-sm',
-        md: 'px-4 h-10 text-sm',
-        lg: 'px-6 h-12 text-base',
+        sm: 'px-3 h-8 text-xs font-semibold rounded-md',
+        md: 'px-4 h-9 text-sm font-semibold rounded-md',
+        lg: 'px-6 h-11 text-base font-semibold rounded-md',
       },
     },
     defaultVariants: {

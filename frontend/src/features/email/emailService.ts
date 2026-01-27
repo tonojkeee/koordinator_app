@@ -14,6 +14,7 @@ export interface EmailFolder {
     name: string;
     user_id: number;
     parent_id?: number | null;
+    unread_count?: number;
 }
 
 export interface EmailMessage {

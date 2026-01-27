@@ -26,7 +26,7 @@ export const formatDate = (dateString: string, t: (key: string) => string, local
         }
 
         return date.toLocaleDateString(locale, { day: 'numeric', month: 'long' });
-    } catch (error) {
+    } catch {
         return dateString;
     }
 };
@@ -79,12 +79,12 @@ export const renderMessageContent = (content: string, isSent: boolean, invitatio
     // Check for invitation actions pattern
     const invitationActionsRegex = /\[INVITATION_ACTIONS:(\d+)\]/;
     const invitationMatch = content.match(invitationActionsRegex);
-    
+
     if (invitationMatch && invitationId) {
         // Remove the action pattern from content and add the component
         const cleanContent = content.replace(invitationActionsRegex, '').trim();
         const contentParts = renderMessageContentInternal(cleanContent, isSent);
-        
+
         return [
             ...contentParts,
             <InvitationActions key={`invitation-${invitationId}`} invitationId={invitationId} />
@@ -105,9 +105,9 @@ const renderMessageContentInternal = (content: string, isSent: boolean): (string
             return (
                 <span
                     key={index}
-                    className={`inline-block px-1.5 py-0.5 rounded-md font-bold transition-all ${isSent
-                        ? 'bg-white/20 text-white shadow-sm'
-                        : 'bg-indigo-100 text-indigo-700 shadow-sm border border-indigo-200/50'
+                    className={`inline-block px-1 py-0.5 rounded font-semibold transition-all ${isSent
+                        ? 'bg-white/20 text-white'
+                        : 'bg-[#5B5FC7]/10 text-[#5B5FC7]'
                         }`}
                     style={{ margin: '0 1px' }}
                 >

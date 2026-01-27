@@ -185,7 +185,7 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
             closeOnOverlayClick={false}
             footer={
                 <>
-                    <div className="flex items-center gap-6 flex-1">
+                    <div className="flex items-center gap-4 flex-1">
                         <input
                             type="file"
                             multiple
@@ -196,18 +196,18 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                         <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className="flex items-center gap-2 group"
+                            className="flex items-center gap-2 group p-1.5 rounded-md hover:bg-[#F5F5F5] transition-all"
                             title={t('email.compose.attach')}
                         >
-                            <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-400 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center transition-all duration-300 group-hover:shadow-lg group-hover:shadow-indigo-200">
-                                <Paperclip size={20} className="group-hover:rotate-45 transition-transform duration-300" />
+                            <div className="text-[#616161] group-hover:text-[#5B5FC7] transition-colors">
+                                <Paperclip size={18} className="group-hover:rotate-45 transition-transform duration-300" strokeWidth={1.5} />
                             </div>
-                            <span className="text-xs font-bold text-slate-500 group-hover:text-indigo-600 transition-colors uppercase tracking-wide">{t('email.compose.attach')}</span>
+                            <span className="text-xs font-semibold text-[#616161] group-hover:text-[#5B5FC7] transition-colors">{t('email.compose.attach')}</span>
                         </button>
 
-                        <div className="text-[10px] font-black uppercase tracking-widest text-slate-300">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-[#888888] border-l border-[#E0E0E0] pl-4">
                             {files.length > 0 && (
-                                <span className={totalSize > maxTotalSizeBytes ? "text-rose-500" : "text-slate-400"}>
+                                <span className={totalSize > maxTotalSizeBytes ? "text-[#C4314B]" : "text-[#616161]"}>
                                     {(totalSize / (1024 * 1024)).toFixed(2)} MB / {maxTotalSizeMb} MB
                                 </span>
                             )}
@@ -216,10 +216,10 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                         <button
                             type="button"
                             onClick={() => setIsImportant(!isImportant)}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${isImportant ? 'bg-rose-50 text-rose-600' : 'text-slate-400 hover:bg-slate-50'}`}
+                            className={`flex items-center gap-2 px-2 py-1.5 rounded-md transition-all ${isImportant ? 'bg-[#C4314B]/10 text-[#C4314B]' : 'text-[#616161] hover:bg-[#F5F5F5]'}`}
                             title={t('email.important')}
                         >
-                            <AlertCircle size={18} fill={isImportant ? "currentColor" : "none"} />
+                            <AlertCircle size={16} fill={isImportant ? "currentColor" : "none"} strokeWidth={1.5} />
                             <span className="text-xs font-bold uppercase tracking-wide">{t('email.important')}</span>
                         </button>
                     </div>
@@ -244,23 +244,23 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                 </>
             }
         >
-            <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                 {/* Recipients */}
                 <div className="relative group z-20">
-                    <label className="text-[10px] uppercase font-black text-slate-400 mb-2 block tracking-widest ml-1">{t('email.compose.recipients')}</label>
+                    <label className="text-[10px] uppercase font-bold text-[#616161] mb-1.5 block tracking-widest ml-1">{t('email.compose.recipients')}</label>
                     <div
-                        className="w-full min-h-[56px] px-3 py-2 bg-white border-2 border-slate-100 focus-within:border-indigo-100 rounded-2xl shadow-sm focus-within:shadow-xl focus-within:shadow-indigo-500/5 transition-all flex flex-wrap gap-2 items-center cursor-text"
+                        className="w-full min-h-[48px] px-3 py-2 bg-white border border-[#E0E0E0] focus-within:border-[#5B5FC7] rounded-md transition-all flex flex-wrap gap-2 items-center cursor-text"
                         onClick={() => recipientInputRef.current?.focus()}
                     >
                         {recipients.map(email => (
-                            <div key={email} className="flex items-center gap-1.5 bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-xl text-xs font-bold ring-1 ring-indigo-500/10 animate-in fade-in zoom-in duration-200">
+                            <div key={email} className="flex items-center gap-1.5 bg-[#EEF2FF] text-[#5B5FC7] px-2 py-1 rounded text-xs font-medium border border-[#E0E7FF] animate-in fade-in zoom-in duration-200">
                                 <span className="truncate max-w-[200px]">{email}</span>
                                 <button
                                     type="button"
                                     onClick={(e) => { e.stopPropagation(); removeRecipient(email); }}
-                                    className="text-indigo-400 hover:text-indigo-600 rounded-full hover:bg-indigo-100 p-0.5 transition-colors"
+                                    className="text-[#5B5FC7] hover:text-[#4f52b2] rounded-full hover:bg-[#E0E7FF] p-0.5 transition-colors"
                                 >
-                                    <X size={12} strokeWidth={3} />
+                                    <X size={12} strokeWidth={2} />
                                 </button>
                             </div>
                         ))}
@@ -268,7 +268,7 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                             ref={recipientInputRef}
                             id="recipient-input"
                             type="text"
-                            className="flex-1 bg-transparent min-w-[150px] outline-none text-sm font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-medium h-8"
+                            className="flex-1 bg-transparent min-w-[150px] outline-none text-sm text-[#242424] placeholder-[#888888] h-7"
                             placeholder={recipients.length === 0 ? t('email.compose.recipients_placeholder') : ""}
                             value={recipientInput}
                             onChange={e => setRecipientInput(e.target.value)}
@@ -279,21 +279,21 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
 
                     {/* Suggestions Dropdown */}
                     {showSuggestions && suggestions.length > 0 && (
-                        <div ref={suggestionsRef} className="absolute left-0 right-0 top-full mt-2 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/50 overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200">
+                        <div ref={suggestionsRef} className="absolute left-0 right-0 top-full mt-1 bg-white rounded-md shadow-lg border border-[#E0E0E0] overflow-hidden z-50 animate-in fade-in slide-in-from-top-1 duration-150">
                             {suggestions.map((user) => (
                                 <button
                                     key={user.id}
                                     type="button"
                                     onClick={() => user.email && addRecipient(user.email)}
-                                    className="w-full text-left px-5 py-3 hover:bg-indigo-50/50 flex items-center justify-between group/item transition-colors border-b border-slate-50 last:border-0"
+                                    className="w-full text-left px-4 py-2 hover:bg-[#F5F5F5] flex items-center justify-between group/item transition-colors border-b border-[#F5F5F5] last:border-0"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-500 group-hover/item:bg-indigo-100 group-hover/item:text-indigo-600 flex items-center justify-center font-black text-xs transition-colors">
+                                        <div className="w-8 h-8 rounded bg-[#F0F0F0] text-[#616161] group-hover/item:bg-[#EEF2FF] group-hover/item:text-[#5B5FC7] flex items-center justify-center font-bold text-xs transition-colors">
                                             {user.full_name?.[0] || user.username[0]}
                                         </div>
                                         <div>
-                                            <div className="text-sm font-bold text-slate-800 group-hover/item:text-indigo-900 transition-colors">{user.full_name || user.username}</div>
-                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wide group-hover/item:text-indigo-400 transition-colors">{user.email}</div>
+                                            <div className="text-sm font-semibold text-[#242424] group-hover/item:text-[#5B5FC7] transition-colors">{user.full_name || user.username}</div>
+                                            <div className="text-[10px] text-[#888888] uppercase tracking-wide group-hover/item:text-[#5B5FC7]/70 transition-colors">{user.email}</div>
                                         </div>
                                     </div>
                                 </button>
@@ -318,27 +318,27 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                     placeholder={t('email.compose.message_placeholder')}
                     value={body}
                     onChange={e => setBody(e.target.value)}
-                    rows={10}
+                    rows={12}
                     fullWidth
                     tabIndex={0}
                 />
 
                 {/* Files List */}
                 {files.length > 0 && (
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-2 pt-2 border-t border-[#E0E0E0]">
                         {files.map((file, i) => (
-                            <div key={i} className="flex items-center gap-3 bg-white pl-4 pr-2 py-2.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-indigo-100 hover:-translate-y-0.5 transition-all duration-300 group animate-in fade-in slide-in-from-bottom duration-200" style={{ animationDelay: `${i * 50}ms` }}>
-                                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-500 flex items-center justify-center">
-                                    <FileText size={16} />
+                            <div key={i} className="flex items-center gap-2 bg-white pl-3 pr-2 py-2 rounded border border-[#E0E0E0] shadow-sm hover:border-[#5B5FC7]/50 transition-all duration-200 group animate-in fade-in slide-in-from-bottom duration-200" style={{ animationDelay: `${i * 50}ms` }}>
+                                <div className="w-7 h-7 rounded bg-[#F0F0F0] text-[#616161] flex items-center justify-center">
+                                    <FileText size={14} strokeWidth={1.5} />
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-xs font-bold text-slate-700 truncate max-w-[150px]">{file.name}</span>
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{(file.size / 1024).toFixed(0)} {t('common.kb')}</span>
+                                    <span className="text-xs font-semibold text-[#242424] truncate max-w-[150px]">{file.name}</span>
+                                    <span className="text-[9px] font-medium text-[#888888] uppercase tracking-tight">{(file.size / 1024).toFixed(0)} {t('common.kb')}</span>
                                 </div>
                                 <button
                                     type="button"
                                     onClick={() => removeFile(i)}
-                                    className="p-1.5 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors ml-1"
+                                    className="p-1 text-[#BDBDBD] hover:text-[#C4314B] hover:bg-[#C4314B]/10 rounded transition-colors ml-1"
                                 >
                                     <Trash2 size={14} />
                                 </button>

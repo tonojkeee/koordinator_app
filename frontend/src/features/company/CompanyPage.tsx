@@ -105,7 +105,7 @@ const CompanyPage: React.FC = () => {
     ];
 
     return (
-        <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden animate-in fade-in duration-300">
+        <div className="flex-1 flex flex-col bg-[#F5F5F5] overflow-hidden animate-in fade-in duration-300">
             {/* Header with Design System */}
             <div className="px-6 pt-4 pb-2 shrink-0 z-20 sticky top-0 pointer-events-none">
                 <Header
@@ -123,7 +123,7 @@ const CompanyPage: React.FC = () => {
                             <select
                                 value={selectedUnitId}
                                 onChange={(e) => setSelectedUnitId(e.target.value)}
-                                className="h-10 px-3 pr-8 bg-white/50 border border-slate-200/50 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm hover:bg-white"
+                                className="h-9 px-3 pr-8 bg-white border border-[#E0E0E0] rounded-md text-sm font-medium text-[#242424] focus:outline-none focus:ring-1 focus:ring-[#5B5FC7] focus:border-[#5B5FC7] transition-all shadow-sm cursor-pointer"
                             >
                                 {unitOptions.map(option => (
                                     <option key={option.value} value={option.value}>
@@ -131,7 +131,7 @@ const CompanyPage: React.FC = () => {
                                     </option>
                                 ))}
                             </select>
-                            
+
                             {/* Send Document Button */}
                             {selectedUserIds.length > 0 && (
                                 <Button
@@ -146,13 +146,13 @@ const CompanyPage: React.FC = () => {
                         </div>
                     }
                     sticky={false}
-                    className="pointer-events-auto"
+                    className="pointer-events-auto shadow-sm border border-[#E0E0E0] rounded-lg bg-white"
                 />
             </div>
 
             {/* Content - Employee List with smooth transition */}
-            <div className="flex-1 overflow-hidden relative">
-                <div 
+            <div className="flex-1 overflow-hidden relative p-4">
+                <div
                     key={selectedUnitId}
                     className="h-full w-full animate-in fade-in duration-300"
                 >

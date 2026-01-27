@@ -73,7 +73,7 @@ export const Avatar = React.memo<AvatarProps>(({
     <div className={cn('relative shrink-0 rounded-full', sizeClasses[size], className)}>
       <div className={cn(
         'w-full h-full rounded-full flex items-center justify-center font-bold overflow-hidden shadow-inner',
-        !src || imageError ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white' : 'bg-slate-100'
+        !src || imageError ? 'bg-gradient-to-br from-[#5B5FC7] to-[#4F46E5] text-white' : 'bg-[#F0F0F0]'
       )}>
         {src && !imageError ? (
           <img
@@ -92,7 +92,7 @@ export const Avatar = React.memo<AvatarProps>(({
           className={cn(
             'absolute -bottom-0.5 -right-0.5 rounded-full border-white shadow-sm',
             statusSizeClasses[size],
-            status === 'online' ? 'bg-emerald-500' : 'bg-slate-300'
+            status === 'online' ? 'bg-green-500' : 'bg-[#BDBDBD]'
           )}
         />
       )}

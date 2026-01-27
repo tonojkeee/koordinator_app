@@ -4,7 +4,7 @@ import { useAuthStore } from '../store/useAuthStore';
 // Helper to get CSRF token from cookies
 const getCsrfToken = (): string | null => {
     const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
+    for (const cookie of cookies) {
         const [name, value] = cookie.trim().split('=');
         if (name === 'csrf_token') {
             return decodeURIComponent(value);
@@ -65,8 +65,8 @@ const processQueue = (error: unknown, token: string | null = null): void => {
 
 api.interceptors.response.use(
     (response: AxiosResponse): AxiosResponse => response,
-    async (error: any): Promise<AxiosResponse> => {
-        const axiosError = error as AxiosError;
+    async (error: AxiosError): Promise<AxiosResponse> => {
+        const axiosError = error;
         const originalRequest = axiosError.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
         // Handle 405 Method Not Allowed

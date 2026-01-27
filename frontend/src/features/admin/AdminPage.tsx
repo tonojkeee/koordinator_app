@@ -147,50 +147,50 @@ const AdminPage: React.FC = () => {
 
     // Tab definitions
     const mainTabs = [
-        { id: 'overview', icon: <Activity size={14} />, label: t('admin.overview') },
-        { id: 'units', icon: <Building2 size={14} />, label: t('admin.units') },
-        { id: 'users', icon: <Users size={14} />, label: t('admin.users') },
-        { id: 'tasks', icon: <ClipboardList size={14} />, label: t('admin.tasks') },
-        { id: 'sessions', icon: <BarChart2 size={14} />, label: t('admin.sessions') },
+        { id: 'overview', icon: <Activity size={18} strokeWidth={1.5} />, label: t('admin.overview') },
+        { id: 'units', icon: <Building2 size={18} strokeWidth={1.5} />, label: t('admin.units') },
+        { id: 'users', icon: <Users size={18} strokeWidth={1.5} />, label: t('admin.users') },
+        { id: 'tasks', icon: <ClipboardList size={18} strokeWidth={1.5} />, label: t('admin.tasks') },
+        { id: 'sessions', icon: <BarChart2 size={18} strokeWidth={1.5} />, label: t('admin.sessions') },
     ];
 
     const settingsTabs = [
-        { id: 'settings_general', label: t('settings.groups.general'), icon: <Sliders size={12} /> },
-        { id: 'settings_security', label: t('settings.groups.security'), icon: <Shield size={12} /> },
-        { id: 'settings_chat', label: t('settings.groups.chat'), icon: <MessageSquare size={12} /> },
-        { id: 'settings_email', label: t('settings.groups.email'), icon: <Settings size={12} /> },
-        { id: 'settings_database', label: t('settings.groups.database'), icon: <Database size={12} /> },
+        { id: 'settings_general', label: t('settings.groups.general'), icon: <Sliders size={16} strokeWidth={1.5} /> },
+        { id: 'settings_security', label: t('settings.groups.security'), icon: <Shield size={16} strokeWidth={1.5} /> },
+        { id: 'settings_chat', label: t('settings.groups.chat'), icon: <MessageSquare size={16} strokeWidth={1.5} /> },
+        { id: 'settings_email', label: t('settings.groups.email'), icon: <Settings size={16} strokeWidth={1.5} /> },
+        { id: 'settings_database', label: t('settings.groups.database'), icon: <Database size={16} strokeWidth={1.5} /> },
     ];
 
     return (
-        <div className="flex-1 flex flex-col bg-slate-50 overflow-hidden h-screen">
+        <div className="flex-1 flex flex-col bg-[#F5F5F5] overflow-hidden h-screen animate-in fade-in duration-300">
             {/* Header */}
             <div className="px-6 pt-4 pb-2 shrink-0 z-30 sticky top-0 pointer-events-none">
-                <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-4 pointer-events-auto">
+                <div className="bg-white border border-[#E0E0E0] rounded-lg shadow-sm p-3 pointer-events-auto flex items-center justify-between">
                     {/* Title Row */}
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="p-2.5 bg-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-200">
-                            <Shield size={20} />
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-[#5B5FC7] rounded-md text-white shadow-sm">
+                            <Shield size={18} strokeWidth={1.5} />
                         </div>
                         <div>
-                            <h1 className="text-xl font-semibold text-slate-900 leading-tight">
+                            <h1 className="text-base font-bold text-[#242424] leading-tight">
                                 {t('admin.dashboard')}
                             </h1>
-                            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                            <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-wider">
                                 {t('admin.systemControl')}
                             </p>
                         </div>
                     </div>
 
                     {/* Tabs Row */}
-                    <div className="flex items-center gap-1 bg-slate-100/50 p-1 rounded-xl border border-slate-200/50">
+                    <div className="flex items-center gap-1 bg-[#F5F5F5] p-1 rounded-md border border-[#E0E0E0]">
                         {mainTabs.map(tab => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${activeTab === tab.id
-                                    ? 'bg-white text-indigo-600 shadow-sm'
-                                    : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${activeTab === tab.id
+                                    ? 'bg-white text-[#5B5FC7] shadow-sm'
+                                    : 'text-[#616161] hover:text-[#242424] hover:bg-[#E0E0E0]/50'
                                     }`}
                             >
                                 {tab.icon}
@@ -201,23 +201,23 @@ const AdminPage: React.FC = () => {
                         {/* Settings Dropdown */}
                         <div className="relative group">
                             <button
-                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${activeTab.startsWith('settings')
-                                    ? 'bg-white text-indigo-600 shadow-sm'
-                                    : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${activeTab.startsWith('settings')
+                                    ? 'bg-white text-[#5B5FC7] shadow-sm'
+                                    : 'text-[#616161] hover:text-[#242424] hover:bg-[#E0E0E0]/50'
                                     }`}
                             >
-                                <Sliders size={14} />
+                                <Sliders size={18} strokeWidth={1.5} />
                                 <span>{t('admin.settings')}</span>
                             </button>
 
-                            <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg p-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                            <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-[#E0E0E0] rounded-lg shadow-lg p-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                                 {settingsTabs.map(sub => (
                                     <button
                                         key={sub.id}
                                         onClick={() => setActiveTab(sub.id)}
-                                        className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${activeTab === sub.id
-                                            ? 'bg-indigo-50 text-indigo-600'
-                                            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                                        className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs font-semibold transition-all ${activeTab === sub.id
+                                            ? 'bg-[#EEF2FF] text-[#5B5FC7]'
+                                            : 'text-[#616161] hover:bg-[#F5F5F5] hover:text-[#242424]'
                                             }`}
                                     >
                                         {sub.icon}
