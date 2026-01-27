@@ -72,40 +72,49 @@ const ToastItem: React.FC<{ toast: Toast; onClose: () => void }> = ({ toast, onC
   };
 
   const iconMap = {
-    info: <Bell size={20} />,
-    success: <MessageSquare size={20} />,
-    warning: <Bell size={20} />,
-    error: <X size={20} />,
-    deleted: <Trash2 size={20} />,
-  };
-
-  const colorMap = {
-    info: 'from-blue-500 to-indigo-600',
-    success: 'from-emerald-500 to-green-600',
-    warning: 'from-amber-500 to-orange-600',
-    error: 'from-rose-500 to-red-600',
-    deleted: 'from-rose-500 to-pink-600',
+    info: <Bell size={18} />,
+    success: <MessageSquare size={18} />,
+    warning: <Bell size={18} />,
+    error: <X size={18} />,
+    deleted: <Trash2 size={18} />,
   };
 
   const bgColorMap = {
-    info: 'bg-white/80 border-indigo-200/50 text-indigo-900',
-    success: 'bg-white/80 border-emerald-200/50 text-emerald-900',
-    warning: 'bg-white/80 border-amber-200/50 text-amber-900',
-    error: 'bg-white/80 border-rose-200/50 text-rose-900',
-    deleted: 'bg-white/80 border-rose-200/50 text-rose-900',
+    info: 'bg-white border-[#E0E0E0] text-[#242424]',
+    success: 'bg-white border-[#E0E0E0] text-[#242424]',
+    warning: 'bg-white border-[#E0E0E0] text-[#242424]',
+    error: 'bg-white border-[#E0E0E0] text-[#242424]',
+    deleted: 'bg-white border-[#E0E0E0] text-[#242424]',
+  };
+
+  const iconColorMap = {
+    info: 'text-[#5B5FC7]',
+    success: 'text-[#237B4B]',
+    warning: 'text-[#FFB900]',
+    error: 'text-[#C4314B]',
+    deleted: 'text-[#C4314B]',
+  };
+
+  const borderAccentMap = {
+    info: 'border-l-[#5B5FC7]',
+    success: 'border-l-[#237B4B]',
+    warning: 'border-l-[#FFB900]',
+    error: 'border-l-[#C4314B]',
+    deleted: 'border-l-[#C4314B]',
   };
 
   return (
     <div
       className={cn(
         bgColorMap[toast.type],
-        'backdrop-blur-xl border shadow-[0_8px_32px_rgba(0,0,0,0.12)]',
-        'rounded-[2rem] overflow-hidden transition-all-custom',
-        isExiting ? 'opacity-0 scale-90 translate-y-4' : 'animate-in slide-in-from-bottom-4 fade-in zoom-in-95',
-        toast.onClick ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98]' : '',
-        'ring-1 ring-white/60'
+        borderAccentMap[toast.type],
+        'shadow-md border border-l-4',
+        'rounded-md overflow-hidden transition-all duration-200 ease-in-out',
+        isExiting ? 'opacity-0 translate-x-full' : 'animate-in slide-in-from-right-full fade-in',
+        toast.onClick ? 'cursor-pointer hover:shadow-md' : '',
+        'w-80 pointer-events-auto'
       )}
-      style={isExiting ? { transitionDuration: '300ms' } : {}}
+      style={isExiting ? { transitionDuration: '200ms' } : {}}
       onClick={(e) => {
         if (toast.onClick && !(e.target as HTMLElement).closest('button')) {
           toast.onClick();
@@ -113,40 +122,41 @@ const ToastItem: React.FC<{ toast: Toast; onClose: () => void }> = ({ toast, onC
         }
       }}
     >
-      <div className="flex items-center gap-4 p-4 pl-5">
-        <div className={cn(
-          'w-10 h-10 rounded-full bg-gradient-to-br flex items-center justify-center text-white shrink-0 shadow-lg shadow-black/5',
-          colorMap[toast.type]
-        )}>
-          {iconMap[toast.type]}
+      <div className="flex items-start gap-3 p-4">
+        <div className={cn('shrink-0 mt-0.5', iconColorMap[toast.type])}>
+            {iconMap[toast.type]}
         </div>
-        <div className="flex-1 min-w-0 py-0.5">
-          <h4 className="font-bold text-sm tracking-tight">{toast.title}</h4>
+        <div className="flex-1 min-w-0">
+          <h4 className="font-bold text-sm leading-tight">{toast.title}</h4>
           {toast.message && (
-            <p className="text-current text-xs font-medium opacity-80 mt-0.5 leading-relaxed">
+            <p className="text-xs font-medium opacity-90 mt-1 leading-relaxed">
               {toast.message}
             </p>
           )}
         </div>
-        {toast.action && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              toast.action?.onClick();
-              handleClose();
-            }}
-            className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-full text-[10px] font-black uppercase tracking-wider transition-all"
-          >
-            {toast.action.label}
-          </button>
-        )}
-        <button
-          onClick={handleClose}
-          className="p-2 rounded-full hover:bg-black/5 text-current opacity-60 hover:opacity-100 transition-all mr-1"
-        >
-          <X size={16} />
-        </button>
+        <div className="shrink-0 flex flex-col gap-2 -mt-1 -mr-1">
+            <button
+            onClick={handleClose}
+            className="p-1 rounded-md hover:bg-black/5 transition-colors opacity-60 hover:opacity-100"
+            >
+            <X size={14} />
+            </button>
+        </div>
       </div>
+      {toast.action && (
+          <div className="px-4 pb-3 pt-0 flex justify-end">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toast.action?.onClick();
+                  handleClose();
+                }}
+                className="text-xs font-bold uppercase tracking-wide hover:underline"
+              >
+                {toast.action.label}
+              </button>
+          </div>
+      )}
     </div>
   );
 };

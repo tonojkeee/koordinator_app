@@ -41,14 +41,14 @@ export const SearchInput = React.memo<SearchInputProps>(({
   return (
     <div className={cn('relative group w-full sm:w-80', className)}>
       {/* Search Icon - абсолютное позиционирование слева */}
-      <Search 
+      <Search
         className={cn(
-          'absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4',
-          'text-slate-400 transition-colors',
-          'group-focus-within:text-indigo-500'
+          'absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4',
+          'text-[#616161] transition-colors',
+          'group-focus-within:text-[#5B5FC7]'
         )}
       />
-      
+
       {/* Input Field с glass effect */}
       <input
         type="text"
@@ -57,31 +57,31 @@ export const SearchInput = React.memo<SearchInputProps>(({
         placeholder={placeholder || defaultPlaceholder}
         className={cn(
           // Base styling - responsive width (Requirements 11.2)
-          'w-full h-9 pl-11 pr-10',
-          // Glass effect background
-          'bg-white/50 border border-slate-200/50 rounded-xl',
+          'w-full h-9 pl-9 pr-8',
+          // Teams-like background
+          'bg-white border border-[#E0E0E0] rounded-md',
           // Typography
-          'text-xs font-medium text-slate-900 placeholder:text-slate-400',
+          'text-sm font-normal text-[#242424] placeholder:text-[#616161]',
           // Transitions
           'transition-all outline-none',
           // Focus state enhancement (Requirement 3.3)
-          'focus:bg-white focus:shadow-md focus:border-indigo-100 focus:ring-4 focus:ring-indigo-100'
+          'focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7]'
         )}
         {...props}
       />
-      
+
       {/* Clear Button - показывается только при наличии значения */}
       {value && onClear && (
         <button
           type="button"
           onClick={onClear}
           className={cn(
-            'absolute right-3 top-1/2 -translate-y-1/2',
-            'p-1 hover:bg-slate-100 rounded transition-colors'
+            'absolute right-2 top-1/2 -translate-y-1/2',
+            'p-0.5 hover:bg-[#F5F5F5] rounded-full transition-colors'
           )}
           aria-label="Clear search"
         >
-          <X className="w-3 h-3 text-slate-400" />
+          <X className="w-3 h-3 text-[#616161]" />
         </button>
       )}
     </div>

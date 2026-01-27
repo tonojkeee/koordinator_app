@@ -19,15 +19,15 @@ import { cn } from '../utils/cn';
 
 const headerIconVariants = cva(
   // Base styles - padding, rounded corners, shadow, hover animation
-  'p-2.5 rounded-xl shadow-lg transition-transform duration-300 hover:scale-105 text-white',
+  'p-2 rounded-md transition-transform duration-300 hover:scale-105 text-white',
   {
     variants: {
       color: {
-        indigo: 'bg-indigo-600 shadow-indigo-200',
-        amber: 'bg-amber-600 shadow-amber-200',
-        rose: 'bg-rose-600 shadow-rose-200',
-        green: 'bg-green-600 shadow-green-200',
-        blue: 'bg-blue-600 shadow-blue-200',
+        indigo: 'bg-[#5B5FC7]',
+        amber: 'bg-[#D97706]',
+        rose: 'bg-[#C4314B]',
+        green: 'bg-[#16A34A]',
+        blue: 'bg-[#2563EB]',
       },
     },
     defaultVariants: {

@@ -75,10 +75,10 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ children, options, cla
           className="fixed z-[9999] pointer-events-auto" 
           style={{ top: position.y, left: position.x }}
         >
-          <div className="w-56 bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl border border-slate-200 py-1.5 focus:outline-none ring-1 ring-black/5 animate-in fade-in zoom-in duration-100">
+          <div className="w-56 bg-white rounded-md shadow-md border border-[#E0E0E0] py-1 focus:outline-none animate-in fade-in zoom-in-95 duration-100">
             {options.map((option, idx) => (
               <Fragment key={idx}>
-                {option.divider && <div className="my-1 border-t border-slate-100" />}
+                {option.divider && <div className="my-1 border-t border-[#E0E0E0]" />}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -90,19 +90,19 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ children, options, cla
                   onContextMenu={(e) => e.preventDefault()}
                   disabled={option.disabled}
                   className={cn(
-                    "w-full flex items-center gap-3 px-3 py-2 text-sm transition-all text-left mx-1.5 w-[calc(100%-12px)] rounded-md",
-                    option.disabled ? "opacity-30 cursor-not-allowed" : 
-                    option.variant === 'danger' ? "text-rose-600 hover:bg-rose-50" : 
+                    "w-full flex items-center gap-3 px-3 py-2 text-sm transition-all text-left mx-1 w-[calc(100%-8px)] rounded-md",
+                    option.disabled ? "opacity-40 cursor-not-allowed" :
+                    option.variant === 'danger' ? "text-[#C4314B] hover:bg-[#C4314B]/10" :
                     option.variant === 'warning' ? "text-amber-600 hover:bg-amber-50" :
-                    "text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 font-medium"
+                    "text-[#242424] hover:bg-[#F5F5F5] hover:text-[#5B5FC7] font-medium"
                   )}
                 >
                   {option.icon && <option.icon size={16} className={cn(
                     "shrink-0",
-                    option.disabled ? "text-slate-300" :
-                    option.variant === 'danger' ? "text-rose-500" : 
+                    option.disabled ? "text-[#BDBDBD]" :
+                    option.variant === 'danger' ? "text-[#C4314B]" :
                     option.variant === 'warning' ? "text-amber-500" :
-                    "text-slate-400 group-hover:text-indigo-500"
+                    "text-[#616161] group-hover:text-[#5B5FC7]"
                   )} />}
                   <span className="truncate">{option.label}</span>
                 </button>

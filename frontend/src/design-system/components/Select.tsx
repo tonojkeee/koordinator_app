@@ -62,7 +62,7 @@ export const Select = React.memo<SelectProps>(({
       {label && (
         <label
           htmlFor={selectId}
-          className="block text-xs font-bold text-slate-700"
+          className="block text-xs font-bold text-[#242424]"
         >
           {label}
         </label>
@@ -70,7 +70,7 @@ export const Select = React.memo<SelectProps>(({
 
       <div className="relative">
         {leftIcon && (
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#616161] pointer-events-none">
             {leftIcon}
           </div>
         )}
@@ -78,15 +78,15 @@ export const Select = React.memo<SelectProps>(({
         <select
           id={selectId}
           className={cn(
-            'w-full py-4 bg-slate-50 border-2 rounded-2xl appearance-none',
-            'font-medium text-slate-900',
+            'w-full py-2 bg-white border border-[#E0E0E0] rounded-md appearance-none',
+            'font-medium text-[#242424] text-sm',
             'transition-all outline-none cursor-pointer',
-            'focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-100',
-            error && 'border-rose-500 focus:border-rose-500 focus:ring-rose-100',
-            !error && 'border-slate-100',
-            leftIcon ? 'pl-11 pr-12' : 'px-5 pr-12',
+            'focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7]',
+            error && 'border-[#C4314B] focus:border-[#C4314B] focus:ring-[#C4314B]/20',
+            !error && 'hover:border-[#BDBDBD]',
+            leftIcon ? 'pl-9 pr-10' : 'px-3 pr-10',
             // Style for placeholder state
-            !props.value && 'text-slate-400',
+            !props.value && 'text-[#616161]',
             className
           )}
           {...props}
@@ -101,24 +101,24 @@ export const Select = React.memo<SelectProps>(({
               key={option.value}
               value={option.value}
               disabled={option.disabled}
-              className="text-slate-900"
+              className="text-[#242424]"
             >
               {option.label}
             </option>
           ))}
         </select>
 
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-          <ChevronDown className="w-5 h-5" />
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[#616161] pointer-events-none">
+          <ChevronDown className="w-4 h-4" />
         </div>
       </div>
 
       {error && (
-        <p className="text-xs font-medium text-rose-600">{error}</p>
+        <p className="text-xs font-medium text-[#C4314B]">{error}</p>
       )}
 
       {helperText && !error && (
-        <p className="text-xs text-slate-500">{helperText}</p>
+        <p className="text-xs text-[#616161]">{helperText}</p>
       )}
     </div>
   );

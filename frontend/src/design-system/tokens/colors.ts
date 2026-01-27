@@ -6,23 +6,34 @@
  */
 
 export const colors = {
-  // Primary palette - более насыщенный и современный
-  primary: {
-    25: 'slate-25',
-    50: 'indigo-50',
-    100: 'indigo-100',
-    200: 'indigo-200',
-    300: 'indigo-300',
-    400: 'indigo-400',
-    500: 'indigo-500',
-    600: 'indigo-600',
-    700: 'indigo-700',
-    800: 'indigo-800',
-    900: 'indigo-900',
-    950: 'indigo-950',
+  // Microsoft Teams inspired palette
+  teams: {
+    purple: 'teams-accent',
+    bg: 'teams-bg',
+    sidebar: 'teams-sidebar',
+    header: 'teams-header',
+    border: 'teams-border',
+    textPrimary: 'teams-text-primary',
+    textSecondary: 'teams-text-secondary',
   },
-  
-  // Neutral palette - расширенная для лучшей иерархии
+
+  // Primary palette - now mapped to Teams purple
+  primary: {
+    25: 'primary-25',
+    50: 'primary-50',
+    100: 'primary-100',
+    200: 'primary-200',
+    300: 'primary-300',
+    400: 'primary-400',
+    500: 'primary-500', // #5B5FC7
+    600: 'primary-600',
+    700: 'primary-700',
+    800: 'primary-800',
+    900: 'primary-900',
+    950: 'primary-950',
+  },
+
+  // Neutral palette - using slate for Teams-like gray scale
   neutral: {
     0: 'white',
     25: 'slate-25',
@@ -38,17 +49,17 @@ export const colors = {
     900: 'slate-900',
     950: 'slate-950',
   },
-  
-  // Surface colors для современного layering
+
+  // Surface colors for layering
   surface: {
     primary: 'white',
-    secondary: 'slate-50',
+    secondary: 'teams-bg',
     tertiary: 'slate-100',
     elevated: 'white',
-    overlay: 'slate-900/10',
+    overlay: 'black/20',
   },
-  
-  // Semantic colors с улучшенной палитрой
+
+  // Semantic colors
   success: {
     50: 'emerald-50',
     100: 'emerald-100',

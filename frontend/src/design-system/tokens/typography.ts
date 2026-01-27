@@ -6,49 +6,49 @@
  */
 
 export const typography = {
-  // Display - для больших заголовков
+  // Font Family
+  fontFamily: 'font-sans',
+
+  // Display - for large headers
   display: {
-    large: 'text-4xl font-black text-slate-900 leading-tight tracking-tight',
-    medium: 'text-3xl font-black text-slate-900 leading-tight tracking-tight',
-    small: 'text-2xl font-black text-slate-900 leading-tight tracking-tight',
+    large: 'text-3xl font-bold text-teams-text-primary leading-tight tracking-tight',
+    medium: 'text-2xl font-bold text-teams-text-primary leading-tight tracking-tight',
+    small: 'text-xl font-bold text-teams-text-primary leading-tight tracking-tight',
   },
-  
-  // Headings - четкая иерархия
+
+  // Headings - Semibold for Teams feel
   heading: {
-    h1: 'text-2xl font-bold text-slate-900 leading-tight tracking-tight',
-    h2: 'text-xl font-bold text-slate-900 leading-tight tracking-tight',
-    h3: 'text-lg font-semibold text-slate-900 leading-tight',
-    h4: 'text-base font-semibold text-slate-900 leading-tight',
-    h5: 'text-sm font-semibold text-slate-900 leading-tight',
-    h6: 'text-xs font-semibold text-slate-900 leading-tight',
+    h1: 'text-xl font-semibold text-teams-text-primary leading-snug',
+    h2: 'text-lg font-semibold text-teams-text-primary leading-snug',
+    h3: 'text-base font-semibold text-teams-text-primary leading-snug',
+    h4: 'text-sm font-semibold text-teams-text-primary leading-snug',
+    h5: 'text-xs font-bold text-teams-text-primary uppercase tracking-wider',
+    h6: 'text-[10px] font-bold text-teams-text-primary uppercase tracking-widest',
   },
-  
-  // Body text - улучшенная читаемость
+
+  // Body text - Professional and dense
   body: {
-    large: 'text-base font-normal text-slate-700 leading-relaxed',
-    medium: 'text-sm font-normal text-slate-700 leading-relaxed',
-    small: 'text-xs font-normal text-slate-600 leading-relaxed',
+    large: 'text-base font-normal text-teams-text-primary leading-normal',
+    medium: 'text-sm font-normal text-teams-text-primary leading-normal',
+    small: 'text-xs font-normal text-teams-text-secondary leading-normal',
   },
-  
-  // Labels и UI элементы
+
+  // UI Elements
   label: {
-    large: 'text-sm font-medium text-slate-900',
-    medium: 'text-xs font-medium text-slate-900',
-    small: 'text-xs font-medium text-slate-700',
+    large: 'text-sm font-medium text-teams-text-primary',
+    medium: 'text-xs font-medium text-teams-text-primary',
+    small: 'text-[11px] font-medium text-teams-text-secondary',
   },
-  
-  // Caption и вспомогательный текст
+
+  // Captions
   caption: {
-    large: 'text-xs font-normal text-slate-500',
-    medium: 'text-xs font-normal text-slate-400',
-    small: 'text-[10px] font-normal text-slate-400',
+    large: 'text-xs font-normal text-teams-text-secondary',
+    medium: 'text-[11px] font-normal text-teams-text-secondary',
+    small: 'text-[10px] font-normal text-teams-text-secondary/80',
   },
-  
-  // Overline - для категорий и меток
-  overline: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider',
-  
-  // Legacy support - постепенно заменить
-  subheading: 'text-[10px] font-bold text-slate-400 uppercase tracking-widest',
+
+  // Special styles
+  overline: 'text-[10px] font-bold text-teams-text-secondary uppercase tracking-widest',
 } as const;
 
 export type TypographyToken = typeof typography;

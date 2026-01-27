@@ -160,34 +160,34 @@ export function UserAutocomplete({
   return (
     <div className={`relative ${className}`}>
       {label && (
-        <label className="block text-sm font-medium text-slate-700 mb-2">
+        <label className="block text-sm font-medium text-[#242424] mb-2">
           {label}
         </label>
       )}
-      
+
       {/* Selected users */}
       {selectedUsers.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-3">
+        <div className="flex flex-wrap gap-2 mb-2">
           {selectedUsers.map(user => (
             <div
               key={user.id}
-              className="flex items-center gap-2 bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-200"
+              className="flex items-center gap-1.5 bg-[#F0F0F0] px-2 py-1 rounded border border-[#E0E0E0]"
             >
               <Avatar
                 src={user.avatar_url}
                 name={displayName(user)}
                 size="xs"
               />
-              <span className="text-sm text-slate-900">
+              <span className="text-xs font-medium text-[#5B5FC7]">
                 {displayName(user)}
               </span>
               {!disabled && (
                 <button
                   onClick={() => handleUserRemove(user.id)}
-                  className="ml-1 text-slate-500 hover:text-slate-700 transition-colors"
+                  className="ml-1 text-[#5B5FC7] hover:text-[#4f52b2] transition-colors rounded-full hover:bg-[#E0E0E0] p-0.5"
                   type="button"
                 >
-                  <X size={12} />
+                  <X size={12} strokeWidth={2} />
                 </button>
               )}
             </div>
@@ -208,21 +208,21 @@ export function UserAutocomplete({
             placeholder={placeholder}
             disabled={disabled || (maxSelections ? selectedUsers.length >= maxSelections : false)}
             autoFocus
-            className="w-full px-4 py-2.5 pl-10 pr-10 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all disabled:bg-slate-50 disabled:text-slate-500"
+            className="w-full px-4 py-2 pl-9 pr-9 border border-[#E0E0E0] rounded-md focus:outline-none focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7] transition-all disabled:bg-[#F5F5F5] disabled:text-[#616161] text-sm text-[#242424] placeholder-[#616161]"
           />
-          <Search 
-            size={18} 
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" 
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#616161]"
           />
           {isLoading && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-[#5B5FC7] border-t-transparent rounded-full animate-spin" />
             </div>
           )}
           {!isLoading && isOpen && (
-            <ChevronDown 
-              size={18} 
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" 
+            <ChevronDown
+              size={16}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#616161]"
             />
           )}
         </div>
@@ -231,17 +231,15 @@ export function UserAutocomplete({
         {isOpen && suggestions.length > 0 && (
           <div
             ref={dropdownRef}
-            className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+            className="absolute z-50 w-full mt-1 bg-white border border-[#E0E0E0] rounded-md shadow-md max-h-60 overflow-y-auto"
           >
             {suggestions.map((user, index) => (
               <button
                 key={user.id}
                 type="button"
                 onClick={() => handleUserSelect(user)}
-                className={`w-full flex items-center gap-3 p-3 text-left hover:bg-slate-50 transition-colors ${
-                  index === highlightedIndex ? 'bg-indigo-50' : ''
-                } ${index === 0 ? 'rounded-t-lg' : ''} ${
-                  index === suggestions.length - 1 ? 'rounded-b-lg' : ''
+                className={`w-full flex items-center gap-3 p-3 text-left hover:bg-[#F5F5F5] transition-colors ${
+                  index === highlightedIndex ? 'bg-[#F5F5F5]' : ''
                 }`}
               >
                 <Avatar
@@ -250,16 +248,16 @@ export function UserAutocomplete({
                   size="sm"
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-slate-900">
+                  <div className="text-sm font-semibold text-[#242424]">
                     {displayName(user)}
                   </div>
                   {user.email && (
-                    <div className="text-xs text-slate-500">
+                    <div className="text-xs text-[#616161]">
                       {user.email}
                     </div>
                   )}
                   {user.rank && (
-                    <div className="text-xs text-slate-400">
+                    <div className="text-[10px] text-[#616161] uppercase tracking-wide mt-0.5">
                       {user.rank}
                     </div>
                   )}
@@ -272,7 +270,7 @@ export function UserAutocomplete({
 
       {/* Helper text */}
       {maxSelections && (
-        <div className="mt-1 text-xs text-slate-500">
+        <div className="mt-1 text-xs text-[#616161]">
           {selectedUsers.length} / {maxSelections} выбрано
         </div>
       )}

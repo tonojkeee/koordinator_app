@@ -41,8 +41,8 @@ export const TabNavigation = React.memo<TabNavigationProps>(({
   return (
     <div
       className={cn(
-        'flex bg-slate-100/50 p-1 rounded-xl border border-slate-200/50',
-        // Horizontal scroll on mobile (Requirements 11.3)
+        'flex gap-1',
+        // Horizontal scroll on mobile
         'overflow-x-auto scrollbar-hide',
         // Snap scrolling for better mobile UX
         'snap-x snap-mandatory',
@@ -58,14 +58,11 @@ export const TabNavigation = React.memo<TabNavigationProps>(({
             key={tab.id}
             onClick={() => onTabChange?.(tab.id)}
             className={cn(
-              'flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold',
-              'transition-all duration-200 whitespace-nowrap',
-              // Snap alignment for mobile scrolling
-              'snap-start',
-              // Responsive sizing - slightly smaller on mobile
-              'min-w-fit',
-              isActive && 'bg-white text-indigo-600 shadow-md',
-              !isActive && 'text-slate-500 hover:text-slate-700 hover:bg-white/50'
+              'flex items-center gap-2 px-3 py-2 rounded-t-md text-sm font-semibold transition-all',
+              'whitespace-nowrap snap-start min-w-fit border-b-2',
+              isActive
+                ? 'text-[#5B5FC7] border-[#5B5FC7] bg-[#F0F0F0]'
+                : 'text-[#616161] border-transparent hover:text-[#242424] hover:bg-[#F5F5F5]'
             )}
             role="tab"
             aria-selected={isActive}
@@ -79,7 +76,7 @@ export const TabNavigation = React.memo<TabNavigationProps>(({
               <span
                 className={cn(
                   'px-1.5 py-0.5 rounded-full text-[10px] font-bold',
-                  isActive ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-200 text-slate-600'
+                  isActive ? 'bg-[#5B5FC7] text-white' : 'bg-[#E0E0E0] text-[#616161]'
                 )}
                 aria-label={`${tab.badge} items`}
               >

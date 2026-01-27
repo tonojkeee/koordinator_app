@@ -21,16 +21,16 @@ import { cva } from 'class-variance-authority';
 import { cn } from '../utils/cn';
 
 const cardVariants = cva(
-  // Base styles - современный минималистичный подход
-  'bg-white border rounded-xl transition-all duration-200 ease-out',
+  // Base styles - Teams-like
+  'bg-white border rounded-md transition-all duration-200 ease-out',
   {
     variants: {
       selected: {
-        true: 'bg-indigo-50 border-indigo-200 ring-2 ring-indigo-500/20',
-        false: 'border-slate-200 hover:border-slate-300',
+        true: 'bg-[#F0F0F0] border-[#5B5FC7] ring-1 ring-[#5B5FC7]',
+        false: 'border-[#E0E0E0] hover:border-[#BDBDBD]',
       },
       hoverable: {
-        true: 'cursor-pointer hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]',
+        true: 'cursor-pointer hover:shadow-sm active:scale-[0.99]',
         false: '',
       },
       padding: {
@@ -41,9 +41,9 @@ const cardVariants = cva(
         xl: 'p-8',
       },
       variant: {
-        default: 'shadow-sm',
-        elevated: 'shadow-md',
-        outlined: 'border-2',
+        default: 'shadow-none',
+        elevated: 'shadow-sm',
+        outlined: 'border',
         ghost: 'border-0 shadow-none bg-transparent',
       },
     },

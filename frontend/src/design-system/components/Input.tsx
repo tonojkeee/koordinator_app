@@ -52,27 +52,27 @@ export const Input = React.memo<InputProps>(({
       {label && (
         <label
           htmlFor={inputId}
-          className="block text-sm font-medium text-slate-700"
+          className="block text-sm font-medium text-[#242424]"
         >
           {label}
         </label>
       )}
-      
+
       <div className="relative">
         {leftIcon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#616161]">
             {leftIcon}
           </div>
         )}
-        
+
         <input
           id={inputId}
           className={cn(
             'w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-md',
-            'font-normal text-[#242424] placeholder:text-[#888888] text-sm',
+            'font-normal text-[#242424] placeholder:text-[#616161] text-sm',
             'transition-all duration-200 ease-out outline-none',
             'focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7]',
-            'hover:border-[#888888]',
+            'hover:border-[#BDBDBD]',
             error && 'border-[#C4314B] focus:border-[#C4314B] focus:ring-[#C4314B]/20',
             leftIcon && 'pl-9',
             rightIcon && 'pr-9',
@@ -80,20 +80,20 @@ export const Input = React.memo<InputProps>(({
           )}
           {...props}
         />
-        
+
         {rightIcon && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[#616161]">
             {rightIcon}
           </div>
         )}
       </div>
-      
+
       {error && (
-        <p className="text-sm font-medium text-red-600">{error}</p>
+        <p className="text-sm font-medium text-[#C4314B]">{error}</p>
       )}
-      
+
       {helperText && !error && (
-        <p className="text-sm text-slate-500">{helperText}</p>
+        <p className="text-sm text-[#616161]">{helperText}</p>
       )}
     </div>
   );

@@ -6,50 +6,51 @@
  */
 
 export const effects = {
-  // Transitions - плавные переходы
+  // Transitions - Snappy Teams transitions
   transition: {
-    fast: 'transition-all duration-150 ease-out',
-    normal: 'transition-all duration-200 ease-out',
-    slow: 'transition-all duration-300 ease-out',
-    colors: 'transition-colors duration-200 ease-out',
-    transform: 'transition-transform duration-200 ease-out',
+    fast: 'transition-all duration-150 ease-in-out',
+    normal: 'transition-all duration-200 ease-in-out',
+    slow: 'transition-all duration-300 ease-in-out',
+    colors: 'transition-colors duration-150 ease-in-out',
+    transform: 'transition-transform duration-200 ease-in-out',
   },
-  
-  // Hover effects - интерактивность
+
+  // Hover effects - subtle interactivity
   hover: {
-    lift: 'hover:-translate-y-0.5 hover:shadow-md',
-    scale: 'hover:scale-105',
-    glow: 'hover:ring-2 hover:ring-indigo-500/20',
-    brighten: 'hover:brightness-110',
+    lift: 'hover:-translate-y-0.5 transition-transform duration-200 ease-out',
+    scale: 'hover:scale-[1.02]',
+    glow: 'hover:ring-2 hover:ring-teams-accent/20',
+    brighten: 'hover:brightness-105',
   },
-  
+
   // Active states
   active: {
     scale: 'active:scale-95',
     press: 'active:translate-y-0.5',
   },
-  
-  // Backdrop effects - минимальные
+
+  // Backdrop effects
   backdrop: {
-    blur: 'backdrop-blur-sm',
-    overlay: 'bg-slate-900/20',
+    blur: 'backdrop-blur-md',
+    overlay: 'bg-black/20',
   },
-  
-  // Border radius - современные скругления
+
+  // Border radius - Compact professional corners
   radius: {
     none: 'rounded-none',
-    sm: 'rounded-lg',
-    md: 'rounded-xl',
-    lg: 'rounded-2xl',
-    xl: 'rounded-3xl',
+    xs: 'rounded-sm', // 2px
+    sm: 'rounded',    // 4px
+    md: 'rounded-md', // 6px
+    lg: 'rounded-lg', // 8px
+    xl: 'rounded-xl', // 12px
     full: 'rounded-full',
   },
-  
-  // Animations
+
+  // Standard animations
   animate: {
-    fadeIn: 'animate-in fade-in duration-300',
-    slideIn: 'animate-in slide-in-from-bottom-4 duration-300',
-    scaleIn: 'animate-in zoom-in-95 duration-200',
+    fadeIn: 'animate-in fade-in duration-200',
+    slideIn: 'animate-in slide-in-from-bottom-2 duration-300',
+    scaleIn: 'animate-in zoom-in-98 duration-200',
     spin: 'animate-spin',
     pulse: 'animate-pulse',
   },

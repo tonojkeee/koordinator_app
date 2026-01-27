@@ -54,18 +54,19 @@ export const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(({
         <div
           ref={tooltipRef}
           className={`
-            absolute z-50 px-3 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg shadow-sm
+            absolute z-50 px-2.5 py-1.5 text-xs font-medium text-white bg-[#242424] rounded-md shadow-sm
+            animate-in fade-in zoom-in-95 duration-150
             ${positionClasses[position]}
             ${className}
           `}
         >
           {content}
           <div className={`
-            absolute w-0 h-0 border-8 border-transparent
-            ${position === 'top' ? 'top-full left-1/2 -ml-4 border-t-slate-800' : ''}
-            ${position === 'right' ? 'top-1/2 left-0 -mt-4 border-r-slate-800' : ''}
-            ${position === 'bottom' ? 'top-0 left-1/2 -ml-4 border-b-slate-800' : ''}
-            ${position === 'left' ? 'top-1/2 right-0 -mt-4 border-l-slate-800' : ''}
+            absolute w-0 h-0 border-4 border-transparent
+            ${position === 'top' ? 'top-full left-1/2 -ml-1 border-t-[#242424]' : ''}
+            ${position === 'right' ? 'top-1/2 left-0 -mt-1 border-r-[#242424]' : ''}
+            ${position === 'bottom' ? 'top-0 left-1/2 -ml-1 border-b-[#242424]' : ''}
+            ${position === 'left' ? 'top-1/2 right-0 -mt-1 border-l-[#242424]' : ''}
           `}></div>
         </div>
       )}

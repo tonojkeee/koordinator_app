@@ -22,20 +22,20 @@ import { Loader2 } from 'lucide-react';
 
 const buttonVariants = cva(
   // Base styles - современный минималистичный подход
-  'inline-flex items-center justify-center gap-2 font-medium rounded-xl transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2',
+  'inline-flex items-center justify-center gap-2 font-medium rounded-md transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2',
   {
     variants: {
       variant: {
-        primary: 'bg-[#5B5FC7] hover:bg-[#4f52b2] text-white shadow-sm hover:shadow focus:ring-[#5B5FC7]/20 active:scale-[0.98]',
-        secondary: 'bg-white hover:bg-[#F5F5F5] text-[#242424] border border-[#E0E0E0] hover:border-[#BDBDBD] shadow-sm hover:shadow focus:ring-[#5B5FC7]/20 active:scale-[0.98]',
-        danger: 'bg-[#C4314B] hover:bg-[#a3283e] text-white shadow-sm hover:shadow focus:ring-[#C4314B]/20 active:scale-[0.98]',
-        ghost: 'hover:bg-[#EBEBEB] text-[#424242] hover:text-[#242424] focus:ring-[#5B5FC7]/20 active:scale-[0.98]',
+        primary: 'bg-[#5B5FC7] hover:bg-[#4f52b2] text-white shadow-none focus:ring-[#5B5FC7]/20 active:scale-[0.98]',
+        secondary: 'bg-white hover:bg-[#F5F5F5] text-[#242424] border border-[#E0E0E0] hover:border-[#BDBDBD] shadow-none focus:ring-[#5B5FC7]/20 active:scale-[0.98]',
+        danger: 'bg-[#C4314B] hover:bg-[#a3283e] text-white shadow-none focus:ring-[#C4314B]/20 active:scale-[0.98]',
+        ghost: 'hover:bg-[#F5F5F5] text-[#616161] hover:text-[#242424] focus:ring-[#5B5FC7]/20 active:scale-[0.98]',
         outline: 'border border-[#E0E0E0] hover:border-[#BDBDBD] text-[#242424] hover:bg-[#F5F5F5] focus:ring-[#5B5FC7]/20 active:scale-[0.98]',
       },
       size: {
-        sm: 'px-3 h-8 text-xs font-semibold rounded-md',
-        md: 'px-4 h-9 text-sm font-semibold rounded-md',
-        lg: 'px-6 h-11 text-base font-semibold rounded-md',
+        sm: 'px-3 h-8 text-xs font-semibold',
+        md: 'px-4 h-9 text-sm font-semibold',
+        lg: 'px-6 h-11 text-base font-semibold',
       },
     },
     defaultVariants: {

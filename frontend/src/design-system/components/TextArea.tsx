@@ -48,34 +48,34 @@ export const TextArea = React.memo<TextAreaProps>(({
       {label && (
         <label
           htmlFor={textareaId}
-          className="block text-xs font-bold text-slate-700"
+          className="block text-xs font-bold text-[#242424]"
         >
           {label}
         </label>
       )}
-      
+
       <textarea
         id={textareaId}
         rows={rows}
         className={cn(
           'w-full px-3 py-2 bg-white border border-[#E0E0E0] rounded-md',
-          'font-normal text-[#242424] placeholder:text-[#888888] text-sm',
+          'font-normal text-[#242424] placeholder:text-[#616161] text-sm',
           'transition-all outline-none resize-y',
           'focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7]',
-          'hover:border-[#888888]',
+          'hover:border-[#BDBDBD]',
           error && 'border-[#C4314B] focus:border-[#C4314B] focus:ring-[#C4314B]/20',
           !error && 'border-[#E0E0E0]',
           className
         )}
         {...props}
       />
-      
+
       {error && (
-        <p className="text-xs font-medium text-rose-600">{error}</p>
+        <p className="text-xs font-medium text-[#C4314B]">{error}</p>
       )}
-      
+
       {helperText && !error && (
-        <p className="text-xs text-slate-500">{helperText}</p>
+        <p className="text-xs text-[#616161]">{helperText}</p>
       )}
     </div>
   );

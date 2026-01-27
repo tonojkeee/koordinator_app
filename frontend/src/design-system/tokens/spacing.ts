@@ -6,55 +6,54 @@
  */
 
 export const spacing = {
-  // Padding - более гибкая система
+  // Padding - Compact, density-friendly system
   padding: {
     none: 'p-0',
-    xs: 'p-2',     // 8px
-    sm: 'p-3',     // 12px
-    md: 'p-4',     // 16px
-    lg: 'p-6',     // 24px
-    xl: 'p-8',     // 32px
-    '2xl': 'p-12', // 48px
-    '3xl': 'p-16', // 64px
+    tight: 'p-1',   // 4px
+    xs: 'p-2',      // 8px
+    sm: 'p-3',      // 12px
+    md: 'p-4',      // 16px
+    lg: 'p-5',      // 20px
+    xl: 'p-6',      // 24px
+    '2xl': 'p-8',   // 32px
+    '3xl': 'p-12',  // 48px
   },
-  
-  // Gap - для flexbox и grid
+
+  // Gap - for flexbox and grid
   gap: {
     none: 'gap-0',
-    xs: 'gap-1',   // 4px
-    sm: 'gap-2',   // 8px
-    md: 'gap-4',   // 16px
-    lg: 'gap-6',   // 24px
-    xl: 'gap-8',   // 32px
-    '2xl': 'gap-12', // 48px
+    xs: 'gap-1',     // 4px
+    sm: 'gap-2',     // 8px
+    md: 'gap-3',     // 12px
+    lg: 'gap-4',     // 16px
+    xl: 'gap-6',     // 24px
+    '2xl': 'gap-8',  // 32px
   },
-  
-  // Margin - редко используется, но нужен
+
+  // Margin
   margin: {
     none: 'm-0',
-    xs: 'm-1',     // 4px
-    sm: 'm-2',     // 8px
-    md: 'm-4',     // 16px
-    lg: 'm-6',     // 24px
-    xl: 'm-8',     // 32px
-    '2xl': 'm-12', // 48px
+    xs: 'm-1',       // 4px
+    sm: 'm-2',       // 8px
+    md: 'm-4',       // 16px
+    lg: 'm-6',       // 24px
+    xl: 'm-8',       // 32px
   },
-  
-  // Space - для stack layouts
+
+  // Space - for stack layouts
   space: {
     xs: 'space-y-1',   // 4px
     sm: 'space-y-2',   // 8px
-    md: 'space-y-4',   // 16px
-    lg: 'space-y-6',   // 24px
-    xl: 'space-y-8',   // 32px
-    '2xl': 'space-y-12', // 48px
+    md: 'space-y-3',   // 12px
+    lg: 'space-y-4',   // 16px
+    xl: 'space-y-6',   // 24px
   },
-  
-  // Container padding для разных breakpoints
+
+  // Container padding
   container: {
-    mobile: 'px-4',    // 16px на мобильных
-    tablet: 'px-6',    // 24px на планшетах
-    desktop: 'px-8',   // 32px на десктопе
+    mobile: 'px-3',    // 12px
+    tablet: 'px-4',    // 16px
+    desktop: 'px-6',   // 24px
   },
 } as const;
 

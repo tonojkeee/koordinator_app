@@ -151,9 +151,9 @@ const AnimatedTitle: React.FC<{ title: string; className?: string }> = ({ title,
   }, []);
 
   return (
-    <h1 
+    <h1
       className={cn(
-        'text-xl font-semibold text-slate-900 leading-tight truncate transition-all duration-300 ease-in-out',
+        'text-xl font-semibold text-[#242424] leading-tight truncate transition-all duration-300 ease-in-out',
         isAnimating && 'opacity-0 transform translate-y-1',
         !isAnimating && 'opacity-100 transform translate-y-0',
         className
@@ -184,10 +184,10 @@ export const Header = React.memo<HeaderProps>(({
   return (
     <header
       className={cn(
-        // Современный минималистичный дизайн
-        'bg-white border border-slate-200 rounded-xl shadow-sm',
+        // Teams-like header
+        'bg-white border-b border-[#E0E0E0]',
         // Padding и spacing
-        'p-6 space-y-4',
+        'px-6 py-4 space-y-4',
         // Sticky positioning
         sticky && 'sticky top-0 z-40',
         className
@@ -196,24 +196,24 @@ export const Header = React.memo<HeaderProps>(({
       {/* Upper Level: Icon + Title + Search + Actions */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
         {/* Icon + Title Section */}
-        <div className="flex items-center gap-4 flex-1 min-w-0">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
           {/* Module Icon */}
           <HeaderIcon icon={icon} color={iconColor} />
-          
+
           {/* Title Section */}
           <div className="flex-1 min-w-0">
-            <AnimatedTitle title={title} />
+            <AnimatedTitle title={title} className="text-lg font-bold text-[#242424]" />
             {subtitle && (
-              <div className="text-xs font-medium text-slate-500 uppercase tracking-wider mt-0">
+              <div className="text-[11px] font-semibold text-[#616161] uppercase tracking-wider mt-0.5">
                 {subtitle}
               </div>
             )}
           </div>
         </div>
-        
+
         {/* Search Input */}
         {onSearchChange && (
-          <div className="w-full sm:w-80">
+          <div className="w-full sm:w-72">
             <SearchInput
               placeholder={searchPlaceholder}
               value={searchValue}
@@ -222,7 +222,7 @@ export const Header = React.memo<HeaderProps>(({
             />
           </div>
         )}
-        
+
         {/* Actions */}
         {actions && (
           <div className="flex items-center gap-2">
@@ -230,10 +230,10 @@ export const Header = React.memo<HeaderProps>(({
           </div>
         )}
       </div>
-      
+
       {/* Lower Level: Tab Navigation */}
       {tabs && tabs.length > 0 && (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between pt-1">
           <TabNavigation
             tabs={tabs}
             activeTab={activeTab}
