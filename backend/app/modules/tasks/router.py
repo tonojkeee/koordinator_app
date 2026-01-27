@@ -15,7 +15,7 @@ from app.modules.tasks.handlers import TaskEventHandlers
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
-@router.post("/", response_model=List[TaskResponse])
+@router.post("/", response_model=List[TaskResponse], status_code=status.HTTP_201_CREATED)
 async def create_task(
     task_in: TaskCreate,
     current_user: User = Depends(get_current_user),
@@ -120,7 +120,12 @@ async def get_received_tasks(
     updated = False
     now = datetime.now(timezone.utc)
     for t in tasks:
-        if t.status == TaskStatus.IN_PROGRESS and t.deadline < now:
+        # Ensure deadline is aware for comparison
+        deadline = t.deadline
+        if deadline.tzinfo is None:
+            deadline = deadline.replace(tzinfo=timezone.utc)
+
+        if t.status == TaskStatus.IN_PROGRESS and deadline < now:
             t.status = TaskStatus.OVERDUE
             updated = True
     
@@ -285,7 +290,12 @@ async def reject_task(
         raise HTTPException(status_code=403, detail="Not authorized")
         
     old_status = task.status
-    task.status = TaskStatus.IN_PROGRESS if task.deadline > datetime.now(timezone.utc) else TaskStatus.OVERDUE
+    # Ensure deadline is aware for comparison
+    deadline = task.deadline
+    if deadline.tzinfo is None:
+        deadline = deadline.replace(tzinfo=timezone.utc)
+
+    task.status = TaskStatus.IN_PROGRESS if deadline > datetime.now(timezone.utc) else TaskStatus.OVERDUE
     task.return_reason = rejection.reason
 
     await db.commit()
