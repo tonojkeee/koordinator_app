@@ -7,107 +7,117 @@ export const TeamsDashboard = () => {
     const { t } = useTranslation();
     
     return (
-        <div className="p-6 grid grid-cols-12 gap-6 h-full overflow-y-auto bg-[#F5F5F5]">
-            <div className="col-span-12 lg:col-span-8 space-y-6">
-                <div className="flex items-center justify-between mb-4">
-                    <h1 className="text-2xl font-bold text-[#242424] flex items-center gap-3">
-                        <span className="bg-[#5B5FC7] text-white p-2 rounded-md shadow-sm"><MessageSquare size={20} strokeWidth={1.5} /></span>
-                        {t('teams.dashboard.digital_solutions') || 'Digital Solutions Team'}
-                    </h1>
-                    <button className="p-2 hover:bg-white rounded-md text-[#616161] transition-colors">
-                        <MoreHorizontal size={20} />
-                    </button>
-                </div>
-
-                <div className="bg-white rounded-lg shadow-sm border border-[#E0E0E0] p-4 mb-6">
-                    <div className="flex items-center gap-6 text-sm font-semibold text-[#616161] border-b border-[#E0E0E0] pb-0 mb-4">
-                        <span className="text-[#5B5FC7] border-b-[3px] border-[#5B5FC7] pb-3 px-1 cursor-pointer">{t('teams.dashboard.posts')}</span>
-                        <span className="hover:text-[#242424] pb-3 px-1 cursor-pointer transition-colors">{t('teams.dashboard.files')}</span>
-                        <span className="hover:text-[#242424] pb-3 px-1 cursor-pointer transition-colors">{t('teams.dashboard.tasks')}</span>
-                        <span className="hover:text-[#242424] pb-3 px-1 cursor-pointer transition-colors">{t('teams.dashboard.wiki')}</span>
-                    </div>
-
-                    <div className="bg-[#EEF2FF] rounded-md p-4 flex items-center justify-between border border-[#E0E7FF]">
-                        <div className="flex items-center gap-4">
-                            <div className="bg-white p-2.5 rounded-full text-[#5B5FC7] shadow-sm">
-                                <Video size={20} strokeWidth={1.5} />
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-[#242424]">{t('teams.dashboard.sprint_review_time') || 'Sprint Review at 2:00 PM'}</h3>
-                                <p className="text-xs text-[#5B5FC7] font-medium">{t('teams.dashboard.dont_forget_updates') || "Don't forget to bring your updates."}</p>
-                            </div>
-                        </div>
-                        <button className="px-4 py-1.5 bg-[#5B5FC7] text-white text-sm font-semibold rounded-md hover:bg-[#4f52b2] transition-colors shadow-sm">
-                            {t('teams.dashboard.join_meeting')}
+        <div className="flex-1 flex flex-col bg-[#F5F5F5] overflow-hidden animate-in">
+            {/* Header */}
+            <div className="px-6 pt-4 pb-2 shrink-0 z-20 sticky top-0 pointer-events-none">
+                <Header
+                    title={t('teams.dashboard.digital_solutions') || 'Digital Solutions Team'}
+                    subtitle="Software Development"
+                    icon={<MessageSquare size={20} />}
+                    iconColor="indigo"
+                    sticky={false}
+                    className="pointer-events-auto shadow-sm border border-[#E0E0E0] rounded-lg bg-white"
+                    actions={
+                        <button className="p-2 hover:bg-[#F5F5F5] rounded-md text-[#616161] transition-colors">
+                            <MoreHorizontal size={20} />
                         </button>
-                    </div>
-                </div>
-
-                <PostCard
-                    author="Michael Ivanov"
-                    time="10:42 AM"
-                    content={t('teams.dashboard.mock_post_1') || "Design mockups updated. Take a look! 🎨"}
-                    isPrimary
-                    reactions={[{ emoji: '👍', count: 5 }, { emoji: '🤩', count: 5 }]}
-                />
-
-                <PostCard
-                    author="Natalia Orlovac"
-                    time="10:50 AM"
-                    content={t('teams.dashboard.mock_post_2') || "Great, I'll review the new mockups! This looks fantastic."}
-                    reactions={[{ emoji: '👍', count: 2 }, { emoji: '✅', count: 1 }]}
-                />
-
-                <PostCard
-                    author="Alexey Smirnov"
-                    time="11:15 AM"
-                    content={t('teams.dashboard.mock_post_3') || "Reminder: Client presentation tomorrow at 3 PM. Be prepared!"}
+                    }
+                    tabs={[
+                        { id: 'posts', label: t('teams.dashboard.posts') },
+                        { id: 'files', label: t('teams.dashboard.files') },
+                        { id: 'tasks', label: t('teams.dashboard.tasks') },
+                        { id: 'wiki', label: t('teams.dashboard.wiki') }
+                    ]}
+                    activeTab="posts"
                 />
             </div>
 
-            <div className="col-span-12 lg:col-span-4 space-y-6">
-                <Widget title={t('teams.dashboard.sprint_review_meeting') || "Sprint Review Meeting"}>
-                    <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-[#616161]">{t('chat.today')} • 2:00 PM - 3:00 PM</span>
+            <div className="flex-1 overflow-y-auto px-6 pb-6 pt-2 custom-scrollbar">
+                <div className="grid grid-cols-12 gap-6 h-full">
+                    <div className="col-span-12 lg:col-span-8 space-y-6">
+
+                        <div className="bg-[#EEF2FF] rounded-md p-4 flex items-center justify-between border border-[#E0E7FF]">
+                            <div className="flex items-center gap-4">
+                                <div className="bg-white p-2.5 rounded-full text-[#5B5FC7] shadow-sm">
+                                    <Video size={20} strokeWidth={1.5} />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-[#242424]">{t('teams.dashboard.sprint_review_time') || 'Sprint Review at 2:00 PM'}</h3>
+                                    <p className="text-xs text-[#5B5FC7] font-medium">{t('teams.dashboard.dont_forget_updates') || "Don't forget to bring your updates."}</p>
+                                </div>
+                            </div>
+                            <button className="px-4 py-1.5 bg-[#5B5FC7] text-white text-sm font-semibold rounded-md hover:bg-[#4f52b2] transition-colors shadow-sm">
+                                {t('teams.dashboard.join_meeting')}
+                            </button>
                         </div>
-                        <div className="flex items-center space-x-2">
-                            <div className="flex -space-x-2">
-                                {[1,2,3].map(i => (
-                                    <Avatar key={i} name={`User ${i}`} size="sm" className="ring-2 ring-white" />
+
+                        <PostCard
+                            author="Michael Ivanov"
+                            time="10:42 AM"
+                            content={t('teams.dashboard.mock_post_1') || "Design mockups updated. Take a look! 🎨"}
+                            isPrimary
+                            reactions={[{ emoji: '👍', count: 5 }, { emoji: '🤩', count: 5 }]}
+                        />
+
+                        <PostCard
+                            author="Natalia Orlovac"
+                            time="10:50 AM"
+                            content={t('teams.dashboard.mock_post_2') || "Great, I'll review the new mockups! This looks fantastic."}
+                            reactions={[{ emoji: '👍', count: 2 }, { emoji: '✅', count: 1 }]}
+                        />
+
+                        <PostCard
+                            author="Alexey Smirnov"
+                            time="11:15 AM"
+                            content={t('teams.dashboard.mock_post_3') || "Reminder: Client presentation tomorrow at 3 PM. Be prepared!"}
+                        />
+                    </div>
+
+                    <div className="col-span-12 lg:col-span-4 space-y-6">
+                        <Widget title={t('teams.dashboard.sprint_review_meeting') || "Sprint Review Meeting"}>
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-[#616161]">{t('chat.today')} • 2:00 PM - 3:00 PM</span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <div className="flex -space-x-2">
+                                        {[1, 2, 3].map(i => (
+                                            <Avatar key={i} name={`User ${i}`} size="sm" className="ring-2 ring-white" />
+                                        ))}
+                                    </div>
+                                    <span className="text-sm font-bold text-[#242424] ml-2">5 {t('teams.dashboard.meeting_participants')}</span>
+                                </div>
+                            </div>
+                        </Widget>
+
+                        <Widget title={t('teams.dashboard.prepare_meeting')}>
+                            <div className="space-y-3">
+                                <CheckItem label={t('teams.dashboard.review_mockups')} checked />
+                                <CheckItem label={t('teams.dashboard.finalize_report')} checked />
+                                <CheckItem label={t('teams.dashboard.discuss_feedback')} checked />
+                            </div>
+                        </Widget>
+
+                        <Widget title={t('teams.dashboard.shared_files')}>
+                            <div className="space-y-1">
+                                <FileItem name="Project Timeline v2.pdf" type="pdf" />
+                                <FileItem name="Design Mockups.pptx" type="pptx" />
+                                <FileItem name="Client Presentation Deck.pptx" type="pptx" />
+                            </div>
+                        </Widget>
+
+                        <Widget title={t('teams.dashboard.members')}>
+                            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
+                                {[1, 2, 3, 4].map(i => (
+                                    <div key={i} className="flex flex-col items-center min-w-[64px]">
+                                        <Avatar name={`Member ${i}`} size="md" status="online" />
+                                        <span className="text-[11px] font-medium text-[#424242] mt-1 truncate w-full text-center">{t('users.employee')} {i}</span>
+                                    </div>
                                 ))}
                             </div>
-                            <span className="text-sm font-bold text-[#242424] ml-2">5 {t('teams.dashboard.meeting_participants')}</span>
-                        </div>
+                        </Widget>
                     </div>
-                </Widget>
-
-                <Widget title={t('teams.dashboard.prepare_meeting')}>
-                    <div className="space-y-3">
-                        <CheckItem label={t('teams.dashboard.review_mockups')} checked />
-                        <CheckItem label={t('teams.dashboard.finalize_report')} checked />
-                        <CheckItem label={t('teams.dashboard.discuss_feedback')} checked />
-                    </div>
-                </Widget>
-
-                <Widget title={t('teams.dashboard.shared_files')}>
-                    <div className="space-y-1">
-                        <FileItem name="Project Timeline v2.pdf" type="pdf" />
-                        <FileItem name="Design Mockups.pptx" type="pptx" />
-                        <FileItem name="Client Presentation Deck.pptx" type="pptx" />
-                    </div>
-                </Widget>
-
-                <Widget title={t('teams.dashboard.members')}>
-                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
-                         {[1,2,3,4].map(i => (
-                            <div key={i} className="flex flex-col items-center min-w-[64px]">
-                                <Avatar name={`Member ${i}`} size="md" status="online" />
-                                <span className="text-[11px] font-medium text-[#424242] mt-1 truncate w-full text-center">{t('users.employee')} {i}</span>
-                            </div>
-                        ))}
-                    </div>
-                </Widget>
+                </div>
             </div>
         </div>
     );

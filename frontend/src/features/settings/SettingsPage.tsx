@@ -195,17 +195,13 @@ const SettingsPage: React.FC = () => {
     return (
         <div className="flex-1 overflow-y-auto bg-[#F5F5F5] animate-in fade-in duration-300">
             {/* Header with Design System */}
-            <div className="px-6 pt-4 pb-2 shrink-0 z-20 sticky top-0 pointer-events-none">
-                <Header
-                    title={t('settings.subtitle')}
-                    subtitle={t('settings.title')}
-                    icon={<SettingsIcon size={20} />}
-                    iconColor="indigo"
-                    sticky={false}
-                    className="pointer-events-auto shadow-sm border border-[#E0E0E0] rounded-lg bg-white"
-                />
-            </div>
-
+            <Header
+                title={t('settings.subtitle')}
+                subtitle={t('settings.title')}
+                icon={<SettingsIcon size={20} />}
+                iconColor="indigo"
+                sticky={true}
+            />
 
             <div className="p-8 max-w-4xl">
                 <div className="flex items-center space-x-6 mb-8 p-6 bg-white rounded-lg border border-[#E0E0E0] shadow-sm">

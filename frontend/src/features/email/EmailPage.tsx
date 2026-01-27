@@ -11,7 +11,7 @@ import {
     Book, Folder, Star, AlertCircle, Search, Filter,
     CheckSquare, ChevronDown, ShieldAlert, MailOpen, Pencil
 } from 'lucide-react';
-import { Avatar, ContextMenu, type ContextMenuOption } from '../../design-system';
+import { Avatar, ContextMenu, type ContextMenuOption, Header, Button } from '../../design-system';
 import { useToast } from '../../design-system';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
@@ -212,53 +212,64 @@ const EmailPage: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col h-full w-full bg-white overflow-hidden min-h-0">
-            <header className="h-14 border-b border-[#E0E0E0] flex items-center px-4 bg-white shrink-0 shadow-sm z-10">
-                <div className="flex items-center gap-3 mr-8">
-                    <div className="w-8 h-8 bg-[#5B5FC7] rounded-lg flex items-center justify-center shadow-sm">
-                        <Mail size={18} className="text-white" strokeWidth={1.5} />
-                    </div>
-                    <span className="text-sm font-bold text-[#242424] uppercase tracking-wide">{t('email.title')}</span>
-                </div>
-            </header>
+        <div className="flex flex-col h-full w-full bg-[#F5F5F5] overflow-hidden min-h-0 animate-in fade-in duration-300">
+            {/* Header */}
+            <div className="px-6 pt-4 pb-2 shrink-0 z-20 sticky top-0 pointer-events-none">
+                <Header
+                    title={t('email.title')}
+                    icon={<Mail size={20} />}
+                    iconColor="indigo"
+                    sticky={false}
+                    className="pointer-events-auto shadow-sm border border-[#E0E0E0] rounded-lg bg-white"
+                    actions={
+                        <div className="flex items-center gap-2">
+                            <Button
+                                onClick={() => { setComposerData({}); setIsComposerOpen(true); }}
+                                variant="primary"
+                                size="sm"
+                                icon={<Plus size={16} />}
+                            >
+                                <span className="hidden sm:inline">{t('email.new_message')}</span>
+                            </Button>
 
-            <header className="h-12 border-b border-[#E0E0E0] flex items-center px-4 bg-[#F5F5F5] shrink-0 gap-3">
-                <button
-                    onClick={() => { setComposerData({}); setIsComposerOpen(true); }}
-                    className="flex items-center gap-2 px-3 py-1.5 hover:bg-white/60 rounded-md text-sm font-bold text-[#5B5FC7] transition-all border border-transparent hover:border-[#E0E0E0] hover:shadow-sm"
-                >
-                    <Plus size={16} strokeWidth={2} />
-                    <span>{t('email.new_message')}</span>
-                </button>
-                <div className="w-px h-4 bg-[#E0E0E0] mx-1" />
-                <button
-                    onClick={async () => {
-                        try {
-                            await emailService.markAllAsRead();
-                            await fetchStats();
-                            await fetchEmails();
-                            addToast({ type: 'success', title: t('common.success'), message: t('email.toast_marked_all_read') });
-                        } catch {
-                            addToast({ type: 'error', title: t('common.error'), message: t('email.toast_mark_read_error') });
-                        }
-                    }}
-                    className="flex items-center gap-2 px-3 py-1.5 hover:bg-white/60 rounded-md text-sm font-medium text-[#616161] hover:text-[#242424] transition-all border border-transparent hover:border-[#E0E0E0]"
-                >
-                    <Mail size={16} strokeWidth={1.5} />
-                    <span>{t('email.mark_all_read')}</span>
-                </button>
-                <button
-                    onClick={handleUndo}
-                    disabled={!lastAction}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all border border-transparent ${lastAction ? 'hover:bg-white/60 hover:text-[#242424] text-[#616161] hover:border-[#E0E0E0]' : 'text-[#BDBDBD] cursor-not-allowed'}`}
-                >
-                    <RefreshCw size={16} strokeWidth={1.5} />
-                    <span>{t('email.undo')}</span>
-                </button>
-            </header>
+                            <div className="h-6 w-px bg-[#E0E0E0] mx-1" />
 
-            <div className="flex-1 flex overflow-hidden min-h-0">
-                <aside className="w-64 flex-shrink-0 border-r border-[#E0E0E0] bg-[#F5F5F5] flex flex-col">
+                            <Button
+                                onClick={async () => {
+                                    try {
+                                        await emailService.markAllAsRead();
+                                        await fetchStats();
+                                        await fetchEmails();
+                                        addToast({ type: 'success', title: t('common.success'), message: t('email.toast_marked_all_read') });
+                                    } catch {
+                                        addToast({ type: 'error', title: t('common.error'), message: t('email.toast_mark_read_error') });
+                                    }
+                                }}
+                                variant="ghost"
+                                size="sm"
+                                icon={<MailOpen size={16} />}
+                                title={t('email.mark_all_read')}
+                            >
+                                <span className="hidden xl:inline">{t('email.mark_all_read')}</span>
+                            </Button>
+
+                            <Button
+                                onClick={handleUndo}
+                                disabled={!lastAction}
+                                variant="ghost"
+                                size="sm"
+                                icon={<RefreshCw size={16} />}
+                                title={t('email.undo')}
+                            >
+                                <span className="hidden xl:inline">{t('email.undo')}</span>
+                            </Button>
+                        </div>
+                    }
+                />
+            </div>
+
+            <div className="flex-1 flex overflow-hidden min-h-0 px-6 pb-6">
+                <aside className="w-64 flex-shrink-0 bg-white border border-[#E0E0E0] rounded-l-lg flex flex-col overflow-hidden">
                     <div className="flex-1 overflow-y-auto px-3 space-y-6 pt-4 custom-scrollbar">
                         <section>
                             <div className="px-2 mb-2 text-[10px] font-bold text-[#888888] uppercase tracking-wider">{t('email.favorites')}</div>
