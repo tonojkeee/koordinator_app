@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Query
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Query, Form, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 import os
@@ -27,8 +27,8 @@ router = APIRouter(prefix="/board", tags=["Electronic Board"])
 
 @router.post("/documents", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED)
 async def upload_document(
-    title: str,
-    description: str = None,
+    title: str = Form(...),
+    description: str = Form(None),
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)

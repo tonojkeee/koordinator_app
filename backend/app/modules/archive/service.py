@@ -127,7 +127,7 @@ class ArchiveService:
         db_file = ArchiveFile(
             title=title,
             description=description,
-            file_path=f"/{file_path}",
+            file_path=f"{unit_id}/{safe_filename}", # Relative to UPLOAD_DIR
             file_size=file.size,
             mime_type=file.content_type,
             owner_id=owner_id,
@@ -297,7 +297,7 @@ class ArchiveService:
             shutil.copyfileobj(file.file, buffer)
             
         # Update DB record
-        file_record.file_path = f"/{new_path}"
+        file_record.file_path = f"{file_record.unit_id}/{safe_filename}" # Relative to UPLOAD_DIR
         file_record.file_size = file.size
         # Update title if it changed (usually same)
         file_record.created_at = datetime.now() # Update "last modified" time if needed, though strictly it's "created_at" in our model
@@ -439,7 +439,7 @@ class ArchiveService:
                     new_file = ArchiveFile(
                         title=file.title,
                         description=file.description,
-                        file_path=f"/{new_path}",
+                        file_path=f"{target_unit_id}/{new_filename}", # Relative to UPLOAD_DIR
                         file_size=file.file_size,
                         mime_type=file.mime_type,
                         owner_id=owner_id,
@@ -508,7 +508,7 @@ class ArchiveService:
             new_file = ArchiveFile(
                 title=f.title,
                 description=f.description,
-                file_path=f"/{new_path}",
+                file_path=f"{target_unit_id}/{new_filename}", # Relative to UPLOAD_DIR
                 file_size=f.file_size,
                 mime_type=f.mime_type,
                 owner_id=owner_id,

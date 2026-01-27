@@ -1,7 +1,7 @@
 import os
 import logging
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ async def get_archive_contents(
         limit=limit
     )
 
-@router.post("/folders", response_model=ArchiveFolderResponse)
+@router.post("/folders", response_model=ArchiveFolderResponse, status_code=status.HTTP_201_CREATED)
 async def create_folder(
     folder_data: ArchiveFolderCreate,
     db: AsyncSession = Depends(get_db),
@@ -75,7 +75,7 @@ async def create_folder(
         is_private=folder_data.is_private
     )
 
-@router.post("/upload", response_model=ArchiveFileResponse)
+@router.post("/upload", response_model=ArchiveFileResponse, status_code=status.HTTP_201_CREATED)
 async def upload_file(
     title: str = Form(...),
     description: Optional[str] = Form(None),
@@ -132,9 +132,11 @@ async def view_file(
     file_record = await ArchiveService.get_file_by_id(db, file_id)
     if not file_record:
         raise HTTPException(status_code=404, detail="File not found")
-        
-    # Access control: All authenticated users can view, but only owners/admins can delete (handled in delete_file)
-    
+
+    # Access control: All members of the same unit can view. Admin can view all.
+    if current_user.role != 'admin' and current_user.unit_id != file_record.unit_id:
+        raise HTTPException(status_code=403, detail="Access denied to this unit's archive")
+
     # Secure path validation
     try:
         safe_path = safe_file_operation(file_record.file_path, "uploads/archive")
