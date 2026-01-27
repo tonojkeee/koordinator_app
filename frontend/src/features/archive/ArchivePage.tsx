@@ -1558,77 +1558,74 @@ const ArchivePage: React.FC = () => {
             )}
 
             {/* Header */}
-            <div className="px-6 pt-4 pb-2 shrink-0 z-20 sticky top-0 pointer-events-none">
-                <Header
-                    title={activeTab === 'mine'
-                        ? (user?.unit_name || t('archive.myDepartment'))
-                        : (currentUnitId && units?.find(u => u.id === currentUnitId)?.name || t('archive.allDepartments'))}
-                    subtitle={t('archive.subtitle')}
-                    icon={<ArchiveIcon size={20} />}
-                    iconColor="indigo"
-                    searchPlaceholder={t('archive.search_placeholder')}
-                    searchValue={searchQuery}
-                    onSearchChange={(e) => setSearchQuery(e.target.value)}
-                    onSearchClear={() => setSearchQuery('')}
-                    tabs={[
-                        { id: 'global', label: t('archive.allDepartments') },
-                        { id: 'mine', label: t('archive.myDepartment') }
-                    ]}
-                    activeTab={activeTab}
-                    onTabChange={(tabId) => handleTabChange(tabId as 'global' | 'mine')}
-                    actions={
-                        <div className="flex items-center gap-2">
-                            {/* View Toggle */}
-                            <div className="flex bg-white p-1 rounded-md border border-[#E0E0E0] h-9 items-center shadow-sm">
-                                <button
-                                    onClick={() => setViewMode('grid')}
-                                    className={`p-1.5 rounded transition-all duration-200 ${viewMode === 'grid' ? 'bg-[#5B5FC7] text-white shadow-sm' : 'text-[#616161] hover:bg-[#F5F5F5] hover:text-[#242424]'}`}
-                                >
-                                    <LayoutGrid size={16} strokeWidth={1.5} />
-                                </button>
-                                <button
-                                    onClick={() => setViewMode('list')}
-                                    className={`p-1.5 rounded transition-all duration-200 ${viewMode === 'list' ? 'bg-[#5B5FC7] text-white shadow-sm' : 'text-[#616161] hover:bg-[#F5F5F5] hover:text-[#242424]'}`}
-                                >
-                                    <List size={16} strokeWidth={1.5} />
-                                </button>
-                            </div>
+            <Header
+                title={activeTab === 'mine'
+                    ? (user?.unit_name || t('archive.myDepartment'))
+                    : (currentUnitId && units?.find(u => u.id === currentUnitId)?.name || t('archive.allDepartments'))}
+                subtitle={t('archive.subtitle')}
+                icon={<ArchiveIcon size={20} />}
+                iconColor="indigo"
+                searchPlaceholder={t('archive.search_placeholder')}
+                searchValue={searchQuery}
+                onSearchChange={(e) => setSearchQuery(e.target.value)}
+                onSearchClear={() => setSearchQuery('')}
+                tabs={[
+                    { id: 'global', label: t('archive.allDepartments') },
+                    { id: 'mine', label: t('archive.myDepartment') }
+                ]}
+                activeTab={activeTab}
+                onTabChange={(tabId) => handleTabChange(tabId as 'global' | 'mine')}
+                actions={
+                    <div className="flex items-center gap-2">
+                        {/* View Toggle */}
+                        <div className="flex bg-white p-1 rounded-md border border-[#E0E0E0] h-9 items-center shadow-sm">
+                            <button
+                                onClick={() => setViewMode('grid')}
+                                className={`p-1.5 rounded transition-all duration-200 ${viewMode === 'grid' ? 'bg-[#5B5FC7] text-white shadow-sm' : 'text-[#616161] hover:bg-[#F5F5F5] hover:text-[#242424]'}`}
+                            >
+                                <LayoutGrid size={16} strokeWidth={1.5} />
+                            </button>
+                            <button
+                                onClick={() => setViewMode('list')}
+                                className={`p-1.5 rounded transition-all duration-200 ${viewMode === 'list' ? 'bg-[#5B5FC7] text-white shadow-sm' : 'text-[#616161] hover:bg-[#F5F5F5] hover:text-[#242424]'}`}
+                            >
+                                <List size={16} strokeWidth={1.5} />
+                            </button>
+                        </div>
 
-                            {canInteract && (
-                                <>
-                                    <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        icon={<FolderPlus size={16} />}
-                                        onClick={() => setIsFolderModalOpen(true)}
-                                        title={t('archive.createFolder')}
-                                    />
+                        {canInteract && (
+                            <>
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    icon={<FolderPlus size={16} />}
+                                    onClick={() => setIsFolderModalOpen(true)}
+                                    title={t('archive.createFolder')}
+                                />
+                                <Button
+                                    variant="primary"
+                                    size="sm"
+                                    icon={<Plus size={16} />}
+                                    onClick={() => setIsUploadModalOpen(true)}
+                                >
+                                    <span className="hidden sm:inline">{t('archive.upload')}</span>
+                                </Button>
+                                {clipboard && (
                                     <Button
                                         variant="primary"
                                         size="sm"
-                                        icon={<Plus size={16} />}
-                                        onClick={() => setIsUploadModalOpen(true)}
-                                    >
-                                        <span className="hidden sm:inline">{t('archive.upload')}</span>
-                                    </Button>
-                                    {clipboard && (
-                                        <Button
-                                            variant="primary"
-                                            size="sm"
-                                            icon={<ClipboardList size={16} />}
-                                            onClick={handlePasteItems}
-                                            title={t('archive.button_paste', { count: clipboard.items.length })}
-                                            className="bg-emerald-600 hover:bg-emerald-700"
-                                        />
-                                    )}
-                                </>
-                            )}
-                        </div>
-                    }
-                    sticky={false}
-                    className="pointer-events-auto shadow-sm border border-[#E0E0E0] rounded-lg bg-white"
-                />
-            </div>
+                                        icon={<ClipboardList size={16} />}
+                                        onClick={handlePasteItems}
+                                        title={t('archive.button_paste', { count: clipboard.items.length })}
+                                        className="bg-emerald-600 hover:bg-emerald-700"
+                                    />
+                                )}
+                            </>
+                        )}
+                    </div>
+                }
+                sticky={true}
+            />
 
             {/* Breadcrumbs */}
             {path.length > 1 && (

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../api/client';
 import type { User } from '../../types';
 import { HelpCircle, MessageSquare, Shield, LifeBuoy, Mail, Loader2, Headset, FileText, CheckCircle, ClipboardList, Building2, Archive } from 'lucide-react';
-import { Modal } from '../../design-system';
+import { Modal, Header } from '../../design-system';
 import packageJson from '../../../package.json';
 
 const HelpPage: React.FC = () => {
@@ -87,36 +87,46 @@ const HelpPage: React.FC = () => {
     // Import Building2 manually if not available in common imports, but looking at code it might be missing
 
     return (
-        <div className="flex-1 overflow-y-auto bg-[#F5F5F5] p-4 md:p-8 animate-in fade-in duration-500">
-            <div className="max-w-5xl mx-auto space-y-12">
-                {/* Header Section */}
-                <header className="relative py-10 px-8 bg-white rounded-lg overflow-hidden shadow-sm border border-[#E0E0E0]">
-                    <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start justify-between gap-8">
-                        <div className="space-y-4 text-center md:text-left max-w-2xl">
-                            <div className="inline-flex items-center space-x-2 px-3 py-1 bg-[#EEF2FF] border border-[#E0E7FF] rounded-full">
-                                <span className="w-1.5 h-1.5 bg-[#5B5FC7] rounded-full animate-pulse" />
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-[#5B5FC7]">
-                                    {t('help.support_center_badge')}
-                                </span>
+        <div className="flex-1 flex flex-col bg-[#F5F5F5] overflow-hidden animate-in fade-in duration-500">
+            {/* Header with Design System */}
+            <Header
+                title={t('help.hero_heading')}
+                subtitle={t('help.support_center_badge')}
+                icon={<HelpCircle size={20} />}
+                iconColor="indigo"
+                sticky={true}
+            />
+
+            <div className="flex-1 overflow-y-auto p-6">
+                <div className="max-w-5xl mx-auto space-y-12 pb-12">
+                    {/* Header Section */}
+                    <div className="relative py-10 px-8 bg-white rounded-lg overflow-hidden shadow-sm border border-[#E0E0E0]">
+                        <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start justify-between gap-8">
+                            <div className="space-y-4 text-center md:text-left max-w-2xl">
+                                <div className="inline-flex items-center space-x-2 px-3 py-1 bg-[#EEF2FF] border border-[#E0E7FF] rounded-full">
+                                    <span className="w-1.5 h-1.5 bg-[#5B5FC7] rounded-full animate-pulse" />
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#5B5FC7]">
+                                        {t('help.support_center_badge')}
+                                    </span>
+                                </div>
+                                <h1 className="text-4xl font-bold tracking-tight leading-tight text-[#242424]">
+                                    <Trans i18nKey="help.hero_heading">
+                                        Как мы можем <span className="text-[#5B5FC7]">помочь?</span>
+                                    </Trans>
+                                </h1>
+                                <p className="text-[#616161] text-lg font-medium leading-relaxed">
+                                    {t('help.description')}
+                                </p>
                             </div>
-                            <h1 className="text-4xl font-bold tracking-tight leading-tight text-[#242424]">
-                                <Trans i18nKey="help.hero_heading">
-                                    Как мы можем <span className="text-[#5B5FC7]">помочь?</span>
-                                </Trans>
-                            </h1>
-                            <p className="text-[#616161] text-lg font-medium leading-relaxed">
-                                {t('help.description')}
-                            </p>
-                        </div>
-                        <div className="shrink-0">
-                            <div className="w-24 h-24 bg-[#F5F5F5] rounded-full flex items-center justify-center relative group">
-                                <HelpCircle size={40} className="text-[#5B5FC7] relative z-10" strokeWidth={1.5} />
+                            <div className="shrink-0">
+                                <div className="w-24 h-24 bg-[#F5F5F5] rounded-full flex items-center justify-center relative group">
+                                    <HelpCircle size={40} className="text-[#5B5FC7] relative z-10" strokeWidth={1.5} />
+                                </div>
                             </div>
                         </div>
                     </div>
-                </header>
 
-                {/* Categories Section */}
+                    {/* Categories Section */}
                 <section className="space-y-6">
                     <div className="flex items-center justify-between px-1">
                         <h2 className="text-xl font-bold text-[#242424] tracking-tight">
@@ -206,6 +216,7 @@ const HelpPage: React.FC = () => {
                         </p>
                     </div>
                 </footer>
+            </div>
             </div>
 
 

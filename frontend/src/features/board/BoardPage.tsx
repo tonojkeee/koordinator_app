@@ -24,35 +24,32 @@ const BoardPage: React.FC = () => {
     return (
         <div className="flex-1 flex flex-col bg-[#F5F5F5] overflow-hidden animate-in">
             {/* Header */}
-            <div className="px-6 pt-4 pb-2 shrink-0 z-20 sticky top-0 pointer-events-none">
-                <Header
-                    title={activeTab === 'owned' ? t('board.my_documents') : t('board.received_documents')}
-                    subtitle={t('board.title')}
-                    icon={<FileText size={20} />}
-                    iconColor="indigo"
-                    searchPlaceholder={t('board.search_placeholder')}
-                    searchValue={searchQuery}
-                    onSearchChange={(e) => setSearchQuery(e.target.value)}
-                    onSearchClear={() => setSearchQuery('')}
-                    tabs={[
-                        { id: 'owned', label: t('board.my_documents'), badge: ownedDocs?.length },
-                        { id: 'received', label: t('board.received_documents'), badge: receivedDocs?.length }
-                    ]}
-                    activeTab={activeTab}
-                    onTabChange={(id) => setActiveTab(id as 'owned' | 'received')}
-                    actions={
-                        <Button
-                            variant="primary"
-                            icon={<Upload size={16} />}
-                            onClick={() => setIsUploadModalOpen(true)}
-                        >
-                            {t('board.upload')}
-                        </Button>
-                    }
-                    sticky={false}
-                    className="pointer-events-auto shadow-sm border border-[#E0E0E0] rounded-lg bg-white"
-                />
-            </div>
+            <Header
+                title={activeTab === 'owned' ? t('board.my_documents') : t('board.received_documents')}
+                subtitle={t('board.title')}
+                icon={<FileText size={20} />}
+                iconColor="indigo"
+                searchPlaceholder={t('board.search_placeholder')}
+                searchValue={searchQuery}
+                onSearchChange={(e) => setSearchQuery(e.target.value)}
+                onSearchClear={() => setSearchQuery('')}
+                tabs={[
+                    { id: 'owned', label: t('board.my_documents'), badge: ownedDocs?.length },
+                    { id: 'received', label: t('board.received_documents'), badge: receivedDocs?.length }
+                ]}
+                activeTab={activeTab}
+                onTabChange={(id) => setActiveTab(id as 'owned' | 'received')}
+                actions={
+                    <Button
+                        variant="primary"
+                        icon={<Upload size={16} />}
+                        onClick={() => setIsUploadModalOpen(true)}
+                    >
+                        {t('board.upload')}
+                    </Button>
+                }
+                sticky={true}
+            />
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto px-6 pb-8 pt-4 custom-scrollbar">

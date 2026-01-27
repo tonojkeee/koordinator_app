@@ -100,76 +100,73 @@ const TasksPage: React.FC = () => {
     return (
         <div className="flex-1 flex flex-col bg-[#F5F5F5] overflow-hidden animate-in fade-in duration-300">
             {/* Header */}
-            <div className="px-6 pt-4 pb-2 shrink-0 z-20 sticky top-0 pointer-events-none">
-                <Header
-                    title={t(`tasks.subtitle.${activeTab}`)}
-                    subtitle={t('tasks.title')}
-                    icon={<ClipboardList size={20} />}
-                    iconColor="indigo"
-                    searchPlaceholder={t('tasks.search_placeholder')}
-                    searchValue={searchQuery}
-                    onSearchChange={(e) => setSearchQuery(e.target.value)}
-                    onSearchClear={() => setSearchQuery('')}
-                    tabs={[
-                        {
-                            id: 'received',
-                            label: t('tasks.tabs.received'),
-                            icon: <ListTodo size={16} strokeWidth={1.5} />,
-                            badge: receivedTasks?.length || 0,
-                        },
-                        {
-                            id: 'issued',
-                            label: t('tasks.tabs.issued'),
-                            icon: <Send size={16} strokeWidth={1.5} />,
-                            badge: issuedTasks?.length || 0,
-                        },
-                        {
-                            id: 'completed',
-                            label: t('tasks.tabs.completed'),
-                            icon: <CheckCircle2 size={16} strokeWidth={1.5} />,
-                            badge: completedTasks?.length || 0,
-                        },
-                    ]}
-                    activeTab={activeTab}
-                    onTabChange={(tabId) => setActiveTab(tabId as 'received' | 'issued' | 'completed')}
-                    actions={
-                        <Button
-                            variant="primary"
-                            size="md"
-                            icon={<Plus size={18} />}
-                            onClick={() => setIsCreateModalOpen(true)}
-                        >
-                            <span className="hidden sm:inline">{t('tasks.create_button')}</span>
-                        </Button>
-                    }
-                    tabsActions={
-                        activeTab === 'completed' ? (
-                            <div className="flex bg-white p-1 rounded-md border border-[#E0E0E0] animate-in fade-in zoom-in-95 duration-200 shadow-sm">
-                                <button
-                                    onClick={() => setCompletedFilter('my_execution')}
-                                    className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wide transition-all ${completedFilter === 'my_execution'
-                                        ? 'bg-[#5B5FC7] text-white shadow-sm'
-                                        : 'text-[#616161] hover:bg-[#F5F5F5]'
-                                        }`}
-                                >
-                                    {t('tasks.filter.my_execution')}
-                                </button>
-                                <button
-                                    onClick={() => setCompletedFilter('my_orders')}
-                                    className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wide transition-all ${completedFilter === 'my_orders'
-                                        ? 'bg-[#5B5FC7] text-white shadow-sm'
-                                        : 'text-[#616161] hover:bg-[#F5F5F5]'
-                                        }`}
-                                >
-                                    {t('tasks.filter.my_orders')}
-                                </button>
-                            </div>
-                        ) : undefined
-                    }
-                    sticky={false}
-                    className="pointer-events-auto shadow-sm border border-[#E0E0E0] rounded-lg bg-white"
-                />
-            </div>
+            <Header
+                title={t(`tasks.subtitle.${activeTab}`)}
+                subtitle={t('tasks.title')}
+                icon={<ClipboardList size={20} />}
+                iconColor="indigo"
+                searchPlaceholder={t('tasks.search_placeholder')}
+                searchValue={searchQuery}
+                onSearchChange={(e) => setSearchQuery(e.target.value)}
+                onSearchClear={() => setSearchQuery('')}
+                tabs={[
+                    {
+                        id: 'received',
+                        label: t('tasks.tabs.received'),
+                        icon: <ListTodo size={16} strokeWidth={1.5} />,
+                        badge: receivedTasks?.length || 0,
+                    },
+                    {
+                        id: 'issued',
+                        label: t('tasks.tabs.issued'),
+                        icon: <Send size={16} strokeWidth={1.5} />,
+                        badge: issuedTasks?.length || 0,
+                    },
+                    {
+                        id: 'completed',
+                        label: t('tasks.tabs.completed'),
+                        icon: <CheckCircle2 size={16} strokeWidth={1.5} />,
+                        badge: completedTasks?.length || 0,
+                    },
+                ]}
+                activeTab={activeTab}
+                onTabChange={(tabId) => setActiveTab(tabId as 'received' | 'issued' | 'completed')}
+                actions={
+                    <Button
+                        variant="primary"
+                        size="md"
+                        icon={<Plus size={18} />}
+                        onClick={() => setIsCreateModalOpen(true)}
+                    >
+                        <span className="hidden sm:inline">{t('tasks.create_button')}</span>
+                    </Button>
+                }
+                tabsActions={
+                    activeTab === 'completed' ? (
+                        <div className="flex bg-white p-1 rounded-md border border-[#E0E0E0] animate-in fade-in zoom-in-95 duration-200 shadow-sm">
+                            <button
+                                onClick={() => setCompletedFilter('my_execution')}
+                                className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wide transition-all ${completedFilter === 'my_execution'
+                                    ? 'bg-[#5B5FC7] text-white shadow-sm'
+                                    : 'text-[#616161] hover:bg-[#F5F5F5]'
+                                    }`}
+                            >
+                                {t('tasks.filter.my_execution')}
+                            </button>
+                            <button
+                                onClick={() => setCompletedFilter('my_orders')}
+                                className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wide transition-all ${completedFilter === 'my_orders'
+                                    ? 'bg-[#5B5FC7] text-white shadow-sm'
+                                    : 'text-[#616161] hover:bg-[#F5F5F5]'
+                                    }`}
+                            >
+                                {t('tasks.filter.my_orders')}
+                            </button>
+                        </div>
+                    ) : undefined
+                }
+                sticky={true}
+            />
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-6 scrollbar-hide">

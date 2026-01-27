@@ -107,48 +107,45 @@ const CompanyPage: React.FC = () => {
     return (
         <div className="flex-1 flex flex-col bg-[#F5F5F5] overflow-hidden animate-in fade-in duration-300">
             {/* Header with Design System */}
-            <div className="px-6 pt-4 pb-2 shrink-0 z-20 sticky top-0 pointer-events-none">
-                <Header
-                    title={t('company.subtitle')}
-                    subtitle={t('company.title')}
-                    icon={<Users size={20} />}
-                    iconColor="indigo"
-                    searchPlaceholder={t('users.searchPlaceholder')}
-                    searchValue={searchQuery}
-                    onSearchChange={(e) => setSearchQuery(e.target.value)}
-                    onSearchClear={() => setSearchQuery('')}
-                    actions={
-                        <div className="flex items-center gap-3">
-                            {/* Unit Filter - Compact */}
-                            <select
-                                value={selectedUnitId}
-                                onChange={(e) => setSelectedUnitId(e.target.value)}
-                                className="h-9 px-3 pr-8 bg-white border border-[#E0E0E0] rounded-md text-sm font-medium text-[#242424] focus:outline-none focus:ring-1 focus:ring-[#5B5FC7] focus:border-[#5B5FC7] transition-all shadow-sm cursor-pointer"
-                            >
-                                {unitOptions.map(option => (
-                                    <option key={option.value} value={option.value}>
-                                        {option.label}
-                                    </option>
-                                ))}
-                            </select>
+            <Header
+                title={t('company.subtitle')}
+                subtitle={t('company.title')}
+                icon={<Users size={20} />}
+                iconColor="indigo"
+                searchPlaceholder={t('users.searchPlaceholder')}
+                searchValue={searchQuery}
+                onSearchChange={(e) => setSearchQuery(e.target.value)}
+                onSearchClear={() => setSearchQuery('')}
+                actions={
+                    <div className="flex items-center gap-3">
+                        {/* Unit Filter - Compact */}
+                        <select
+                            value={selectedUnitId}
+                            onChange={(e) => setSelectedUnitId(e.target.value)}
+                            className="h-9 px-3 pr-8 bg-white border border-[#E0E0E0] rounded-md text-sm font-medium text-[#242424] focus:outline-none focus:ring-1 focus:ring-[#5B5FC7] focus:border-[#5B5FC7] transition-all shadow-sm cursor-pointer"
+                        >
+                            {unitOptions.map(option => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label}
+                                </option>
+                            ))}
+                        </select>
 
-                            {/* Send Document Button */}
-                            {selectedUserIds.length > 0 && (
-                                <Button
-                                    variant="primary"
-                                    size="md"
-                                    icon={<FileUp size={18} />}
-                                    onClick={() => setIsSendModalOpen(true)}
-                                >
-                                    {t('board.send_document')} ({selectedUserIds.length})
-                                </Button>
-                            )}
-                        </div>
-                    }
-                    sticky={false}
-                    className="pointer-events-auto shadow-sm border border-[#E0E0E0] rounded-lg bg-white"
-                />
-            </div>
+                        {/* Send Document Button */}
+                        {selectedUserIds.length > 0 && (
+                            <Button
+                                variant="primary"
+                                size="md"
+                                icon={<FileUp size={18} />}
+                                onClick={() => setIsSendModalOpen(true)}
+                            >
+                                {t('board.send_document')} ({selectedUserIds.length})
+                            </Button>
+                        )}
+                    </div>
+                }
+                sticky={true}
+            />
 
             {/* Content - Employee List with smooth transition */}
             <div className="flex-1 overflow-hidden relative p-4">
