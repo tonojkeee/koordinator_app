@@ -330,7 +330,12 @@ async def _extract_email_body(msg) -> tuple[str, str]:
         try:
             payload = msg.get_payload(decode=True)
             if payload:
-                body_text = payload.decode('utf-8', errors='ignore')
+                content = payload.decode('utf-8', errors='ignore')
+                ctype = msg.get_content_type()
+                if ctype == "text/html":
+                    body_html = sanitize_html(content)
+                else:
+                    body_text = content
         except (UnicodeDecodeError, LookupError, ValueError) as e:
             logger.warning(f"Failed to decode message content: {e}")
             pass
@@ -568,10 +573,10 @@ async def update_email_message(db: AsyncSession, message_id: int, account_id: in
     update_data = updates.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(message, field, value)
-    
+
     await db.commit()
-    await db.refresh(message)
-    return message
+    # Re-fetch to ensure relationships are loaded and prevent MissingGreenlet
+    return await get_email_by_id(db, message_id, account_id)
 
 async def delete_email_message(db: AsyncSession, message_id: int, account_id: int):
     message = await get_email_by_id(db, message_id, account_id)
