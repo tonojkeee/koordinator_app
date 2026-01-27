@@ -1,6 +1,6 @@
 """Response enrichers for chat module"""
-from sqlalchemy import select, func
-from sqlalchemy.orm import defer
+from sqlalchemy import select, func, and_
+from sqlalchemy.orm import defer, selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 

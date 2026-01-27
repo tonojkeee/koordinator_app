@@ -47,6 +47,7 @@ class Message(Base):
     updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, onupdate=lambda: datetime.now(timezone.utc))
     
     user = relationship("app.modules.auth.models.User")
+    document = relationship("app.modules.board.models.Document")
     reactions = relationship("MessageReaction", cascade="all, delete-orphan")
     replies = relationship("Message", backref=backref("parent", remote_side=[id]), cascade="all, delete-orphan")
 

@@ -1536,7 +1536,7 @@ const ArchivePage: React.FC = () => {
 
     return (
         <div
-            className="flex-1 flex flex-col h-full bg-slate-50/50 relative animate-in fade-in duration-300"
+            className="flex-1 flex flex-col h-full bg-[#F5F5F5] relative animate-in fade-in duration-300"
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
@@ -1544,14 +1544,14 @@ const ArchivePage: React.FC = () => {
         >
             {/* Drag and Drop Overlay */}
             {isDragging && (
-                <div className="absolute inset-0 z-[60] flex items-center justify-center bg-indigo-600/10 backdrop-blur-[2px] border-4 border-dashed border-indigo-500/50 m-4 rounded-3xl animate-in fade-in duration-200">
-                    <div className="bg-white px-8 py-6 rounded-2xl shadow-2xl flex flex-col items-center space-y-3 transform animate-in zoom-in-95 duration-200">
-                        <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center text-indigo-600">
+                <div className="absolute inset-0 z-[60] flex items-center justify-center bg-[#5B5FC7]/10 backdrop-blur-[2px] border-4 border-dashed border-[#5B5FC7]/50 m-4 rounded-lg animate-in fade-in duration-200">
+                    <div className="bg-white px-8 py-6 rounded-lg shadow-xl flex flex-col items-center space-y-3 transform animate-in zoom-in-95 duration-200 border border-[#E0E0E0]">
+                        <div className="w-16 h-16 bg-[#EEF2FF] rounded-lg flex items-center justify-center text-[#5B5FC7]">
                             <Plus size={32} className="animate-bounce" />
                         </div>
                         <div className="text-center">
-                            <h3 className="text-xl font-black text-slate-900 tracking-tight">{t('archive.dropzone.release')}</h3>
-                            <p className="text-xs text-slate-500 font-medium">{t('archive.dropzone.tip')}</p>
+                            <h3 className="text-xl font-bold text-[#242424] tracking-tight">{t('archive.dropzone.release')}</h3>
+                            <p className="text-xs text-[#616161] font-medium">{t('archive.dropzone.tip')}</p>
                         </div>
                     </div>
                 </div>
@@ -1579,25 +1579,25 @@ const ArchivePage: React.FC = () => {
                     actions={
                         <div className="flex items-center gap-2">
                             {/* View Toggle */}
-                            <div className="flex bg-slate-100/80 p-0.5 rounded-xl border border-slate-200/50 h-9 items-center">
+                            <div className="flex bg-white p-1 rounded-md border border-[#E0E0E0] h-9 items-center shadow-sm">
                                 <button
                                     onClick={() => setViewMode('grid')}
-                                    className={`p-2 rounded-lg transition-all duration-300 ${viewMode === 'grid' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                    className={`p-1.5 rounded transition-all duration-200 ${viewMode === 'grid' ? 'bg-[#5B5FC7] text-white shadow-sm' : 'text-[#616161] hover:bg-[#F5F5F5] hover:text-[#242424]'}`}
                                 >
-                                    <LayoutGrid size={16} />
+                                    <LayoutGrid size={16} strokeWidth={1.5} />
                                 </button>
                                 <button
                                     onClick={() => setViewMode('list')}
-                                    className={`p-2 rounded-lg transition-all duration-300 ${viewMode === 'list' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                    className={`p-1.5 rounded transition-all duration-200 ${viewMode === 'list' ? 'bg-[#5B5FC7] text-white shadow-sm' : 'text-[#616161] hover:bg-[#F5F5F5] hover:text-[#242424]'}`}
                                 >
-                                    <List size={16} />
+                                    <List size={16} strokeWidth={1.5} />
                                 </button>
                             </div>
 
                             {canInteract && (
                                 <>
                                     <Button
-                                        variant="outline"
+                                        variant="secondary"
                                         size="sm"
                                         icon={<FolderPlus size={16} />}
                                         onClick={() => setIsFolderModalOpen(true)}
@@ -1618,7 +1618,7 @@ const ArchivePage: React.FC = () => {
                                             icon={<ClipboardList size={16} />}
                                             onClick={handlePasteItems}
                                             title={t('archive.button_paste', { count: clipboard.items.length })}
-                                            className="bg-emerald-500 hover:bg-emerald-600"
+                                            className="bg-emerald-600 hover:bg-emerald-700"
                                         />
                                     )}
                                 </>
@@ -1626,14 +1626,14 @@ const ArchivePage: React.FC = () => {
                         </div>
                     }
                     sticky={false}
-                    className="pointer-events-auto"
+                    className="pointer-events-auto shadow-sm border border-[#E0E0E0] rounded-lg bg-white"
                 />
             </div>
 
             {/* Breadcrumbs */}
             {path.length > 1 && (
-                <div className="px-6 pb-4">
-                    <div className="flex items-center gap-2 bg-slate-50/50 p-2 rounded-xl border border-slate-200/50 max-w-xl">
+                <div className="px-6 pb-2 pt-2">
+                    <div className="flex items-center gap-2 bg-white p-1.5 rounded-md border border-[#E0E0E0] max-w-xl shadow-sm">
                         <button
                             onClick={() => {
                                 if (path.length > 1) {
@@ -1641,22 +1641,22 @@ const ArchivePage: React.FC = () => {
                                     handleBreadcrumbClick(parentPath, path.length - 2);
                                 }
                             }}
-                            className="h-7 w-7 flex items-center justify-center rounded-lg bg-white text-slate-600 hover:text-indigo-600 shadow-sm transition-all"
+                            className="h-6 w-6 flex items-center justify-center rounded-md bg-[#F5F5F5] text-[#616161] hover:text-[#5B5FC7] hover:bg-[#EEF2FF] transition-all"
                         >
-                            <ArrowUp size={13} />
+                            <ArrowUp size={14} strokeWidth={1.5} />
                         </button>
                         <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
                             {path.map((p, i) => (
                                 <React.Fragment key={i}>
-                                    {i > 0 && <ChevronRight size={10} className="text-slate-300 shrink-0" />}
+                                    {i > 0 && <ChevronRight size={12} className="text-[#888888] shrink-0" strokeWidth={1.5} />}
                                     <button
                                         onClick={() => handleBreadcrumbClick(p, i)}
-                                        className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all text-xs font-bold shrink-0 ${i === path.length - 1
-                                            ? 'bg-white text-slate-800 shadow-sm border border-slate-200/50'
-                                            : 'text-slate-500 hover:text-indigo-600 hover:bg-white/50'
+                                        className={`flex items-center gap-1.5 px-2 py-1 rounded-md transition-all text-xs font-semibold shrink-0 ${i === path.length - 1
+                                            ? 'bg-[#F0F0F0] text-[#242424] border border-[#E0E0E0]'
+                                            : 'text-[#616161] hover:text-[#5B5FC7] hover:bg-[#F5F5F5]'
                                             }`}
                                     >
-                                        {i === 0 ? <Home size={11} className="opacity-70" /> : <FolderIcon size={11} className="text-amber-400" />}
+                                        {i === 0 ? <Home size={12} className="opacity-70" strokeWidth={1.5} /> : <FolderIcon size={12} className="text-[#F59E0B]" strokeWidth={1.5} />}
                                         <span>{i === 0 ? (activeTab === 'global' ? t('archive.breadcrumb_all') : t('archive.breadcrumb_my')) : p.name}</span>
                                     </button>
                                 </React.Fragment>

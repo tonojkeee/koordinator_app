@@ -149,7 +149,12 @@ class Settings(BaseSettings):
     def is_mysql(self) -> bool:
         """Check if using MySQL database"""
         return "mysql" in self.database_url.lower()
-    
+
+    @property
+    def is_postgresql(self) -> bool:
+        """Check if using PostgreSQL database"""
+        return "postgresql" in self.database_url.lower() or "postgres" in self.database_url.lower()
+
     class Config:
         env_file = ".env"
 

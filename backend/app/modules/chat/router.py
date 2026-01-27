@@ -901,6 +901,8 @@ async def websocket_endpoint(
                 # Also broadcast to all channel members via global WebSocket
                 # This notifies users who are not currently viewing the channel
                 member_ids = await ChatService.get_channel_member_ids(db, channel_id)
+                logger.info(f"New message in channel {channel_id}. Broadcasting to members: {member_ids}")
+
                 for member_id in member_ids:
                     is_mentioned = member_id in mentioned_user_ids
                     

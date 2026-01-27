@@ -57,6 +57,8 @@ class WebSocketManager:
             # Subscribe to broadcast channels
             await redis_manager.subscribe("ws:broadcast:all", self._handle_redis_broadcast_all)
             await redis_manager.subscribe("ws:broadcast:presence", self._handle_redis_presence)
+            await redis_manager.subscribe("ws:broadcast:channel", self._handle_redis_channel_message)
+            await redis_manager.subscribe("ws:broadcast:user", self._handle_redis_user_message)
             await redis_manager.start_listener()
             logger.info("WebSocket manager: Redis pub/sub initialized")
         else:
@@ -70,6 +72,30 @@ class WebSocketManager:
     async def _handle_redis_presence(self, message: dict) -> None:
         """Handle presence updates from other workers"""
         await self._local_broadcast_to_all_users(message)
+
+    async def _handle_redis_channel_message(self, message: dict) -> None:
+        """Handle channel broadcast from other workers"""
+        channel_id = message.get("_channel_id")
+        if channel_id is None:
+            return
+
+        # Remove metadata
+        msg_payload = {k: v for k, v in message.items() if not k.startswith("_")}
+
+        # Broadcast locally to this channel
+        await self._local_broadcast_to_channel(channel_id, msg_payload)
+
+    async def _handle_redis_user_message(self, message: dict) -> None:
+        """Handle user broadcast from other workers"""
+        user_id = message.get("_user_id")
+        if user_id is None:
+            return
+
+        # Remove metadata
+        msg_payload = {k: v for k, v in message.items() if not k.startswith("_")}
+
+        # Broadcast locally to this user
+        await self._local_broadcast_to_user(user_id, msg_payload)
 
     async def connect(self, websocket: WebSocket, channel_id: int, user_id: int, is_member: bool = True) -> None:
         """
@@ -311,27 +337,47 @@ class WebSocketManager:
         """
         Broadcast a message to all connections in a channel.
         Uses parallel sending with asyncio.gather for performance.
+        Supports multi-worker via Redis.
         """
+        # If Redis is available, publish to it (except for purely local messages if we wanted optimization, but broadcast usually means everyone)
+        # Note: To avoid loops, we might need a flag. But typically we publish to Redis,
+        # and the Redis listener handles local broadcast.
+        # However, for efficiency, we might do local broadcast immediately and publish to others.
+        # Simple approach: Publish to Redis, let Redis listener call _local_broadcast.
+        # BUT: We often pass 'exclude_websocket' which is a local object. We can't pass that through Redis.
+
+        # Strategy:
+        # 1. Broadcast locally (respecting exclude_websocket)
+        # 2. Publish to Redis (if available) for OTHER workers
+
+        await self._local_broadcast_to_channel(channel_id, message, exclude_websocket)
+
+        if redis_manager.is_available:
+            # Add metadata so other workers know which channel
+            msg_with_meta = {**message, "_channel_id": channel_id}
+            # We don't need exclude_websocket for other workers (socket is local)
+            await redis_manager.publish("ws:broadcast:channel", msg_with_meta)
+
+    async def _local_broadcast_to_channel(self, channel_id: int, message: dict, exclude_websocket: WebSocket = None):
+        """Broadcast to local channel connections"""
         msg_type = message.get('type', 'unknown')
-        
+
         if channel_id not in self.active_connections:
-            logger.debug(f"broadcast_to_channel: No connections for channel {channel_id} (message type: {msg_type})")
+            # logger.debug(f"broadcast_to_channel: No connections for channel {channel_id}")
             return
-        
+
         connections = self.active_connections[channel_id]
-        logger.debug(f"broadcast_to_channel: Sending {msg_type} to {len(connections)} connections in channel {channel_id}")
-            
-        # Collect tasks for parallel execution
+        # logger.debug(f"broadcast_to_channel: Sending {msg_type} to {len(connections)} connections in channel {channel_id}")
+
         tasks = []
         for ws, user_id in connections:
             if exclude_websocket and ws == exclude_websocket:
                 continue
             tasks.append(self._safe_send(ws, message))
-        
+
         if tasks:
-            logger.debug(f"broadcast_to_channel: Executing {len(tasks)} send tasks for channel {channel_id}")
             await asyncio.gather(*tasks, return_exceptions=True)
-    
+
     async def broadcast_to_user(self, user_id, message: dict):
         """Broadcast a message to all of a user's global notification connections"""
         try:
@@ -340,14 +386,24 @@ class WebSocketManager:
             logger.error(f"Invalid user_id type for broadcast: {type(user_id)}")
             return
 
-        connections = self.user_connections.get(uid_int, [])
-        
+        # 1. Local broadcast
+        await self._local_broadcast_to_user(uid_int, message)
+
+        # 2. Redis broadcast (for other workers)
+        if redis_manager.is_available:
+            msg_with_meta = {**message, "_user_id": uid_int}
+            await redis_manager.publish("ws:broadcast:user", msg_with_meta)
+
+    async def _local_broadcast_to_user(self, user_id: int, message: dict):
+        """Broadcast to local user connections"""
+        connections = self.user_connections.get(user_id, [])
+
         if connections:
             tasks = [self._safe_send(ws, message) for ws in connections]
             await asyncio.gather(*tasks, return_exceptions=True)
-        else:
-            logger.debug(f"No active connections found for user {user_id}")
-    
+        # else:
+            # logger.debug(f"No active connections found for user {user_id}")
+
     async def broadcast_to_all_users(self, message: dict, exclude_user_id=None):
         """
         Broadcast a message to ALL connected users across all workers.

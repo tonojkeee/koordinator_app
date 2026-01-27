@@ -2,16 +2,17 @@ from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
-from app.core.database import get_db
+from app.core.database import get_db, engine
 from app.modules.auth.router import get_admin_user, get_current_user
 from app.modules.auth.schemas import UserResponse
 from app.modules.auth.models import User
 from app.modules.admin.service import AdminService, SystemSettingService
 from app.modules.admin.schemas import (
-    OverviewStats, ActivityStat, StorageStat, 
+    OverviewStats, ActivityStat, StorageStat,
     UnitStat, TopUserStat, ActivityLogEvent, AuditLogResponse,
     SystemHealth, TaskUnitStat, SystemSettingResponse, SystemSettingUpdate,
-    EmailSettingsResponse, EmailSettingsUpdate, EmailAccountRecreateResponse
+    EmailSettingsResponse, EmailSettingsUpdate, EmailAccountRecreateResponse,
+    DatabaseStatusResponse
 )
 from app.modules.tasks.schemas import TaskResponse
 
@@ -136,6 +137,55 @@ async def update_system_setting(
     return await SystemSettingService.set_value(db, key, setting_data.value, admin.id)
 
 
+@router.get("/system/database-status", response_model=DatabaseStatusResponse)
+async def get_database_status(
+    db: AsyncSession = Depends(get_db),
+    _ = Depends(get_admin_user)
+):
+    """Get current database status and pool statistics"""
+    from app.core.config import get_settings
+    settings = get_settings()
+
+    # Determine type
+    db_type = "sqlite"
+    if settings.is_postgresql:
+        db_type = "postgresql"
+    elif settings.is_mysql:
+        db_type = "mysql"
+
+    # Get version (generic SQL)
+    try:
+        # Most DBs support SELECT version() or sqlite_version()
+        if settings.is_sqlite:
+            version_query = "SELECT sqlite_version()"
+        else:
+            version_query = "SELECT version()"
+
+        result = await db.execute(text(version_query))
+        version = result.scalar()
+    except Exception:
+        version = "Unknown"
+
+    # Get pool stats if available
+    pool_status = None
+    if not settings.is_sqlite:
+        pool = engine.pool
+        pool_status = {
+            "size": pool.size(),
+            "checked_out": pool.checkedout(),
+            "overflow": pool.overflow()
+        }
+
+    return {
+        "type": db_type,
+        "dialect": str(engine.dialect.name) + "+" + str(engine.dialect.driver),
+        "database_name": settings.database_url.split("/")[-1].split("?")[0], # Rough extraction
+        "server_version": str(version),
+        "pool_status": pool_status,
+        "config_source": "environment"
+    }
+
+
 # Database Configuration Endpoints
 from app.modules.admin.schemas import DatabaseConfig
 from app.modules.admin.utils import read_env_file, write_env_file, parse_database_url
@@ -197,19 +247,30 @@ async def save_database_config(
     elif config.type == "mysql":
         if not all([config.host, config.user, config.database]):
              raise HTTPException(status_code=400, detail="Missing required fields for MySQL")
-        
+
         password = config.password if config.password else ""
         url = f"mysql+aiomysql://{config.user}:{password}@{config.host}:{config.port}/{config.database}"
+    elif config.type == "postgresql":
+        if not all([config.host, config.user, config.database]):
+             raise HTTPException(status_code=400, detail="Missing required fields for PostgreSQL")
+
+        password = config.password if config.password else ""
+        url = f"postgresql+asyncpg://{config.user}:{password}@{config.host}:{config.port}/{config.database}"
     else:
          raise HTTPException(status_code=400, detail="Unsupported database type")
-         
-    # 1. Test connection first (using async driver version if possible, or just re-use sync logic)
-    # We re-use logic but with sync driver to be sure credentials function
-    test_url = url.replace("+aiosqlite", "").replace("+aiomysql", "+pymysql")
+
+    # 1. Test connection first
     try:
-        engine_test = create_engine(test_url)
-        with engine_test.connect() as conn:
-            conn.execute(text("SELECT 1"))
+        if config.type == "postgresql":
+             from sqlalchemy.ext.asyncio import create_async_engine
+             engine_test = create_async_engine(url)
+             async with engine_test.connect() as conn:
+                 await conn.execute(text("SELECT 1"))
+        else:
+            test_url = url.replace("+aiosqlite", "").replace("+aiomysql", "+pymysql")
+            engine_test = create_engine(test_url)
+            with engine_test.connect() as conn:
+                conn.execute(text("SELECT 1"))
     except Exception as e:
         from app.core.errors import sanitize_database_error
         error_msg = sanitize_database_error(e, "database configuration validation")

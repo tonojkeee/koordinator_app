@@ -85,12 +85,27 @@ class SystemSettingResponse(BaseModel):
 
 
 class DatabaseConfig(BaseModel):
-    type: str  # sqlite | mysql
+    type: str  # sqlite | mysql | postgresql
     host: Optional[str] = None
     port: Optional[int] = 3306
     user: Optional[str] = None
     password: Optional[str] = None
     database: Optional[str] = None
+
+
+class DatabasePoolStatus(BaseModel):
+    size: int
+    checked_out: int
+    overflow: int
+
+
+class DatabaseStatusResponse(BaseModel):
+    type: str  # postgresql, mysql, sqlite
+    dialect: str
+    database_name: str
+    server_version: str
+    pool_status: Optional[DatabasePoolStatus] = None
+    config_source: str = "environment"
 
 
 class EmailSettingsResponse(BaseModel):
