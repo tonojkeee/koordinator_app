@@ -22,7 +22,7 @@ async def get_outgoing_packages(
     user_id = None if current_user.role in ['admin', 'operator'] else current_user.id
     return await service.get_packages(direction=ZsspdDirection.OUTGOING, skip=skip, limit=limit, user_id=user_id)
 
-@router.post("/outgoing", response_model=ZsspdPackageRead)
+@router.post("/outgoing", response_model=ZsspdPackageRead, status_code=status.HTTP_201_CREATED)
 async def create_outgoing_package(
     package: ZsspdPackageCreate,
     db: AsyncSession = Depends(get_db),
@@ -33,7 +33,7 @@ async def create_outgoing_package(
         raise HTTPException(status_code=400, detail="Invalid direction for this endpoint")
     return await service.create_package(package, current_user.id)
 
-@router.post("/packages/{package_id}/files", response_model=ZsspdFileRead)
+@router.post("/packages/{package_id}/files", response_model=ZsspdFileRead, status_code=status.HTTP_201_CREATED)
 async def upload_package_file(
     package_id: int,
     file: UploadFile = File(...),
@@ -81,4 +81,9 @@ async def get_package_details(
     package = await service.get_package(package_id)
     if not package:
         raise HTTPException(status_code=404, detail="Package not found")
+
+    # Check permissions: owner OR admin/operator
+    if package.created_by != current_user.id and current_user.role not in ['admin', 'operator']:
+        raise HTTPException(status_code=403, detail="Not authorized to view this package")
+
     return package
