@@ -339,6 +339,23 @@ const MainLayout: React.FC = () => {
     const onUserPresence = useCallback((data: { user_id: number; status: 'online' | 'offline' }) => {
         const delta = data.status === 'online' ? 1 : -1;
 
+        // Update global online users list (for Directory page)
+        queryClient.setQueryData<{ online_user_ids: number[] }>(['users', 'online'], (old) => {
+            if (!old) return old;
+
+            const currentIds = new Set(old.online_user_ids);
+            if (data.status === 'online') {
+                currentIds.add(data.user_id);
+            } else {
+                currentIds.delete(data.user_id);
+            }
+
+            return {
+                ...old,
+                online_user_ids: Array.from(currentIds)
+            };
+        });
+
         // Update channel_members cache for ALL channels using predicate
         queryClient.getQueriesData<Array<{ id: number; is_online?: boolean; last_seen?: string }>>({ queryKey: ['channel_members'] }).forEach(([queryKey, queryData]) => {
             if (queryData && Array.isArray(queryData)) {
