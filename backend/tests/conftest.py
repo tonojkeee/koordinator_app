@@ -69,3 +69,21 @@ async def client(db_session):
         yield ac
 
     app.dependency_overrides.clear()
+
+@pytest.fixture(autouse=True)
+def disable_rate_limiting():
+    """Disable rate limiting for all tests"""
+    from app.core.rate_limit import rate_limit_auth, rate_limit_api, rate_limit_file_upload
+
+    async def mock_rate_limit():
+        return None
+
+    app.dependency_overrides[rate_limit_auth] = mock_rate_limit
+    app.dependency_overrides[rate_limit_api] = mock_rate_limit
+    app.dependency_overrides[rate_limit_file_upload] = mock_rate_limit
+
+    yield
+
+    app.dependency_overrides.pop(rate_limit_auth, None)
+    app.dependency_overrides.pop(rate_limit_api, None)
+    app.dependency_overrides.pop(rate_limit_file_upload, None)
