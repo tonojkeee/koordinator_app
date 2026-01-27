@@ -12,7 +12,7 @@ import {
     BarChart2, Sliders, MessageSquare, Settings, Database
 } from 'lucide-react';
 
-import { useToast } from '../../design-system';
+import { useToast, Header } from '../../design-system';
 import type { User, Unit } from '../../types';
 
 // Hooks
@@ -165,70 +165,45 @@ const AdminPage: React.FC = () => {
     return (
         <div className="flex-1 flex flex-col bg-[#F5F5F5] overflow-hidden h-screen animate-in fade-in duration-300">
             {/* Header */}
-            <div className="px-6 pt-4 pb-2 shrink-0 z-30 sticky top-0 pointer-events-none">
-                <div className="bg-white border border-[#E0E0E0] rounded-lg shadow-sm p-3 pointer-events-auto flex items-center justify-between">
-                    {/* Title Row */}
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-[#5B5FC7] rounded-md text-white shadow-sm">
-                            <Shield size={18} strokeWidth={1.5} />
-                        </div>
-                        <div>
-                            <h1 className="text-base font-bold text-[#242424] leading-tight">
-                                {t('admin.dashboard')}
-                            </h1>
-                            <p className="text-[10px] font-semibold text-[#888888] uppercase tracking-wider">
-                                {t('admin.systemControl')}
-                            </p>
-                        </div>
-                    </div>
+            <Header
+                title={t('admin.dashboard')}
+                subtitle={t('admin.systemControl')}
+                icon={<Shield size={20} strokeWidth={1.5} />}
+                iconColor="indigo"
+                sticky={true}
+                tabs={mainTabs}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                actions={
+                    <div className="relative group">
+                        <button
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${activeTab.startsWith('settings')
+                                ? 'bg-white text-[#5B5FC7] shadow-sm'
+                                : 'text-[#616161] hover:text-[#242424] hover:bg-[#E0E0E0]/50'
+                                }`}
+                        >
+                            <Sliders size={18} strokeWidth={1.5} />
+                            <span>{t('admin.settings')}</span>
+                        </button>
 
-                    {/* Tabs Row */}
-                    <div className="flex items-center gap-1 bg-[#F5F5F5] p-1 rounded-md border border-[#E0E0E0]">
-                        {mainTabs.map(tab => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${activeTab === tab.id
-                                    ? 'bg-white text-[#5B5FC7] shadow-sm'
-                                    : 'text-[#616161] hover:text-[#242424] hover:bg-[#E0E0E0]/50'
-                                    }`}
-                            >
-                                {tab.icon}
-                                <span>{tab.label}</span>
-                            </button>
-                        ))}
-
-                        {/* Settings Dropdown */}
-                        <div className="relative group">
-                            <button
-                                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${activeTab.startsWith('settings')
-                                    ? 'bg-white text-[#5B5FC7] shadow-sm'
-                                    : 'text-[#616161] hover:text-[#242424] hover:bg-[#E0E0E0]/50'
-                                    }`}
-                            >
-                                <Sliders size={18} strokeWidth={1.5} />
-                                <span>{t('admin.settings')}</span>
-                            </button>
-
-                            <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-[#E0E0E0] rounded-lg shadow-lg p-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                                {settingsTabs.map(sub => (
-                                    <button
-                                        key={sub.id}
-                                        onClick={() => setActiveTab(sub.id)}
-                                        className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs font-semibold transition-all ${activeTab === sub.id
-                                            ? 'bg-[#EEF2FF] text-[#5B5FC7]'
-                                            : 'text-[#616161] hover:bg-[#F5F5F5] hover:text-[#242424]'
-                                            }`}
-                                    >
-                                        {sub.icon}
-                                        {sub.label}
-                                    </button>
-                                ))}
-                            </div>
+                        <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-[#E0E0E0] rounded-lg shadow-lg p-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                            {settingsTabs.map(sub => (
+                                <button
+                                    key={sub.id}
+                                    onClick={() => setActiveTab(sub.id)}
+                                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs font-semibold transition-all ${activeTab === sub.id
+                                        ? 'bg-[#EEF2FF] text-[#5B5FC7]'
+                                        : 'text-[#616161] hover:bg-[#F5F5F5] hover:text-[#242424]'
+                                        }`}
+                                >
+                                    {sub.icon}
+                                    {sub.label}
+                                </button>
+                            ))}
                         </div>
                     </div>
-                </div>
-            </div>
+                }
+            />
 
             {/* Content */}
             <main className="flex-1 overflow-y-auto p-6">

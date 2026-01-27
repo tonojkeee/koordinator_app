@@ -184,68 +184,78 @@ export const Header = React.memo<HeaderProps>(({
   return (
     <header
       className={cn(
-        // Teams-like header
-        'bg-white border-b border-[#E0E0E0]',
-        // Padding и spacing
-        'px-6 py-4 space-y-4',
-        // Sticky positioning
-        sticky && 'sticky top-0 z-40',
+        // Outer container for floating effect
+        'px-6 pt-4 pb-2 z-40',
+        sticky && 'sticky top-0 pointer-events-none',
         className
       )}
     >
-      {/* Upper Level: Icon + Title + Search + Actions */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        {/* Icon + Title Section */}
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          {/* Module Icon */}
-          <HeaderIcon icon={icon} color={iconColor} />
+      <div className={cn(
+        // Floating card style
+        'bg-white border border-[#E0E0E0] rounded-lg shadow-sm p-3',
+        'pointer-events-auto', // Re-enable pointer events
+        'flex flex-col gap-3'
+      )}>
+        {/* Upper Level: Icon + Title + Search + Actions */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          {/* Icon + Title Section */}
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            {/* Module Icon */}
+            <HeaderIcon icon={icon} color={iconColor} className="rounded-md shadow-sm" />
 
-          {/* Title Section */}
-          <div className="flex-1 min-w-0">
-            <AnimatedTitle title={title} className="text-lg font-bold text-[#242424]" />
-            {subtitle && (
-              <div className="text-[11px] font-semibold text-[#616161] uppercase tracking-wider mt-0.5">
-                {subtitle}
+            {/* Title Section */}
+            <div className="flex-1 min-w-0">
+              <AnimatedTitle title={title} className="text-base font-bold text-[#242424]" />
+              {subtitle && (
+                <div className="text-[10px] font-semibold text-[#888888] uppercase tracking-wider leading-tight">
+                  {subtitle}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+            {/* Search Input */}
+            {onSearchChange && (
+              <div className="w-full sm:w-64">
+                <SearchInput
+                  placeholder={searchPlaceholder}
+                  value={searchValue}
+                  onChange={onSearchChange}
+                  onClear={onSearchClear}
+                />
+              </div>
+            )}
+
+            {/* Actions */}
+            {actions && (
+              <div className="flex items-center gap-2">
+                {actions}
               </div>
             )}
           </div>
         </div>
 
-        {/* Search Input */}
-        {onSearchChange && (
-          <div className="w-full sm:w-72">
-            <SearchInput
-              placeholder={searchPlaceholder}
-              value={searchValue}
-              onChange={onSearchChange}
-              onClear={onSearchClear}
-            />
-          </div>
-        )}
-
-        {/* Actions */}
-        {actions && (
-          <div className="flex items-center gap-2">
-            {actions}
+        {/* Lower Level: Tab Navigation */}
+        {((tabs && tabs.length > 0) || tabsActions) && (
+          <div className="flex items-center justify-between pt-1 border-t border-[#F0F0F0] mt-1 pt-2">
+            <div className="flex-1 overflow-x-auto">
+              {tabs && tabs.length > 0 && (
+                <TabNavigation
+                  tabs={tabs}
+                  activeTab={activeTab}
+                  onTabChange={onTabChange}
+                />
+              )}
+            </div>
+            {tabsActions && (
+              <div className="flex items-center pl-2 shrink-0">
+                {tabsActions}
+              </div>
+            )}
           </div>
         )}
       </div>
-
-      {/* Lower Level: Tab Navigation */}
-      {tabs && tabs.length > 0 && (
-        <div className="flex items-center justify-between pt-1">
-          <TabNavigation
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={onTabChange}
-          />
-          {tabsActions && (
-            <div className="flex items-center">
-              {tabsActions}
-            </div>
-          )}
-        </div>
-      )}
     </header>
   );
 });
