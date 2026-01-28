@@ -348,6 +348,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
                         >
                             <MessageSquare size={14} />
                         </button>
+                        {!isSelf && (
                         <button
                             onMouseDown={(e) => {
                                 e.preventDefault(); e.stopPropagation();
@@ -361,6 +362,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
                         >
                             <Smile size={14} />
                         </button>
+                    )}
                             {(message.user_id === currentUser?.id || currentUser?.role === 'admin') && (
                             <>
                                 <button

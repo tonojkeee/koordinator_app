@@ -149,6 +149,10 @@
         "newMessages": "Новые сообщения",
         "online": "в сети",
         "offline": "не в сети",
+        "status": {
+            "online": "В СЕТИ",
+            "offline": "НЕ В СЕТИ"
+        },
         "channelStatus": "{{count}} {{label}}, {{online}} онлайн",
         "fileNotification": {
             "document": "Документ",

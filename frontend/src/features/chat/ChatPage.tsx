@@ -1452,7 +1452,7 @@ const ChatPage: React.FC = () => {
 
                             {/* Collapsible Participants Sidebar */}
                             {showParticipants && channelId && channel && !channel.is_direct && !channel.is_system && (
-                                <aside className="w-80 border-l border-slate-100 bg-white shrink-0 overflow-hidden flex flex-col">
+                                <aside className="w-64 border-l border-slate-200 bg-white shrink-0 overflow-hidden flex flex-col">
                                     <ParticipantsPanel
                                         channelId={Number(channelId)}
                                         onMention={handleMention}
