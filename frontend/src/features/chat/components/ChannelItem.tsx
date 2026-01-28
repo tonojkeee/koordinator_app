@@ -67,53 +67,53 @@ export const ChannelItem: React.FC<ChannelItemProps> = ({
       <div
         onClick={handleClick}
         className={cn(
-          "group relative flex items-center px-3 py-2 rounded-lg cursor-pointer transition-all duration-200",
+          "group relative flex items-center px-2 py-1.5 rounded-md cursor-pointer transition-all duration-200 mx-1",
           isActive
-            ? "bg-blue-50/80 text-blue-900"
-            : "hover:bg-slate-100 text-slate-700 hover:text-slate-900"
+            ? "bg-blue-50 text-blue-900"
+            : "hover:bg-slate-100/80 text-slate-600 hover:text-slate-900"
         )}
       >
         {/* Active Marker */}
         {isActive && (
-          <div className="absolute left-0 top-2 bottom-2 w-1 bg-blue-600 rounded-r-full" />
+          <div className="absolute left-0 top-1.5 bottom-1.5 w-0.5 bg-blue-600 rounded-full" />
         )}
 
-        <div className="relative shrink-0 mr-3">
+        <div className="relative shrink-0 mr-2.5">
           <Avatar
             src={channel.is_direct ? channel.other_user?.avatar_url : undefined}
             name={channel.display_name || channel.name}
-            size="sm"
+            size="xs"
             className={cn(
-              "transition-transform duration-200 group-hover:scale-105",
-              isActive ? "ring-2 ring-blue-100" : "ring-1 ring-slate-200"
+              "transition-transform duration-200",
+              isActive ? "ring-1 ring-blue-200" : "ring-1 ring-slate-200"
             )}
           />
           {channel.visibility === 'private' && !channel.is_direct && (
-            <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-500 rounded-full flex items-center justify-center border-2 border-white">
-              <Lock size={8} className="text-white" />
+            <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-amber-500 rounded-full flex items-center justify-center border border-white">
+              <Lock size={6} className="text-white" />
             </div>
           )}
           {channel.is_system && (
-            <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-slate-500 rounded-full flex items-center justify-center border-2 border-white">
-              <Settings size={8} className="text-white" />
+            <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-slate-500 rounded-full flex items-center justify-center border border-white">
+              <Settings size={6} className="text-white" />
             </div>
           )}
           {channel.is_direct && (
             <div className={cn(
-              "absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-white rounded-full",
+              "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 border border-white rounded-full",
               channel.other_user?.is_online ? "bg-green-500" : "bg-slate-300"
             )} />
           )}
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex justify-between items-center">
-            <h3 className={cn(
+          <div className="flex justify-between items-center gap-2">
+            <div className={cn(
               "text-[13px] truncate flex items-center gap-1.5",
-              isActive ? "font-bold text-blue-900" : (unread > 0 ? "font-bold text-slate-900" : "font-medium text-slate-700")
+              isActive ? "font-semibold text-blue-900" : (unread > 0 ? "font-semibold text-slate-900" : "font-medium text-slate-700")
             )}>
               {channel.other_user?.rank && (
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-slate-500">
+                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
                   {abbreviateRank(channel.other_user.rank)}
                 </span>
               )}
@@ -121,11 +121,11 @@ export const ChannelItem: React.FC<ChannelItemProps> = ({
               {channel.is_owner && !channel.is_direct && !channel.is_system && (
                 <Crown size={10} className="text-amber-500 shrink-0" fill="currentColor" />
               )}
-            </h3>
+            </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               {unread > 0 && (
-                <span className="shrink-0 min-w-[18px] h-[18px] bg-blue-600 text-white text-[10px] font-black rounded-full flex items-center justify-center px-1 shadow-sm">
+                <span className="shrink-0 min-w-[16px] h-[16px] bg-blue-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1">
                   {unread > 99 ? '99+' : unread}
                 </span>
               )}
@@ -137,7 +137,7 @@ export const ChannelItem: React.FC<ChannelItemProps> = ({
                     className="p-1 text-slate-400 hover:text-blue-600 rounded transition-colors"
                     title={channel.is_pinned ? t('chat.unpin') : t('chat.pin')}
                   >
-                    <Pin size={12} fill={channel.is_pinned ? "currentColor" : "none"} />
+                    <Pin size={11} fill={channel.is_pinned ? "currentColor" : "none"} />
                   </button>
                 )}
               </div>

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../api/client';
 import type { Channel } from '../../types';
 import { AxiosError } from 'axios';
-import { Loader2, MessageSquare, Pin, Filter, Plus, Search, Lock, Globe, Settings, ChevronDown, ChevronRight } from 'lucide-react';
+import { Loader2, Filter, Plus, Search, Lock, Globe, ChevronDown, ChevronRight } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -363,8 +363,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
     title,
     count,
     expanded,
-    onToggle,
-    icon: Icon
+    onToggle
   }: {
     title: string;
     count: number;
@@ -374,35 +373,34 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
   }) => (
     <button
       onClick={onToggle}
-      className="w-full flex items-center justify-between px-3 py-2 text-[11px] font-black uppercase tracking-[0.05em] text-slate-500/70 hover:text-slate-900 transition-colors group"
+      className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-900 transition-colors group"
     >
-      <div className="flex items-center gap-2">
-        <div className="text-slate-400 group-hover:text-blue-500 transition-colors">
-          {expanded ? <ChevronDown size={12} strokeWidth={3} /> : <ChevronRight size={12} strokeWidth={3} />}
+      <div className="flex items-center gap-1.5">
+        <div className="text-slate-400 group-hover:text-slate-600 transition-colors">
+          {expanded ? <ChevronDown size={10} strokeWidth={2.5} /> : <ChevronRight size={10} strokeWidth={2.5} />}
         </div>
-        {Icon && <Icon size={12} strokeWidth={2.5} className="opacity-70" />}
         <span>{title}</span>
-        {count > 0 && <span className="ml-1 text-[10px] opacity-40">({count})</span>}
+        {count > 0 && <span className="ml-1 opacity-60 font-medium">({count})</span>}
       </div>
     </button>
   );
 
   return (
     <SecondarySidebar title={t('chat.title')} actions={actions}>
-      <div className="px-3 py-2 mb-2 shrink-0">
+      <div className="px-3 py-1.5 mb-1 shrink-0">
         <div className="relative group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={14} />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={13} />
           <input
             type="text"
             placeholder={t('common.search') || 'Search...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-100/80 border-none rounded-lg pl-9 pr-4 py-2 text-xs text-slate-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/10 transition-all placeholder:text-slate-400 font-medium"
+            className="w-full bg-slate-100/50 border border-slate-200/50 rounded-md pl-8 pr-4 py-1.5 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-blue-500/30 focus:ring-4 focus:ring-blue-500/5 transition-all placeholder:text-slate-400 font-medium"
           />
         </div>
       </div>
 
-      <div className="space-y-1 pb-4">
+      <div className="space-y-0.5 pb-4">
         {isLoading && channels.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 space-y-3">
             <Loader2 className="animate-spin text-blue-500" size={24} />
@@ -411,16 +409,15 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
         ) : (
           <>
             {systemChannels.length > 0 && (
-              <div>
+              <div className="mb-2">
                 <SectionHeader
                   title={t('common.system') || 'System'}
                   count={systemChannels.length}
                   expanded={expandedSections.system}
                   onToggle={() => toggleSection('system')}
-                  icon={Settings}
                 />
                 {expandedSections.system && (
-                  <div className="space-y-0.5 px-2">
+                  <div className="space-y-0.5 px-1.5">
                     {systemChannels.map((channel) => (
                       <ChannelItem
                         key={channel.id}
@@ -445,16 +442,15 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
             )}
 
             {pinnedChannels.length > 0 && (
-              <div className="mt-4">
+              <div className="mb-2">
                 <SectionHeader
                   title={t('chat.fileNotification.pinned')}
                   count={pinnedChannels.length}
                   expanded={expandedSections.pinned}
                   onToggle={() => toggleSection('pinned')}
-                  icon={Pin}
                 />
                 {expandedSections.pinned && (
-                  <div className="space-y-0.5 px-2">
+                  <div className="space-y-0.5 px-1.5">
                     {pinnedChannels.map((channel) => (
                       <ChannelItem
                         key={channel.id}
@@ -478,16 +474,15 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
             )}
 
             {publicChannels.length > 0 && (
-              <div className="mt-4">
+              <div className="mb-2">
                 <SectionHeader
                   title={t('chat.publicSpace')}
                   count={publicChannels.length}
                   expanded={expandedSections.public}
                   onToggle={() => toggleSection('public')}
-                  icon={Globe}
                 />
                 {expandedSections.public && (
-                  <div className="space-y-0.5 px-2">
+                  <div className="space-y-0.5 px-1.5">
                     {publicChannels.map((channel) => (
                       <ChannelItem
                         key={channel.id}
@@ -511,16 +506,15 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
             )}
 
             {privateChannels.length > 0 && (
-              <div className="mt-4">
+              <div className="mb-2">
                 <SectionHeader
                   title={t('chat.privateSpace')}
                   count={privateChannels.length}
                   expanded={expandedSections.private}
                   onToggle={() => toggleSection('private')}
-                  icon={Lock}
                 />
                 {expandedSections.private && (
-                  <div className="space-y-0.5 px-2">
+                  <div className="space-y-0.5 px-1.5">
                     {privateChannels.map((channel) => (
                       <ChannelItem
                         key={channel.id}
@@ -544,16 +538,15 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
             )}
 
             {directChannels.length > 0 && (
-              <div className="mt-4">
+              <div className="mb-2">
                 <SectionHeader
                   title={t('chat.directMessages')}
                   count={directChannels.length}
                   expanded={expandedSections.direct}
                   onToggle={() => toggleSection('direct')}
-                  icon={MessageSquare}
                 />
                 {expandedSections.direct && (
-                  <div className="space-y-0.5 px-2">
+                  <div className="space-y-0.5 px-1.5">
                     {directChannels.map((channel) => (
                       <ChannelItem
                         key={channel.id}
