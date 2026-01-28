@@ -1,4 +1,4 @@
-import { Hash, Users, Bell, BellOff, Info, LogOut, Download, UserPlus, Settings } from 'lucide-react';
+import { Hash, Users, Bell, BellOff, Info, LogOut, Download, UserPlus, Settings, Search, Phone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatName } from '../../utils/formatters';
 import { Header, cn } from '../../design-system';
@@ -18,6 +18,7 @@ interface ChannelHeaderProps {
   onLeaveChannel: () => void;
   onInvite?: (userIds: string[], message?: string) => Promise<void>;
   onOpenInviteModal?: () => void;
+  onSearchOpen?: () => void;
   formatLastSeen: (lastSeen: string | null | undefined) => string;
 }
 
@@ -33,6 +34,7 @@ const ChannelHeader: React.FC<ChannelHeaderProps> = ({
   handleExportChat,
   onLeaveChannel,
   onOpenInviteModal,
+  onSearchOpen,
   formatLastSeen
 }) => {
   const { t } = useTranslation();
@@ -60,7 +62,7 @@ const ChannelHeader: React.FC<ChannelHeaderProps> = ({
           ? (isDmPartnerOnline ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-slate-300')
           : (isConnected ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-red-500')
       )} />
-      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
         {channel?.is_system ? (
           t('chat.system_channel')
         ) : channel?.is_direct ? (
@@ -71,7 +73,7 @@ const ChannelHeader: React.FC<ChannelHeaderProps> = ({
             {channel?.online_count ? (
               <>
                 <span className="mx-1.5 opacity-30">|</span>
-                <span className="text-green-600">{channel.online_count}</span> {t('chat.online')}
+                <span className="text-green-600 font-bold">{channel.online_count}</span> {t('chat.online')}
               </>
             ) : null}
           </>
@@ -93,6 +95,25 @@ const ChannelHeader: React.FC<ChannelHeaderProps> = ({
       className="px-6 pt-6 pb-2"
       actions={
         <div className="flex items-center gap-1">
+          {onSearchOpen && (
+            <button
+              onClick={onSearchOpen}
+              className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-95"
+              title={t('common.search')}
+            >
+              <Search size={20} strokeWidth={2.2} />
+            </button>
+          )}
+
+          {!channel?.is_system && (
+            <button
+              className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-95"
+              title={t('chat.call')}
+            >
+              <Phone size={20} strokeWidth={2.2} />
+            </button>
+          )}
+
           {channel?.visibility === 'private' && channel?.is_member && onOpenInviteModal && !channel?.is_system && (
             <button
               onClick={onOpenInviteModal}

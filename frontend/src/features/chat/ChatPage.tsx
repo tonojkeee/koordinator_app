@@ -14,6 +14,8 @@ import { useTranslation } from 'react-i18next';
 import ParticipantsList from './ParticipantsList';
 import { Avatar, ContextMenu, type ContextMenuOption, useToast, cn } from '../../design-system';
 import ChannelHeader from './ChannelHeader';
+import MuteModal from './MuteModal';
+import SearchModal from './components/SearchModal';
 import { formatDate, renderMessageContent } from './utils';
 import { formatName } from '../../utils/formatters';
 
@@ -376,6 +378,37 @@ const ChatPage: React.FC = () => {
     const [activeThread, setActiveThread] = useState<Message | null>(null);
     const [editingMessage, setEditingMessage] = useState<Message | null>(null);
     const [quickReactionMessageId, setQuickReactionMessageId] = useState<number | null>(null);
+    const [isMuteModalOpen, setIsMuteModalOpen] = useState(false);
+    const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+
+    const muteChannelMutation = useMutation({
+        mutationFn: async (duration: '1h' | '8h' | '24h' | 'forever' | null) => {
+            if (!channelId) return;
+            const res = await api.post(`/chat/channels/${channelId}/mute`, { duration });
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['channel', channelId] });
+            queryClient.invalidateQueries({ queryKey: ['channels'] });
+        }
+    });
+
+    const handleMute = (duration: '1h' | '8h' | '24h' | 'forever' | null) => {
+        muteChannelMutation.mutate(duration);
+    };
+
+    const handleGoToMessage = (messageId: number, targetChannelId: number) => {
+        if (String(targetChannelId) !== channelId) {
+            navigate(`/chat/${targetChannelId}?highlightId=${messageId}`);
+        } else {
+            const element = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.classList.add('bg-blue-50');
+                setTimeout(() => element.classList.remove('bg-blue-50'), 2000);
+            }
+        }
+    };
 
     const updateMessageMutation = useMutation({
         mutationFn: async ({ id, content }: { id: number; content: string }) => {
@@ -1207,7 +1240,8 @@ const ChatPage: React.FC = () => {
                         dmPartner={dmPartner as any}
                         showParticipants={showParticipants}
                         setShowParticipants={setShowParticipants}
-                        setIsMuteModalOpen={() => { }}
+                        setIsMuteModalOpen={setIsMuteModalOpen}
+                        onSearchOpen={() => setIsSearchModalOpen(true)}
                         handleExportChat={handleExportChat}
                         onLeaveChannel={handleLeaveChannel}
                         formatLastSeen={formatLastSeen}
@@ -1349,6 +1383,18 @@ const ChatPage: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            <MuteModal
+                isOpen={isMuteModalOpen}
+                onClose={() => setIsMuteModalOpen(false)}
+                onMute={handleMute}
+            />
+
+            <SearchModal
+                isOpen={isSearchModalOpen}
+                onClose={() => setIsSearchModalOpen(false)}
+                onGoToMessage={handleGoToMessage}
+            />
         </div>
     );
 };
