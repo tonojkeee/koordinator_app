@@ -194,33 +194,33 @@ const MessageInput = React.forwardRef<MessageInputHandle, MessageInputProps>((
     }));
 
     return (
-        <div className="px-4 md:px-8 pb-4 md:pb-6 pt-2 z-30 shrink-0">
-            <div className={`relative max-w-5xl mx-auto transition-all`}>
+        <div className="border-t border-slate-100 bg-white p-4 z-30 shrink-0">
+            <div className="relative max-w-5xl mx-auto">
                 {Object.keys(typingUsers).length > 0 && (
-                    <div className={`absolute bottom-full left-4 mb-3 z-50 pointer-events-none ${animations.slideIn}`}>
-                        <div className="px-4 py-2 bg-surface/90 backdrop-blur-md rounded-xl shadow-m3-2 border border-border flex items-center space-x-2.5">
+                    <div className={`absolute bottom-full left-0 mb-2 z-50 pointer-events-none ${animations.slideIn}`}>
+                        <div className="px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-lg shadow-sm border border-slate-100 flex items-center space-x-2">
                             <div className="flex space-x-1">
-                                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]" />
-                                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]" />
-                                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" />
+                                <div className="w-1 h-1 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                                <div className="w-1 h-1 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                                <div className="w-1 h-1 bg-blue-500 rounded-full animate-bounce" />
                             </div>
-                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                                 {(Object.values(typingUsers) as { name: string }[]).map(u => u.name).join(', ')} {t('chat.typing')}
                             </span>
                         </div>
                     </div>
                 )}
 
-                <div className={`relative flex flex-col bg-surface border border-border shadow-m3-2 transition-all duration-500 overflow-hidden group focus-within:ring-2 focus-within:ring-primary/20 rounded-2xl`}>
+                <div className="relative flex flex-col bg-slate-50 border border-slate-200/60 rounded-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-blue-500/10 focus-within:border-blue-500/30 overflow-hidden">
                     {editingMessage && (
-                        <div className={`bg-primary/5 backdrop-blur-md px-4 py-3 border-b border-primary/10 flex items-center justify-between ${animations.slideIn}`}>
+                        <div className={`bg-blue-50/50 px-4 py-2 border-b border-blue-100 flex items-center justify-between ${animations.slideIn}`}>
                             <div className="flex items-center space-x-3 overflow-hidden flex-1 min-w-0">
-                                <Pencil size={16} className="text-primary shrink-0" />
+                                <Pencil size={14} className="text-blue-600 shrink-0" />
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-[9px] font-black text-primary uppercase tracking-widest leading-none mb-1">
+                                    <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest leading-none mb-0.5">
                                         {t('chat.editing_message')}
                                     </p>
-                                    <p className="text-xs text-foreground/80 truncate font-bold">
+                                    <p className="text-xs text-slate-600 truncate font-bold">
                                         {editingMessage.content}
                                     </p>
                                 </div>
@@ -230,42 +230,42 @@ const MessageInput = React.forwardRef<MessageInputHandle, MessageInputProps>((
                                     if (onCancelEdit) onCancelEdit();
                                     setInputMessage('');
                                 }}
-                                className="shrink-0 w-7 h-7 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
+                                className="shrink-0 w-6 h-6 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                             >
-                                <X size={16} />
+                                <X size={14} />
                             </button>
                         </div>
                     )}
                     {activeThread && !editingMessage && (
-                        <div className={`bg-primary/5 backdrop-blur-md px-4 py-3 border-b border-primary/10 flex items-center justify-between ${animations.slideIn}`}>
+                        <div className={`bg-blue-50/50 px-4 py-2 border-b border-blue-100 flex items-center justify-between ${animations.slideIn}`}>
                             <div className="flex items-center space-x-3 overflow-hidden flex-1 min-w-0">
-                                <div className="w-1 h-8 bg-primary rounded-full shrink-0 shadow-[0_0_8px_var(--teams-brand)]" />
+                                <div className="w-0.5 h-6 bg-blue-500 rounded-full shrink-0" />
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-[9px] font-black text-primary uppercase tracking-widest leading-none mb-1">
+                                    <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest leading-none mb-0.5">
                                         {t('chat.replying_to')} {activeThread.username}
                                     </p>
-                                    <p className="text-xs text-foreground/80 truncate font-bold">
+                                    <p className="text-xs text-slate-600 truncate font-bold">
                                         {activeThread.content}
                                     </p>
                                 </div>
                             </div>
                             <button
                                 onClick={() => setActiveThread(null)}
-                                className="shrink-0 w-7 h-7 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
+                                className="shrink-0 w-6 h-6 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                             >
-                                <X size={16} />
+                                <X size={14} />
                             </button>
                         </div>
                     )}
 
-                    <form onSubmit={handleSendMessage} className="flex items-center p-2 md:p-3 space-x-3">
+                    <form onSubmit={handleSendMessage} className="flex items-center p-1.5 space-x-2">
                         <input
                             ref={inputRef}
                             type="text"
                             value={inputMessage}
                             onChange={handleInputChange}
                             placeholder={t('chat.inputPlaceholder')}
-                            className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none font-bold text-foreground placeholder:text-muted-foreground/50 px-2 h-10"
+                            className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none font-bold text-slate-900 placeholder:text-slate-400 px-3 h-9 text-sm"
                             style={{
                                 fontSize: typeof user?.preferences?.font_size === 'number'
                                     ? `${user.preferences.font_size}px`
@@ -293,33 +293,31 @@ const MessageInput = React.forwardRef<MessageInputHandle, MessageInputProps>((
                             }}
                         />
 
-                        <div className="flex items-center space-x-2 shrink-0">
-                            <div className="relative">
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setReactionTargetId(null);
-                                        setShowEmojiPicker(!showEmojiPicker);
-                                    }}
-                                    icon={<Smile size={20} />}
-                                    className={cn("rounded-xl transition-transform active:scale-90", showEmojiPicker ? 'text-primary bg-primary/10' : 'text-muted-foreground')}
-                                />
-                            </div>
+                        <div className="flex items-center space-x-1 shrink-0">
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setReactionTargetId(null);
+                                    setShowEmojiPicker(!showEmojiPicker);
+                                }}
+                                icon={<Smile size={20} />}
+                                className={cn("w-9 h-9 rounded-lg transition-all", showEmojiPicker ? 'text-blue-600 bg-blue-50' : 'text-slate-400 hover:text-blue-600')}
+                            />
 
                             <Button
                                 type="submit"
                                 variant="primary"
                                 size="sm"
                                 disabled={!inputMessage.trim() || !isConnected}
-                                icon={<Send size={20} className={inputMessage.trim() && isConnected ? "translate-x-0.5" : ""} />}
+                                icon={<Send size={18} className={inputMessage.trim() && isConnected ? "translate-x-0.5" : ""} />}
                                 className={cn(
-                                    "rounded-xl px-5 transition-all duration-300",
+                                    "w-9 h-9 rounded-lg transition-all flex items-center justify-center p-0",
                                     inputMessage.trim() && isConnected
-                                        ? 'bg-primary shadow-m3-2 hover:shadow-m3-3 scale-105 active:scale-95'
-                                        : 'bg-muted text-muted-foreground/40 opacity-50 grayscale'
+                                        ? 'bg-blue-600 text-white shadow-sm hover:scale-105 active:scale-95'
+                                        : 'bg-slate-200 text-slate-400 opacity-50'
                                 )}
                             />
                         </div>
@@ -327,8 +325,8 @@ const MessageInput = React.forwardRef<MessageInputHandle, MessageInputProps>((
                 </div>
 
                 {showEmojiPicker && (
-                    <div ref={emojiPickerRef} className={`absolute bottom-full right-0 mb-4 z-[100] origin-bottom-right pr-2 ${animations.zoomIn}`}>
-                        <div className="shadow-m3-4 rounded-3xl overflow-hidden border border-border ring-4 ring-primary/5 backdrop-blur-xl bg-surface/90">
+                    <div ref={emojiPickerRef} className={`absolute bottom-full right-0 mb-4 z-[100] origin-bottom-right ${animations.zoomIn}`}>
+                        <div className="shadow-xl rounded-2xl overflow-hidden border border-slate-100 bg-white">
                             <EmojiPicker
                                 onEmojiClick={onEmojiClick}
                                 theme={Theme.AUTO}

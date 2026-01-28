@@ -1,5 +1,5 @@
 import React from 'react';
-import { Message, User } from '../../../types';
+import type { Message, User } from '../../../types';
 import { MessageBubble } from './MessageBubble';
 import { formatDate } from '../utils';
 import { animations } from '../../../design-system/tokens/animations';
