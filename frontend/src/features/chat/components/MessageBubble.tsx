@@ -67,12 +67,12 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
     };
 
     const msgGroupClass = isFirstInGroup && isLastInGroup
-        ? 'rounded-md'
+        ? 'rounded-lg'
         : isFirstInGroup
-            ? 'rounded-t-md rounded-b-[2px]'
+            ? 'rounded-t-lg rounded-b-sm'
             : isLastInGroup
-                ? 'rounded-b-md rounded-t-[2px]'
-                : 'rounded-[2px]';
+                ? 'rounded-b-lg rounded-t-sm'
+                : 'rounded-sm';
 
     const contextOptions: ContextMenuOption[] = [
         {
@@ -130,11 +130,11 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                                         {message.rank}
                                     </span>
                                 )}
-                                <span className={`font-bold text-[13px] tracking-tight ${isSelf ? 'text-indigo-400' : 'text-indigo-600'}`}>
+                                <span className={`font-bold text-[13px] tracking-tight ${isSelf ? 'text-blue-500' : 'text-slate-700'}`}>
                                     {isSelf ? t('chat.you') : (message.username ? formatName(message.full_name, message.username) : t('common.system'))}
                                 </span>
                                 {((isSelf && currentUser?.role === 'admin') || (!isSelf && message.role === 'admin')) && (
-                                    <div className="text-indigo-400" title={t('admin.roleAdmin')}>
+                                    <div className="text-blue-500" title={t('admin.roleAdmin')}>
                                         <Crown size={10} fill="currentColor" />
                                     </div>
                                 )}
@@ -143,7 +143,12 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 
                         <div
                             id={`message-${message.id}`}
-                            className={`message-bubble group/message relative ${isSelf ? 'message-sent' : 'message-received'} ${msgGroupClass} flex flex-col ${isHighlighted ? 'message-highlight ring-2 ring-indigo-400 shadow-lg z-10' : ''}`}
+                            className={cn(
+                                "relative group/message max-w-[85%] px-4 py-2 flex flex-col transition-all duration-200",
+                                isSelf ? "bg-blue-600 text-white shadow-sm" : "bg-slate-100 text-slate-900 border border-slate-200",
+                                msgGroupClass,
+                                isHighlighted && "ring-2 ring-blue-400 shadow-lg z-10"
+                            )}
                             {...(message.document_id ? { 'data-doc-id': message.document_id } : {})}
                             style={{
                                 fontSize: typeof currentUser?.preferences?.font_size === 'number'
@@ -155,31 +160,32 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                         >
                             {message.parent && (
                                 <div
-                                    className="reply-block"
+                                    className={cn(
+                                        "mb-2 p-2 rounded border-l-4 text-xs cursor-pointer transition-colors",
+                                        isSelf
+                                            ? "bg-white/10 border-white/40 text-white/90"
+                                            : "bg-slate-200/50 border-blue-500 text-slate-600"
+                                    )}
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         const el = document.getElementById(`message-${message.parent!.id}`);
                                         if (el) {
                                             el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                            el.classList.add('bg-indigo-50/80');
-                                            el.classList.add('ring-2');
-                                            el.classList.add('ring-indigo-400/50');
+                                            el.classList.add('ring-2', 'ring-blue-400/50');
                                             setTimeout(() => {
-                                                el.classList.remove('bg-indigo-50/80');
-                                                el.classList.remove('ring-2');
-                                                el.classList.remove('ring-indigo-400/50');
+                                                el.classList.remove('ring-2', 'ring-blue-400/50');
                                             }, 1500);
                                         }
                                     }}
                                 >
-                                    <span className="reply-user">{message.parent.username}</span>
-                                    <span className="reply-content">{renderMessageContent(message.parent.content, message.parent.username === currentUser?.username)}</span>
+                                    <span className="block font-black uppercase tracking-widest text-[10px] mb-0.5">{message.parent.username}</span>
+                                    <span className="line-clamp-1 opacity-80">{renderMessageContent(message.parent.content, message.parent.username === currentUser?.username)}</span>
                                 </div>
                             )}
 
                             <div className="flex flex-col relative">
                                 {message.content && (!message.document_id || !message.content.startsWith('📎')) && (
-                                    <div className={`leading-relaxed whitespace-pre-wrap break-words pr-14 ${isSelf ? 'text-white' : 'text-slate-900'} ${message.document_id ? 'mt-2 opacity-90' : ''}`}>
+                                    <div className={`leading-relaxed whitespace-pre-wrap break-words pr-12 ${isSelf ? 'text-white' : 'text-slate-900'} ${message.document_id ? 'mt-2 opacity-90' : ''}`}>
                                         {renderMessageContent(message.content, isSelf, message.invitation_id)}
                                         {message.updated_at && (
                                             <span className={`text-[10px] ml-1 opacity-60 italic select-none ${isSelf ? 'text-white' : 'text-slate-500'}`}>
@@ -189,15 +195,18 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                                     </div>
                                 )}
 
-                                <div className={`flex items-center justify-end space-x-1 self-end mt-1 -mb-1 ${isSelf ? 'text-white/60' : 'text-slate-400'}`}>
+                                <div className={cn(
+                                    "flex items-center justify-end space-x-1 self-end mt-1 -mr-1",
+                                    isSelf ? "text-white/70" : "text-slate-400"
+                                )}>
                                     <span className="text-[10px] tabular-nums font-medium">
                                         {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </span>
                                     {isSelf && (
                                         message.id <= (othersReadId || 0) ? (
-                                            <CheckCheck size={13} className={`ml-0.5 ${isSelf ? 'text-indigo-200' : 'text-indigo-500'}`} />
+                                            <CheckCheck size={12} className="ml-0.5 text-blue-200" />
                                         ) : (
-                                            <Check size={13} className="ml-0.5" />
+                                            <Check size={12} className="ml-0.5" />
                                         )
                                     )}
                                 </div>
@@ -209,7 +218,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                                         e.stopPropagation();
                                         onReply(message);
                                     }}
-                                    className="p-1.5 bg-white border border-slate-200 rounded-lg shadow-sm text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all active:scale-90"
+                                    className="p-1.5 bg-white border border-slate-200 rounded-lg shadow-sm text-slate-400 hover:text-blue-600 hover:border-blue-200 transition-all active:scale-90"
                                     title={t('chat.reply')}
                                 >
                                     <MessageSquare size={14} />
@@ -222,8 +231,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                                             setQuickReactionMessageId(quickReactionMessageId === message.id ? null : message.id);
                                         }}
                                         className={`p-1.5 bg-white border rounded-lg shadow-sm transition-all active:scale-90 ${quickReactionMessageId === message.id
-                                            ? 'text-indigo-600 border-indigo-300 bg-indigo-50'
-                                            : 'border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200'
+                                            ? 'text-blue-600 border-blue-300 bg-blue-50'
+                                            : 'border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-200'
                                             }`}
                                         title={t('chat.reactions.add')}
                                     >
@@ -250,7 +259,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                                                 e.stopPropagation();
                                                 onEdit(message);
                                             }}
-                                            className="p-1.5 bg-white border border-slate-200 rounded-lg shadow-sm text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all active:scale-90"
+                                            className="p-1.5 bg-white border border-slate-200 rounded-lg shadow-sm text-slate-400 hover:text-blue-600 hover:border-blue-200 transition-all active:scale-90"
                                             title={t('common.edit')}
                                         >
                                             <Pencil size={14} />
@@ -280,8 +289,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                             key={group.emoji}
                             onClick={() => onReact(message.id, group.emoji)}
                             className={`flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-bold transition-all backdrop-blur-sm ${group.hasMine
-                                ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30 hover:bg-indigo-600'
-                                : 'bg-white/80 text-slate-700 border border-slate-200/50 hover:bg-white hover:border-indigo-200 shadow-sm'
+                                ? 'bg-blue-500 text-white shadow-md shadow-blue-500/30 hover:bg-blue-600'
+                                : 'bg-white/80 text-slate-700 border border-slate-200/50 hover:bg-white hover:border-blue-200 shadow-sm'
                                 }`}
                             title={group.users.join(', ')}
                         >
