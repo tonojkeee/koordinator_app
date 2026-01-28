@@ -90,12 +90,12 @@ function CreateChannelModal({ isOpen, onClose, onCreate }: CreateChannelModalPro
               type="button"
               onClick={() => setVisibility('public')}
               className={`p-4 rounded-xl border-2 transition-all text-left ${visibility === 'public'
-                ? 'border-indigo-500 bg-indigo-50'
+                ? 'border-blue-500 bg-blue-50'
                 : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                 }`}
             >
               <div className="flex flex-col items-center gap-2">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${visibility === 'public' ? 'bg-indigo-500' : 'bg-slate-400'
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${visibility === 'public' ? 'bg-blue-500' : 'bg-slate-400'
                   }`}>
                   <Globe size={20} className="text-white" />
                 </div>
@@ -112,12 +112,12 @@ function CreateChannelModal({ isOpen, onClose, onCreate }: CreateChannelModalPro
               type="button"
               onClick={() => setVisibility('private')}
               className={`p-4 rounded-xl border-2 transition-all text-left ${visibility === 'private'
-                ? 'border-indigo-500 bg-indigo-50'
+                ? 'border-blue-500 bg-blue-50'
                 : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                 }`}
             >
               <div className="flex flex-col items-center gap-2">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${visibility === 'private' ? 'bg-indigo-500' : 'bg-slate-400'
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${visibility === 'private' ? 'bg-blue-500' : 'bg-slate-400'
                   }`}>
                   <Lock size={20} className="text-white" />
                 </div>

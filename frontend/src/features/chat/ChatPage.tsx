@@ -1175,16 +1175,16 @@ const ChatPage: React.FC = () => {
 
     return (
         <div
-            className="flex-1 flex flex-col bg-[#F5F5F5] overflow-hidden animate-in fade-in duration-300 relative"
+            className="flex-1 flex flex-col bg-slate-50 overflow-hidden animate-in fade-in duration-300 relative"
             onDragEnter={handleDragEnter}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
         >
             {isDragging && (
-                <div className="absolute inset-0 z-[100] bg-indigo-600/10 backdrop-blur-[2px] border-4 border-dashed border-indigo-500/50 m-4 rounded-lg flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
-                    <div className="bg-white p-8 rounded-lg shadow-2xl flex flex-col items-center space-y-4 border border-[#E0E0E0]">
-                        <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center animate-bounce">
+                <div className="absolute inset-0 z-[100] bg-blue-600/10 backdrop-blur-[2px] border-4 border-dashed border-blue-500/50 m-4 rounded-lg flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
+                    <div className="bg-white p-8 rounded-lg shadow-2xl flex flex-col items-center space-y-4 border border-slate-200">
+                        <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center animate-bounce">
                             <Plus size={32} />
                         </div>
                         <div className="text-center">
@@ -1214,7 +1214,7 @@ const ChatPage: React.FC = () => {
                     />
 
                     <div className="flex-1 flex overflow-hidden min-h-0 px-6 pb-6 pt-2">
-                        <div className="flex-1 flex bg-white border border-[#E0E0E0] rounded-lg shadow-sm overflow-hidden relative">
+                        <div className="flex-1 flex bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden relative">
                             <div className="flex-1 flex flex-col min-w-0 relative">
                                 <div
                                     id="message-container"
@@ -1224,7 +1224,7 @@ const ChatPage: React.FC = () => {
                                 >
                                     {isFetchingNextPage && (
                                         <div className="flex justify-center py-2 absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-slate-50/80 to-transparent p-2">
-                                            <div className="w-5 h-5 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
+                                            <div className="w-5 h-5 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
                                         </div>
                                     )}
 
@@ -1284,13 +1284,13 @@ const ChatPage: React.FC = () => {
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="p-6 flex items-center justify-center bg-indigo-50/50 backdrop-blur-xl">
+                                    <div className="p-6 flex items-center justify-center bg-blue-50/50 backdrop-blur-xl">
                                         <div className="text-center animate-in slide-in-from-bottom-4 duration-500">
                                             <p className="text-slate-600 mb-4 font-bold text-lg">{t('chat.preview_mode_message')}</p>
                                             <Button
                                                 onClick={() => joinChannelMutation.mutate()}
                                                 disabled={joinChannelMutation.isPending}
-                                                className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/30 px-8 py-3 rounded-xl text-base font-bold transition-all hover:scale-105 active:scale-95"
+                                                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30 px-8 py-3 rounded-xl text-base font-bold transition-all hover:scale-105 active:scale-95"
                                             >
                                                 {joinChannelMutation.isPending ? t('common.loading') : t('chat.join_channel')}
                                             </Button>

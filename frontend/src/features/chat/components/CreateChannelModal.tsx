@@ -62,14 +62,14 @@ export function CreateChannelModal({ isOpen, onClose, onCreate }: CreateChannelM
               className={cn(
                 'p-4 rounded-xl border-2 transition-all text-left',
                 visibility === 'public'
-                  ? 'border-indigo-500 bg-indigo-50'
+                  ? 'border-blue-500 bg-blue-50'
                   : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
               )}
             >
               <div className="flex items-start gap-3">
                 <div className={cn(
                   'w-10 h-10 rounded-lg flex items-center justify-center',
-                  visibility === 'public' ? 'bg-indigo-500' : 'bg-slate-400'
+                  visibility === 'public' ? 'bg-blue-500' : 'bg-slate-400'
                 )}>
                   <Hash className="w-5 h-5 text-white" />
                 </div>
@@ -90,14 +90,14 @@ export function CreateChannelModal({ isOpen, onClose, onCreate }: CreateChannelM
               className={cn(
                 'p-4 rounded-xl border-2 transition-all text-left',
                 visibility === 'private'
-                  ? 'border-indigo-500 bg-indigo-50'
+                  ? 'border-blue-500 bg-blue-50'
                   : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
               )}
             >
               <div className="flex items-start gap-3">
                 <div className={cn(
                   'w-10 h-10 rounded-lg flex items-center justify-center',
-                  visibility === 'private' ? 'bg-indigo-500' : 'bg-slate-400'
+                  visibility === 'private' ? 'bg-blue-500' : 'bg-slate-400'
                 )}>
                   <Lock className="w-5 h-5 text-white" />
                 </div>

@@ -53,24 +53,28 @@ const ChannelHeader: React.FC<ChannelHeaderProps> = ({
   };
 
   const getSubtitle = () => (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5">
       <div className={cn(
-        "w-1.5 h-1.5 rounded-full transition-all duration-500",
+        "w-2 h-2 rounded-full transition-all duration-500",
         channel?.is_direct
-          ? (isDmPartnerOnline ? 'bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-muted-foreground/30')
-          : (isConnected ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-destructive shadow-[0_0_8px_rgba(176,0,32,0.4)]')
+          ? (isDmPartnerOnline ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-slate-300')
+          : (isConnected ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-red-500')
       )} />
-      <span className="font-bold text-muted-foreground opacity-80 tracking-tight">
+      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
         {channel?.is_system ? (
           t('chat.system_channel')
         ) : channel?.is_direct ? (
           isDmPartnerOnline ? t('chat.online') : formatLastSeen(dmPartner?.last_seen)
         ) : (
-          t('chat.channelStatus', {
-            count: channel?.members_count || 0,
-            label: t('common.participants', { count: channel?.members_count || 0 }),
-            online: channel?.online_count || 0
-          })
+          <>
+            <span className="text-slate-900">{channel?.members_count || 0}</span> {t('common.participants', { count: channel?.members_count || 0 })}
+            {channel?.online_count ? (
+              <>
+                <span className="mx-1.5 opacity-30">|</span>
+                <span className="text-green-600">{channel.online_count}</span> {t('chat.online')}
+              </>
+            ) : null}
+          </>
         )}
       </span>
     </div>
@@ -84,73 +88,75 @@ const ChannelHeader: React.FC<ChannelHeaderProps> = ({
       }
       subtitle={getSubtitle()}
       icon={getIcon()}
-      iconColor="indigo"
+      iconColor="blue"
       sticky={true}
-      className="px-6 py-3"
+      className="px-6 pt-6 pb-2"
       actions={
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           {channel?.visibility === 'private' && channel?.is_member && onOpenInviteModal && !channel?.is_system && (
             <button
               onClick={onOpenInviteModal}
-              className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all active:scale-90"
-              title="Пригласить участников"
+              className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-95"
+              title={t('chat.invite')}
             >
-              <UserPlus size={19} strokeWidth={2} />
+              <UserPlus size={20} strokeWidth={2.2} />
             </button>
           )}
 
           <button
             onClick={() => setIsMuteModalOpen(true)}
             className={cn(
-              "w-9 h-9 flex items-center justify-center rounded-xl transition-all active:scale-90",
+              "w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95",
               isMuted
-                ? 'text-destructive bg-destructive/5 hover:bg-destructive/10'
-                : 'text-muted-foreground hover:text-primary hover:bg-primary/5'
+                ? 'text-red-500 bg-red-50 hover:bg-red-100'
+                : 'text-slate-500 hover:text-blue-600 hover:bg-blue-50'
             )}
             title={isMuted ? t('chat.notifications.unmute') : t('chat.notifications.mute')}
           >
-            {isMuted ? <BellOff size={19} strokeWidth={2} /> : <Bell size={19} strokeWidth={2} />}
+            {isMuted ? <BellOff size={20} strokeWidth={2.2} /> : <Bell size={20} strokeWidth={2.2} />}
           </button>
 
           {!channel?.is_system && (
             <button
               onClick={handleExportChat}
-              className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all active:scale-90"
+              className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-95"
               title={t('chat.export_history')}
             >
-              <Download size={19} strokeWidth={2} />
+              <Download size={20} strokeWidth={2.2} />
             </button>
           )}
 
-          <button
-            className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all active:scale-90"
-            title={t('common.info')}
-          >
-            <Info size={19} strokeWidth={2} />
-          </button>
+          <div className="w-px h-6 bg-slate-200 mx-1" />
 
           {channel && !channel.is_direct && !channel.is_system && (
             <button
               onClick={() => setShowParticipants(!showParticipants)}
               className={cn(
-                "w-9 h-9 flex items-center justify-center rounded-xl transition-all active:scale-90 shadow-sm border",
+                "w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 border",
                 showParticipants
-                  ? 'bg-primary text-white border-primary shadow-m3-1'
-                  : 'bg-surface text-muted-foreground border-border hover:border-primary/30 hover:text-primary'
+                  ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
+                  : 'bg-white text-slate-500 border-slate-200 hover:border-blue-200 hover:text-blue-600'
               )}
               title={t('chat.participants')}
             >
-              <Users size={19} strokeWidth={2} />
+              <Users size={20} strokeWidth={2.2} />
             </button>
           )}
+
+          <button
+            className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-95"
+            title={t('common.info')}
+          >
+            <Info size={20} strokeWidth={2.2} />
+          </button>
 
           {channel && !channel.is_direct && !channel.is_system && channel.is_member && !channel.is_owner && (
             <button
               onClick={onLeaveChannel}
-              className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-xl transition-all active:scale-90"
+              className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all active:scale-95 ml-1"
               title={t('chat.leave_channel')}
             >
-              <LogOut size={19} strokeWidth={2} />
+              <LogOut size={20} strokeWidth={2.2} />
             </button>
           )}
         </div>
