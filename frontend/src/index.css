@@ -46,22 +46,39 @@
 }
 
 :root {
-  /* Core Base Colors - Microsoft Teams Light (Cool Neutral) */
-  --background: hsl(210 20% 98%);
-  /* #f8f9fa */
-  --foreground: hsl(220 15% 15%);
-  /* #242424 - Teams Standard Text */
+  /* Density Tokens - Comfortable */
+  --spacing-xs: 0.25rem;   /* 4px */
+  --spacing-sm: 0.5rem;    /* 8px */
+  --spacing-md: 1rem;      /* 16px */
+  --spacing-lg: 1.5rem;    /* 24px */
+  --spacing-xl: 2rem;      /* 32px */
 
-  /* Surface Hierarchy (Material 3 Concept) */
+  /* Component Padding (Comfortable) */
+  --container-padding: var(--spacing-lg);
+  --card-padding: var(--spacing-md);
+  --item-padding-y: var(--spacing-sm);
+  --item-padding-x: var(--spacing-md);
+  --input-padding-y: 0.625rem; /* ~10px */
+  --input-padding-x: var(--spacing-md);
+
+  /* Core Base Colors - Professional Corporate (Neutral Grays + Strong Accent) */
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(220 15% 15%);
+
+  /* Surface Hierarchy */
   --surface: hsl(0 0% 100%);
   --surface-1: hsl(210 20% 99%);
-  --surface-2: hsl(210 20% 96%);
+  --surface-2: hsl(210 20% 97%);
   --surface-3: hsl(210 20% 94%);
 
-  /* Teams Signature Colors */
-  --teams-brand: hsl(231 48% 48%); /* #4f52b2 - Classic Teams Purple */
+  /* Accent - Professional Corporate Blue */
+  --brand-primary: hsl(210 100% 40%); /* #0066CC */
+  --brand-primary-hover: hsl(210 100% 35%);
+
+  /* Teams Signature Colors (Legacy support) */
+  --teams-brand: hsl(231 48% 48%);
   --teams-brand-hover: hsl(231 48% 40%);
-  --teams-sidebar-bg: hsl(0 0% 100%); /* New Teams uses light sidebar in light mode */
+  --teams-sidebar-bg: hsl(0 0% 100%);
   --teams-sidebar-rail: hsl(210 20% 96%);
 
   /* Semantic Colors */
@@ -70,7 +87,7 @@
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(220 15% 15%);
 
-  --primary: var(--teams-brand);
+  --primary: var(--brand-primary);
   --primary-foreground: hsl(0 0% 100%);
 
   --secondary: hsl(210 20% 96%);
@@ -79,17 +96,17 @@
   --muted: hsl(210 20% 96%);
   --muted-foreground: hsl(220 10% 45%);
 
-  --accent: hsl(231 48% 96%);
-  --accent-foreground: var(--teams-brand);
+  --accent: hsl(210 100% 97%);
+  --accent-foreground: var(--brand-primary);
 
-  --destructive: hsl(0 75% 42%); /* #b00020 - Material Danger */
+  --destructive: hsl(0 75% 42%);
   --destructive-foreground: hsl(0 0% 100%);
 
   --border: hsl(210 20% 90%);
   --input: hsl(210 20% 90%);
-  --ring: var(--teams-brand);
+  --ring: var(--brand-primary);
 
-  --radius: 6px; /* Teams uses slightly sharper corners than generic Material */
+  --radius: 4px; /* Sharper corners for corporate look */
 }
 
 .dark {

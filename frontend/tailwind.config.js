@@ -20,7 +20,13 @@ export default {
         input: 'var(--input)',
         ring: 'var(--ring)',
 
-        // Teams & Material Brand Colors
+        // Professional Corporate Brand Colors
+        brand: {
+          primary: 'var(--brand-primary)',
+          hover: 'var(--brand-primary-hover)',
+        },
+
+        // Legacy Teams support
         teams: {
           brand: 'var(--teams-brand)',
           brandHover: 'var(--teams-brand-hover)',
@@ -49,23 +55,22 @@ export default {
         }
       },
       fontFamily: {
-        // Using more elegant font stack for Professional look
+        // Professional corporate font stack
         sans: ['"Inter"', '"Segoe UI"', 'system-ui', '-apple-system', 'sans-serif'],
       },
-      boxShadow: {
-        // Material Design 3 Elevation System
-        'm3-1': '0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30)',
-        'm3-2': '0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30)',
-        'm3-3': '0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px 0px rgba(0, 0, 0, 0.30)',
-        'm3-4': '0px 6px 10px 4px rgba(0, 0, 0, 0.15), 0px 2px 3px 0px rgba(0, 0, 0, 0.30)',
-        'teams-card': '0 1.6px 3.6px 0 rgba(0,0,0,0.132), 0 0.3px 0.9px 0 rgba(0,0,0,0.108)',
+      spacing: {
+        'xs': 'var(--spacing-xs)',
+        'sm': 'var(--spacing-sm)',
+        'md': 'var(--spacing-md)',
+        'lg': 'var(--spacing-lg)',
+        'xl': 'var(--spacing-xl)',
       },
       borderRadius: {
         'lg': 'var(--radius)',
         'md': 'calc(var(--radius) - 2px)',
         'sm': 'calc(var(--radius) - 4px)',
-        'xl': '12px',
-        '2xl': '16px',
+        'xl': '8px',
+        '2xl': '12px',
       },
       animation: {
         'fade-in': 'fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
