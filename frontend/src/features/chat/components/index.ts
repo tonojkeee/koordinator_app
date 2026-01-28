@@ -2,7 +2,7 @@ export { MessageSkeleton } from './MessageSkeleton';
 export { MessageInput } from './MessageInput';
 export { ChatAttachmentItem } from './ChatAttachmentItem';
 export { MessageList } from './MessageList';
-export { MessageBubble } from './MessageBubble';
+export { MessageGroupCard } from './MessageGroup';
 export type { MessageInputHandle } from './MessageInput';
 
 // Modal components
@@ -11,4 +11,3 @@ export { default as SearchModal } from './SearchModal';
 export { default as TransferOwnershipModal } from './TransferOwnershipModal';
 export { CreateChannelModal } from './CreateChannelModal';
 export { default as OwnerIndicator } from './OwnerIndicator';
-

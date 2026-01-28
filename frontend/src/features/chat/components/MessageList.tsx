@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { Message, User } from '../../../types';
-import { MessageBubble } from './MessageBubble';
+import { MessageGroupCard } from './MessageGroup';
+import { groupMessages } from '../utils/groupMessages';
 import { formatDate } from '../utils';
 import { animations } from '../../../design-system/tokens/animations';
 import { Bell } from 'lucide-react';
@@ -43,40 +44,48 @@ export const MessageList: React.FC<MessageListProps> = ({
 }) => {
     const { t, i18n } = useTranslation();
 
-    return (
-        <div className="flex flex-col space-y-1 mt-auto">
-            {messages.map((msg, index) => {
-                const isSent = msg.user_id === currentUser?.id;
-                const prevMsg = index > 0 ? messages[index - 1] : null;
-                const nextMsg = index < messages.length - 1 ? messages[index + 1] : null;
+    // Group messages efficiently
+    const groups = useMemo(() => groupMessages(messages), [messages]);
 
-                const msgDate = new Date(msg.created_at).toDateString();
-                const prevMsgDate = prevMsg ? new Date(prevMsg.created_at).toDateString() : null;
-                const showDateSeparator = msgDate !== prevMsgDate;
+    return (
+        <div className="flex flex-col space-y-2 mt-auto px-2 pb-4">
+            {groups.map((group, index) => {
+                const isSent = group.user_id === currentUser?.id;
+                const prevGroup = index > 0 ? groups[index - 1] : null;
+
+                // Date Separators (check if group date is different from previous)
+                const groupDate = new Date(group.date).toDateString();
+                const prevGroupDate = prevGroup ? new Date(prevGroup.date).toDateString() : null;
+                const showDateSeparator = groupDate !== prevGroupDate;
+
+                // Unread Banner Logic
+                // We need to check if *any* message in this group crosses the unread line
+                // But typically, the unread line appears *before* the first unread message.
+                // So check if the FIRST message in this group is the first unread one relative to previous group.
 
                 const lastReadId = initialLastReadId || 0;
+                const firstMsg = group.messages[0];
+                const prevGroupLastMsg = prevGroup ? prevGroup.messages[prevGroup.messages.length - 1] : null;
+
                 const showUnreadSeparator = lastReadId > 0 &&
-                    msg.id > lastReadId &&
-                    (prevMsg ? prevMsg.id <= lastReadId : true) &&
+                    firstMsg.id > lastReadId &&
+                    (prevGroupLastMsg ? prevGroupLastMsg.id <= lastReadId : true) &&
                     !isSent;
 
-                const isFirstInGroup = !prevMsg || prevMsg.user_id !== msg.user_id || showDateSeparator || showUnreadSeparator;
-                const isLastInGroup = !nextMsg || nextMsg.user_id !== msg.user_id || (nextMsg && new Date(nextMsg.created_at).toDateString() !== msgDate);
-
-                const isHighlighted = (msg.document_id && highlightDocId === msg.document_id) || highlightMessageId === msg.id;
-
                 return (
-                    <React.Fragment key={msg.id}>
+                    <React.Fragment key={group.id}>
                         {showDateSeparator && (
-                            <div className={`date-separator ${animations.fadeIn}`}>
-                                <span className="date-label">{formatDate(msg.created_at, t, i18n.language)}</span>
+                            <div className={`date-separator ${animations.fadeIn} my-4`}>
+                                <span className="date-label bg-slate-100 text-slate-500 border border-slate-200">
+                                    {formatDate(group.date.toISOString(), t, i18n.language)}
+                                </span>
                             </div>
                         )}
 
                         {showUnreadSeparator && (
-                            <div className={`flex items-center my-8 ${isUnreadBannerVisible ? animations.slideIn : animations.outCollapse}`}>
+                            <div className={`flex items-center my-6 ${isUnreadBannerVisible ? animations.slideIn : animations.outCollapse}`}>
                                 <div className="flex-1 border-t border-rose-200/60" />
-                                <div className="mx-4 flex items-center space-x-2 px-3 py-1 bg-rose-50/50 rounded-full border border-rose-100">
+                                <div className="mx-4 flex items-center space-x-2 px-3 py-1 bg-rose-50/50 rounded-full border border-rose-100 shadow-sm">
                                     <Bell size={12} className="text-rose-500" />
                                     <span className="text-[10px] font-bold text-rose-500 uppercase tracking-widest">{t('chat.newMessages')}</span>
                                 </div>
@@ -84,15 +93,13 @@ export const MessageList: React.FC<MessageListProps> = ({
                             </div>
                         )}
 
-                        <MessageBubble
-                            message={msg}
+                        <MessageGroupCard
+                            group={group}
                             isSelf={isSent}
-                            isFirstInGroup={isFirstInGroup}
-                            isLastInGroup={isLastInGroup}
-                            showAvatar={isLastInGroup}
-                            othersReadId={othersReadId}
                             currentUser={currentUser}
-                            isHighlighted={isHighlighted}
+                            othersReadId={othersReadId}
+                            highlightDocId={highlightDocId}
+                            highlightMessageId={highlightMessageId}
                             onReply={onReply}
                             onReact={onReact}
                             onEdit={onEdit}

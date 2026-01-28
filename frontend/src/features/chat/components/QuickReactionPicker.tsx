@@ -76,6 +76,7 @@ export const QuickReactionPicker: React.FC<QuickReactionPickerProps> = ({
             ref={pickerRef}
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
+            onContextMenu={(e) => e.stopPropagation()}
             className={`
                 absolute z-[100] 
                 ${position === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'}
