@@ -5,29 +5,34 @@ from app.modules.email.service import process_incoming_email
 
 logger = logging.getLogger(__name__)
 
+
 class DatabaseHandler:
     async def handle_DATA(self, server, session, envelope):
         sender = envelope.mail_from
         recipients = envelope.rcpt_tos
         content = envelope.content  # Bytes
-        
+
         logger.info(f"SMTP: Receiving email from {sender} to {recipients}")
-        
+
         try:
             # We need a new DB session for this operation
             async with AsyncSessionLocal() as db:
                 await process_incoming_email(db, sender, recipients, content)
-            
+
             logger.info(f"SMTP: Successfully processed email from {sender}")
-            return '250 OK'
+            return "250 OK"
         except Exception as e:
-            logger.error(f"SMTP: Error processing incoming email from {sender}: {e}", exc_info=True)
-            return '500 Internal Server Error'
+            logger.error(
+                f"SMTP: Error processing incoming email from {sender}: {e}",
+                exc_info=True,
+            )
+            return "500 Internal Server Error"
+
 
 class SMTPServerManager:
-    def __init__(self, hostname='0.0.0.0', port=2525): 
-        # Using 2525 by default to avoid permission issues if not root, 
-        # though user asked for "like a server", often needs 25. 
+    def __init__(self, hostname="0.0.0.0", port=2525):
+        # Using 2525 by default to avoid permission issues if not root,
+        # though user asked for "like a server", often needs 25.
         # We can map 25->2525 via docker or iptables, or run as root (not recommended).
         # Let's verify with user or assume high port for dev.
         self.hostname = hostname

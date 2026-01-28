@@ -687,15 +687,15 @@ const MainLayout: React.FC = () => {
     const systemNotice = systemSettings?.system_notice;
 
     return (
-        <div className="flex h-screen overflow-hidden bg-[#F0F0F0]">
+        <div className="flex h-screen overflow-hidden bg-background font-sans text-foreground">
             {/* Connectivity Banner */}
             {isOffline ? (
-                <div className="fixed top-0 inset-x-0 bg-amber-500 text-white px-4 py-1.5 text-center text-xs font-black tracking-[0.15em] uppercase shadow-lg border-b border-white/10 z-[101] animate-in slide-in-from-top-full duration-500 flex items-center justify-center gap-3">
+                <div className="fixed top-0 inset-x-0 bg-amber-500 text-white px-4 py-1.5 text-center text-xs font-bold tracking-wide uppercase shadow-md border-b border-white/10 z-[101] animate-fade-in flex items-center justify-center gap-2">
                     <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
                     <span>{t('layout.banner_offline')}</span>
                 </div>
             ) : !isConnected ? (
-                <div className="fixed top-0 inset-x-0 bg-[#5B5FC7] text-white px-4 py-1.5 text-center text-xs font-black tracking-[0.15em] uppercase shadow-lg border-b border-white/10 z-[101] animate-in slide-in-from-top-full duration-500 flex items-center justify-center gap-3">
+                <div className="fixed top-0 inset-x-0 bg-primary/90 backdrop-blur-sm text-white px-4 py-1.5 text-center text-xs font-bold tracking-wide uppercase shadow-md border-b border-white/10 z-[101] animate-fade-in flex items-center justify-center gap-2">
                     <div className="w-2 h-2 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     <span>{t('layout.banner_connecting')}</span>
                 </div>
@@ -703,15 +703,16 @@ const MainLayout: React.FC = () => {
 
             {/* System Notice Banner */}
             {systemNotice && (
-                <div className="fixed top-0 inset-x-0 bg-gradient-to-r from-[#C4314B]/90 to-rose-600/90 backdrop-blur-md text-white px-4 py-1.5 text-center text-xs font-bold tracking-wide shadow-lg border-b border-white/10 z-[100] animate-in slide-in-from-top-full duration-500 whitespace-nowrap overflow-hidden text-ellipsis">
+                <div className="fixed top-0 inset-x-0 bg-gradient-to-r from-destructive/90 to-red-600/90 backdrop-blur-md text-white px-4 py-1.5 text-center text-xs font-bold tracking-wide shadow-md border-b border-white/10 z-[100] animate-fade-in whitespace-nowrap overflow-hidden text-ellipsis">
                     {systemNotice}
                 </div>
             )}
 
             <SidebarNav />
 
-            <div className="flex-1 flex min-w-0 flex-col md:ml-[68px] bg-[#F5F5F5]">
-                <main className="flex-1 relative h-full shadow-[inset_1px_0_0_0_rgba(0,0,0,0.05)]">
+            {/* Stage Area */}
+            <div className="flex-1 flex min-w-0 flex-col md:ml-[68px] bg-background transition-colors duration-300">
+                <main className="flex-1 relative h-full m-0 md:m-1.5 md:rounded-xl bg-surface border-0 md:border border-border shadow-sm overflow-hidden animate-fade-in">
                     <Outlet />
                 </main>
             </div>

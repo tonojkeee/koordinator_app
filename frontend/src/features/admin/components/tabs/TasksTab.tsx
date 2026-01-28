@@ -8,9 +8,9 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell
 } from 'recharts';
-import { ClipboardList, CheckCircle2, Clock, AlertCircle, RefreshCw, Search, Trash2 } from 'lucide-react';
+import { ClipboardList, CheckCircle2, Clock, AlertCircle, RefreshCw, Search, Trash2, Loader2 } from 'lucide-react';
 
-import { Card, Button } from '../../../../design-system';
+import { Card, cn } from '../../../../design-system';
 import { StatCard } from '../StatCard';
 import type { TasksTabProps } from '../../types';
 
@@ -31,14 +31,14 @@ export const TasksTab: React.FC<TasksTabProps> = ({
     ) || [];
 
     const taskStatusData = [
-        { name: t('admin.tasksCompleted'), value: stats?.tasks_completed || 0, color: '#10b981' },
-        { name: t('admin.tasksInProgress'), value: stats?.tasks_in_progress || 0, color: '#6366f1' },
-        { name: t('admin.tasksOnReview'), value: stats?.tasks_on_review || 0, color: '#f59e0b' },
-        { name: t('admin.tasksOverdue'), value: stats?.tasks_overdue || 0, color: '#ef4444' },
+        { name: t('admin.tasksCompleted'), value: stats?.tasks_completed || 0, color: 'var(--color-green-500)' },
+        { name: t('admin.tasksInProgress'), value: stats?.tasks_in_progress || 0, color: 'var(--teams-brand)' },
+        { name: t('admin.tasksOnReview'), value: stats?.tasks_on_review || 0, color: 'var(--color-amber-500)' },
+        { name: t('admin.tasksOverdue'), value: stats?.tasks_overdue || 0, color: 'var(--destructive)' },
     ].filter(d => d.value > 0);
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-300">
+        <div className="space-y-8 animate-fade-in pb-10">
             {/* Stats Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <StatCard title={t('admin.tasksTotal')} value={stats?.tasks_total || 0} icon={<ClipboardList />} color="indigo" t={t} />
@@ -50,29 +50,31 @@ export const TasksTab: React.FC<TasksTabProps> = ({
 
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card variant="elevated" padding="lg" hoverable={false}>
-                    <h3 className="text-lg font-bold text-slate-900 mb-6">{t('admin.tasksByStatus')}</h3>
+                <Card variant="default" padding="lg" hoverable={false} className="shadow-m3-1 border-border/60">
+                    <h3 className="text-lg font-black text-foreground mb-8 uppercase tracking-widest opacity-90">{t('admin.tasksByStatus')}</h3>
                     <div className="h-64 w-full">
                         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                             <PieChart>
                                 <Pie
                                     data={taskStatusData}
-                                    innerRadius={60}
-                                    outerRadius={80}
-                                    paddingAngle={5}
+                                    innerRadius={70}
+                                    outerRadius={95}
+                                    paddingAngle={6}
                                     dataKey="value"
+                                    animationDuration={1500}
                                 >
                                     {taskStatusData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                        <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
                                     ))}
                                 </Pie>
                                 <Tooltip
                                     contentStyle={{
-                                        backgroundColor: 'white',
-                                        borderRadius: '12px',
-                                        border: 'none',
-                                        fontWeight: 600,
-                                        boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
+                                        backgroundColor: 'var(--surface)',
+                                        borderRadius: '16px',
+                                        border: '1px solid var(--border)',
+                                        fontWeight: 900,
+                                        fontSize: '11px',
+                                        boxShadow: 'var(--shadow-m3-2)'
                                     }}
                                 />
                             </PieChart>
@@ -80,33 +82,35 @@ export const TasksTab: React.FC<TasksTabProps> = ({
                     </div>
                 </Card>
 
-                <Card variant="elevated" padding="lg" hoverable={false}>
-                    <h3 className="text-lg font-bold text-slate-900 mb-6">{t('admin.tasksByUnit')}</h3>
+                <Card variant="default" padding="lg" hoverable={false} className="shadow-m3-1 border-border/60">
+                    <h3 className="text-lg font-black text-foreground mb-8 uppercase tracking-widest opacity-90">{t('admin.tasksByUnit')}</h3>
                     <div className="h-64 w-full">
                         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                             <BarChart data={taskUnitStats}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
                                 <XAxis
                                     dataKey="name"
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fontSize: 10, fontWeight: 600 }}
+                                    tick={{ fontSize: 9, fontWeight: 900, fill: 'var(--muted-foreground)', opacity: 0.7 }}
                                 />
                                 <YAxis
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fontSize: 10, fontWeight: 600 }}
+                                    tick={{ fontSize: 9, fontWeight: 900, fill: 'var(--muted-foreground)', opacity: 0.7 }}
                                 />
                                 <Tooltip
-                                    cursor={{ fill: '#f8fafc' }}
+                                    cursor={{ fill: 'var(--surface-2)' }}
                                     contentStyle={{
-                                        borderRadius: '12px',
-                                        border: 'none',
-                                        boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
+                                        borderRadius: '16px',
+                                        border: '1px solid var(--border)',
+                                        boxShadow: 'var(--shadow-m3-2)',
+                                        fontWeight: 900,
+                                        fontSize: '11px'
                                     }}
                                 />
-                                <Bar dataKey="total" fill="#6366f1" radius={[4, 4, 0, 0]} name={t('admin.tasksTotal')} />
-                                <Bar dataKey="completed" fill="#10b981" radius={[4, 4, 0, 0]} name={t('admin.tasksCompleted')} />
+                                <Bar dataKey="total" fill="var(--teams-brand)" radius={[6, 6, 0, 0]} name={t('admin.tasksTotal')} animationDuration={1500} />
+                                <Bar dataKey="completed" fill="var(--color-green-500)" radius={[6, 6, 0, 0]} name={t('admin.tasksCompleted')} animationDuration={1500} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -114,69 +118,76 @@ export const TasksTab: React.FC<TasksTabProps> = ({
             </div>
 
             {/* Tasks Table */}
-            <Card variant="elevated" padding="none" hoverable={false} className="overflow-hidden">
-                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white/30">
-                    <div className="relative group flex-1 max-w-md">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <Card variant="default" padding="none" hoverable={false} className="overflow-hidden shadow-m3-1 border-border/60">
+                <div className="p-8 border-b border-border flex justify-between items-center bg-surface-1/50">
+                    <div className="relative group flex-1 max-w-lg">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60 group-focus-within:text-primary transition-colors" size={18} strokeWidth={2.5} />
                         <input
                             type="text"
                             placeholder={t('common.search_placeholder')}
-                            className="pl-12 pr-4 py-3 bg-slate-100/50 border-none rounded-xl text-sm font-semibold w-full"
+                            className="w-full pl-12 pr-4 py-3 bg-surface border border-border rounded-2xl text-sm font-black text-foreground focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all shadow-inner placeholder:text-muted-foreground/40 uppercase tracking-widest text-[11px]"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-slate-50/50 border-b border-slate-100/50">
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('common.name')}</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('admin.issuer')}</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('admin.assignee')}</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('admin.status')}</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('admin.deadline')}</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right">{t('common.actions')}</th>
+                            <tr className="bg-surface-2/80 border-b border-border">
+                                <th className="px-8 py-5 text-[9px] font-black text-muted-foreground uppercase tracking-[0.25em]">{t('common.name')}</th>
+                                <th className="px-8 py-5 text-[9px] font-black text-muted-foreground uppercase tracking-[0.25em]">{t('admin.issuer')}</th>
+                                <th className="px-8 py-5 text-[9px] font-black text-muted-foreground uppercase tracking-[0.25em]">{t('admin.assignee')}</th>
+                                <th className="px-8 py-5 text-[9px] font-black text-muted-foreground uppercase tracking-[0.25em]">{t('admin.status')}</th>
+                                <th className="px-8 py-5 text-[9px] font-black text-muted-foreground uppercase tracking-[0.25em]">{t('admin.deadline')}</th>
+                                <th className="px-8 py-5 text-[9px] font-black text-muted-foreground uppercase tracking-[0.25em] text-right">{t('common.actions')}</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100/50">
+                        <tbody className="divide-y divide-border/40">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-20 text-center">
-                                        <RefreshCw className="animate-spin mx-auto text-indigo-500" />
+                                    <td colSpan={6} className="px-8 py-24 text-center">
+                                        <Loader2 className="animate-spin mx-auto text-primary" size={32} strokeWidth={3} />
                                     </td>
                                 </tr>
                             ) : (
                                 filteredTasks.map((task) => (
-                                    <tr key={task.id} className="hover:bg-indigo-50/30 transition-all duration-200 group">
-                                        <td className="px-6 py-4 font-semibold text-slate-900">{task.title}</td>
-                                        <td className="px-6 py-4 text-sm text-slate-600">{task.issuer?.full_name || task.issuer?.username}</td>
-                                        <td className="px-6 py-4 text-sm text-slate-600">{task.assignee?.full_name || task.assignee?.username}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${task.status === 'completed' ? 'bg-emerald-50 text-emerald-600' :
-                                                task.status === 'overdue' ? 'bg-rose-50 text-rose-600' :
-                                                    task.status === 'on_review' ? 'bg-amber-50 text-amber-600' :
-                                                        'bg-indigo-50 text-indigo-600'
-                                                }`}>
+                                    <tr key={task.id} className="hover:bg-primary/5 transition-all duration-300 group active:bg-primary/10">
+                                        <td className="px-8 py-5">
+                                            <span className="font-black text-foreground text-sm tracking-tight group-hover:text-primary transition-colors">{task.title}</span>
+                                        </td>
+                                        <td className="px-8 py-5">
+                                            <span className="text-xs font-bold text-muted-foreground opacity-80">{task.issuer?.full_name || task.issuer?.username}</span>
+                                        </td>
+                                        <td className="px-8 py-5">
+                                            <span className="text-xs font-bold text-muted-foreground opacity-80">{task.assignee?.full_name || task.assignee?.username}</span>
+                                        </td>
+                                        <td className="px-8 py-5">
+                                            <span className={cn(
+                                                "inline-flex px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.15em] border shadow-sm transition-all",
+                                                task.status === 'completed' ? 'bg-green-500/10 text-green-700 border-green-500/20' :
+                                                    task.status === 'overdue' ? 'bg-destructive/10 text-destructive border-destructive/20' :
+                                                        task.status === 'on_review' ? 'bg-amber-500/10 text-amber-700 border-amber-500/20' :
+                                                            'bg-primary/10 text-primary border-primary/20'
+                                            )}>
                                                 {t(`tasks.status.${task.status}`, task.status)}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-slate-500">
-                                            {new Date(task.deadline).toLocaleDateString()}
+                                        <td className="px-8 py-5">
+                                            <span className="text-xs font-black text-muted-foreground/60 tabular-nums uppercase tracking-widest">{new Date(task.deadline).toLocaleDateString()}</span>
                                         </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                icon={<Trash2 size={16} />}
+                                        <td className="px-8 py-5 text-right">
+                                            <button
                                                 onClick={() => {
                                                     if (window.confirm(t('admin.deleteTaskConfirm'))) {
                                                         onDeleteTask(task.id);
                                                     }
                                                 }}
-                                                className="text-slate-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                                            />
+                                                className="w-9 h-9 flex items-center justify-center rounded-xl bg-surface-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-border/50 transition-all active:scale-90 shadow-sm opacity-0 group-hover:opacity-100"
+                                            >
+                                                <Trash2 size={16} strokeWidth={2.5} />
+                                            </button>
                                         </td>
                                     </tr>
                                 ))

@@ -74,10 +74,10 @@ function InviteModal({ isOpen, onClose, channelName, onInvite }: InviteModalProp
       onClose={handleClose}
       title={
         <div>
-          <h2 className="text-lg font-bold text-[#242424]">
+          <h2 className="text-xl font-black text-foreground uppercase tracking-tight">
             {t('chat.invite_to_channel')}
           </h2>
-          <p className="text-sm text-[#616161] mt-0.5">
+          <p className="text-[10px] text-primary font-black uppercase tracking-[0.15em] mt-1 opacity-70">
             {channelName}
           </p>
         </div>
@@ -86,10 +86,10 @@ function InviteModal({ isOpen, onClose, channelName, onInvite }: InviteModalProp
       footer={
         <>
           <Button
-            variant="secondary"
+            variant="ghost"
             onClick={handleClose}
             fullWidth
-            className="font-semibold"
+            className="font-black uppercase tracking-widest text-xs"
           >
             {t('common.cancel')}
           </Button>
@@ -98,33 +98,35 @@ function InviteModal({ isOpen, onClose, channelName, onInvite }: InviteModalProp
             onClick={handleInvite}
             disabled={selectedUsers.length === 0 || isLoading}
             fullWidth
-            className="font-semibold"
+            className="font-black uppercase tracking-widest text-xs shadow-m3-2"
           >
             {isLoading ? t('common.loading') : t('chat.send_invitation')}
           </Button>
         </>
       }
     >
-      <div className="space-y-5">
+      <div className="space-y-6">
         {/* Error message */}
         {error && (
-          <div className="bg-[#C4314B]/10 border border-[#C4314B]/20 rounded-md p-3">
-            <p className="text-sm text-[#C4314B] font-medium">{error}</p>
+          <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 animate-scale-in">
+            <p className="text-sm text-destructive font-bold">{error}</p>
           </div>
         )}
 
         {/* User selection with autocomplete */}
-        <UserAutocomplete
-          label={t('chat.search_users')}
-          placeholder={t('chat.select_users')}
-          selectedUsers={selectedUsers}
-          onSelectionChange={setSelectedUsers}
-          onSearch={searchUsers}
-          disabled={isLoading}
-        />
+        <div className="bg-surface-2 p-1 rounded-2xl border border-border/50">
+          <UserAutocomplete
+            label={t('chat.search_users')}
+            placeholder={t('chat.select_users')}
+            selectedUsers={selectedUsers}
+            onSelectionChange={setSelectedUsers}
+            onSearch={searchUsers}
+            disabled={isLoading}
+          />
+        </div>
 
         {/* Invitation message */}
-        <div>
+        <div className="bg-surface p-1">
           <TextArea
             label={t('chat.invite_message')}
             value={inviteMessage}
@@ -134,6 +136,7 @@ function InviteModal({ isOpen, onClose, channelName, onInvite }: InviteModalProp
             maxLength={500}
             fullWidth
             disabled={isLoading}
+            className="rounded-xl border-border bg-surface-2 focus:bg-surface"
           />
         </div>
       </div>

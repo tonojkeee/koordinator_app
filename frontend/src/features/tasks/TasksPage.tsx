@@ -98,7 +98,7 @@ const TasksPage: React.FC = () => {
         (activeTab === 'completed' && isCompletedLoading);
 
     return (
-        <div className="flex-1 flex flex-col bg-[#F5F5F5] overflow-hidden animate-in fade-in duration-300">
+        <div className="flex-1 flex flex-col bg-background overflow-hidden animate-fade-in">
             {/* Header */}
             <Header
                 title={t(`tasks.subtitle.${activeTab}`)}
@@ -113,19 +113,19 @@ const TasksPage: React.FC = () => {
                     {
                         id: 'received',
                         label: t('tasks.tabs.received'),
-                        icon: <ListTodo size={16} strokeWidth={1.5} />,
+                        icon: <ListTodo size={16} strokeWidth={2} />,
                         badge: receivedTasks?.length || 0,
                     },
                     {
                         id: 'issued',
                         label: t('tasks.tabs.issued'),
-                        icon: <Send size={16} strokeWidth={1.5} />,
+                        icon: <Send size={16} strokeWidth={2} />,
                         badge: issuedTasks?.length || 0,
                     },
                     {
                         id: 'completed',
                         label: t('tasks.tabs.completed'),
-                        icon: <CheckCircle2 size={16} strokeWidth={1.5} />,
+                        icon: <CheckCircle2 size={16} strokeWidth={2} />,
                         badge: completedTasks?.length || 0,
                     },
                 ]}
@@ -137,27 +137,28 @@ const TasksPage: React.FC = () => {
                         size="md"
                         icon={<Plus size={18} />}
                         onClick={() => setIsCreateModalOpen(true)}
+                        className="shadow-m3-2"
                     >
                         <span className="hidden sm:inline">{t('tasks.create_button')}</span>
                     </Button>
                 }
                 tabsActions={
                     activeTab === 'completed' ? (
-                        <div className="flex bg-white p-1 rounded-md border border-[#E0E0E0] animate-in fade-in zoom-in-95 duration-200 shadow-sm">
+                        <div className="flex bg-surface-2 p-1 rounded-lg border border-border animate-scale-in shadow-sm">
                             <button
                                 onClick={() => setCompletedFilter('my_execution')}
-                                className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wide transition-all ${completedFilter === 'my_execution'
-                                    ? 'bg-[#5B5FC7] text-white shadow-sm'
-                                    : 'text-[#616161] hover:bg-[#F5F5F5]'
+                                className={`px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest transition-all ${completedFilter === 'my_execution'
+                                    ? 'bg-primary text-white shadow-m3-1'
+                                    : 'text-muted-foreground hover:bg-surface-3 hover:text-foreground'
                                     }`}
                             >
                                 {t('tasks.filter.my_execution')}
                             </button>
                             <button
                                 onClick={() => setCompletedFilter('my_orders')}
-                                className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wide transition-all ${completedFilter === 'my_orders'
-                                    ? 'bg-[#5B5FC7] text-white shadow-sm'
-                                    : 'text-[#616161] hover:bg-[#F5F5F5]'
+                                className={`px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest transition-all ${completedFilter === 'my_orders'
+                                    ? 'bg-primary text-white shadow-m3-1'
+                                    : 'text-muted-foreground hover:bg-surface-3 hover:text-foreground'
                                     }`}
                             >
                                 {t('tasks.filter.my_orders')}
@@ -169,20 +170,22 @@ const TasksPage: React.FC = () => {
             />
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6 scrollbar-hide">
+            <div className="flex-1 overflow-y-auto px-6 pb-6 pt-2 custom-scrollbar">
                 {isLoading ? (
-                    <div className="flex justify-center pt-20">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#5B5FC7]"></div>
+                    <div className="flex justify-center pt-20 animate-fade-in">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>
                 ) : currentTasks.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-[#BDBDBD] opacity-80">
-                        <CheckCircle2 size={48} className="mb-4 text-[#E0E0E0]" strokeWidth={1} />
-                        <p className="text-sm font-semibold">{t('tasks.empty.title')}</p>
+                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground/40 animate-scale-in">
+                        <div className="w-20 h-20 bg-surface-2 rounded-full flex items-center justify-center mb-6">
+                            <CheckCircle2 size={40} className="text-muted-foreground/20" strokeWidth={1} />
+                        </div>
+                        <p className="text-sm font-black tracking-tight">{t('tasks.empty.title')}</p>
                     </div>
                 ) : (
                     <div
                         key={activeTab}
-                        className={`grid gap-4 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both ${viewMode === 'board'
+                        className={`grid gap-4 pb-20 animate-slide-up ${viewMode === 'board'
                             ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
                             : 'grid-cols-1'
                             }`}

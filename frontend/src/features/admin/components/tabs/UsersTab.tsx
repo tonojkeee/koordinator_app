@@ -6,7 +6,7 @@
 import React from 'react';
 import { Search, Pencil, Trash2, Shield } from 'lucide-react';
 
-import { Card, Avatar, Button } from '../../../../design-system';
+import { Card, Avatar, cn } from '../../../../design-system';
 import type { UsersTabProps } from '../../types';
 import type { User } from '../../../../types';
 
@@ -18,94 +18,104 @@ export const UsersTab: React.FC<UsersTabProps> = ({
     setEditingUser,
     deleteUserMutation
 }) => (
-    <Card variant="elevated" padding="none" hoverable={false} className="overflow-hidden animate-in fade-in duration-300">
+    <Card variant="default" padding="none" hoverable={false} className="overflow-hidden animate-fade-in shadow-m3-1 border-border/60">
         {/* Search Header */}
-        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white/30">
-            <div className="relative group">
+        <div className="p-8 border-b border-border flex flex-col sm:flex-row justify-between items-center bg-surface-1/50 gap-6">
+            <div className="relative group w-full sm:w-96">
                 <Search
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60 group-focus-within:text-primary transition-colors"
                     size={18}
+                    strokeWidth={2.5}
                 />
                 <input
                     type="text"
                     placeholder={t('admin.searchUsers')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-12 pr-4 py-3 bg-slate-100/50 border-none rounded-xl text-sm font-semibold focus:ring-4 focus:ring-indigo-500/10 w-72 transition-all placeholder:text-slate-400"
+                    className="w-full pl-12 pr-4 py-3 bg-surface border border-border rounded-2xl text-sm font-black text-foreground focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all shadow-inner placeholder:text-muted-foreground/40 uppercase tracking-widest text-[11px]"
                 />
             </div>
-            <div className="flex items-center gap-4">
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                    {filteredUsers.length} {t('admin.totalUsers')}
-                </span>
+            <div className="flex items-center gap-4 shrink-0">
+                <div className="px-4 py-2 bg-primary/5 rounded-full border border-primary/10 shadow-sm">
+                    <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">
+                        {filteredUsers.length} {t('admin.totalUsers')}
+                    </span>
+                </div>
             </div>
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto custom-scrollbar">
             <table className="w-full text-left border-collapse">
                 <thead>
-                    <tr className="bg-slate-50/50 border-b border-slate-100/50">
-                        <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    <tr className="bg-surface-2/80 border-b border-border">
+                        <th className="px-8 py-5 text-[9px] font-black text-muted-foreground uppercase tracking-[0.25em]">
                             {t('admin.user')}
                         </th>
-                        <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th className="px-8 py-5 text-[9px] font-black text-muted-foreground uppercase tracking-[0.25em]">
                             {t('common.unit')}
                         </th>
-                        <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center">
+                        <th className="px-8 py-5 text-[9px] font-black text-muted-foreground uppercase tracking-[0.25em] text-center">
                             {t('admin.role')}
                         </th>
-                        <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th className="px-8 py-5 text-[9px] font-black text-muted-foreground uppercase tracking-[0.25em]">
                             {t('admin.status')}
                         </th>
-                        <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right">
+                        <th className="px-8 py-5 text-[9px] font-black text-muted-foreground uppercase tracking-[0.25em] text-right">
                             {t('common.actions')}
                         </th>
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100/50">
+                <tbody className="divide-y divide-border/40">
                     {filteredUsers.map((user: User) => (
                         <tr
                             key={user.id}
-                            className="hover:bg-indigo-50/30 transition-all duration-200 group"
+                            className="hover:bg-primary/5 transition-all duration-300 group active:bg-primary/10"
                         >
-                            <td className="px-6 py-4">
-                                <div className="flex items-center gap-3">
-                                    <Avatar
-                                        src={user.avatar_url}
-                                        name={user.full_name || user.username}
-                                        size="sm"
-                                        className="group-hover:scale-105 transition-transform"
-                                    />
+                            <td className="px-8 py-5">
+                                <div className="flex items-center gap-4">
+                                    <div className="relative">
+                                        <Avatar
+                                            src={user.avatar_url}
+                                            name={user.full_name || user.username}
+                                            size="md"
+                                            className="group-hover:scale-105 transition-transform duration-500 shadow-sm ring-4 ring-transparent group-hover:ring-primary/10"
+                                        />
+                                        {user.status === 'active' && (
+                                            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-surface rounded-full shadow-sm" />
+                                        )}
+                                    </div>
                                     <div className="min-w-0">
-                                        <div className="font-semibold text-slate-900 text-sm truncate group-hover:text-indigo-600 transition-colors">
+                                        <div className="font-black text-foreground text-sm truncate group-hover:text-primary transition-colors tracking-tight">
                                             {user.full_name || user.username}
                                         </div>
-                                        <div className="text-xs text-slate-400 truncate">
+                                        <div className="text-[10px] font-bold text-primary opacity-60 uppercase tracking-widest">
                                             @{user.username}
                                         </div>
                                     </div>
                                 </div>
                             </td>
-                            <td className="px-6 py-4">
-                                <div className="flex flex-col">
-                                    <span className="text-xs font-semibold text-slate-700">
+                            <td className="px-8 py-5">
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-xs font-black text-foreground tracking-tight">
                                         {user.unit_name || user.unit?.name || t('admin.noUnit')}
                                     </span>
                                     {user.position && (
-                                        <span className="text-[10px] text-slate-400">
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">
                                             {user.position}
                                         </span>
                                     )}
                                 </div>
                             </td>
-                            <td className="px-6 py-4 text-center">
-                                <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${user.role === 'admin'
-                                        ? 'bg-indigo-100 text-indigo-700'
+                            <td className="px-8 py-5 text-center">
+                                <span className={cn(
+                                    "inline-flex px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.15em] border shadow-sm transition-all",
+                                    user.role === 'admin'
+                                        ? 'bg-primary text-white border-primary shadow-m3-1'
                                         : user.role === 'operator'
-                                            ? 'bg-teal-50 text-teal-700'
-                                            : 'bg-slate-100 text-slate-500'
-                                    }`}>
+                                            ? 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20'
+                                            : 'bg-surface-3 text-muted-foreground border-border/50'
+                                )}>
                                     {user.role === 'admin'
                                         ? t('admin.roleAdmin')
                                         : user.role === 'operator'
@@ -113,54 +123,58 @@ export const UsersTab: React.FC<UsersTabProps> = ({
                                             : t('admin.roleUser')}
                                 </span>
                             </td>
-                            <td className="px-6 py-4">
-                                <div className="flex flex-col gap-1">
-                                    <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${user.status === 'active'
-                                            ? 'text-emerald-600 bg-emerald-50'
+                            <td className="px-8 py-5">
+                                <div className="flex flex-col gap-1.5">
+                                    <span className={cn(
+                                        "inline-flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.15em] px-2.5 py-1 rounded-lg border",
+                                        user.status === 'active'
+                                            ? 'text-green-700 bg-green-500/5 border-green-500/10'
                                             : user.status === 'on_leave'
-                                                ? 'text-amber-600 bg-amber-50'
+                                                ? 'text-amber-700 bg-amber-500/5 border-amber-500/10'
                                                 : user.status === 'away'
-                                                    ? 'text-slate-500 bg-slate-50'
-                                                    : 'text-rose-600 bg-rose-50'
-                                        }`}>
-                                        <span className={`w-1.5 h-1.5 rounded-full ${user.status === 'active'
-                                                ? 'bg-emerald-500'
+                                                    ? 'text-muted-foreground bg-surface-3 border-border/50'
+                                                    : 'text-destructive bg-destructive/5 border-destructive/10'
+                                    )}>
+                                        <span className={cn(
+                                            "w-1.5 h-1.5 rounded-full shadow-[0_0_6px_currentColor]",
+                                            user.status === 'active'
+                                                ? 'bg-green-500'
                                                 : user.status === 'on_leave'
                                                     ? 'bg-amber-500'
                                                     : user.status === 'away'
-                                                        ? 'bg-slate-400'
-                                                        : 'bg-rose-500'
-                                            }`} />
+                                                        ? 'bg-muted-foreground/40'
+                                                        : 'bg-destructive'
+                                        )} />
                                         {t(`admin.status${user.status.charAt(0).toUpperCase() + user.status.slice(1)}`)}
                                     </span>
                                     {!user.is_active && (
-                                        <span className="text-[9px] font-bold text-rose-500 uppercase tracking-wide pl-2 flex items-center gap-1">
-                                            <Shield size={8} />
+                                        <span className="text-[8px] font-black text-destructive uppercase tracking-widest pl-1 flex items-center gap-1.5 opacity-80">
+                                            <Shield size={10} strokeWidth={3} />
                                             {t('admin.accessDenied')}
                                         </span>
                                     )}
                                 </div>
                             </td>
-                            <td className="px-6 py-4 text-right">
-                                <div className="flex justify-end gap-1">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        icon={<Pencil size={16} />}
+                            <td className="px-8 py-5 text-right">
+                                <div className="flex justify-end gap-2">
+                                    <button
                                         onClick={() => setEditingUser(user)}
-                                        className="text-slate-400 hover:text-indigo-600"
-                                    />
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        icon={<Trash2 size={16} />}
+                                        className="w-9 h-9 flex items-center justify-center rounded-xl bg-surface-2 text-muted-foreground hover:text-primary hover:bg-primary/10 border border-border/50 transition-all active:scale-90 shadow-sm"
+                                        title={t('common.edit')}
+                                    >
+                                        <Pencil size={16} strokeWidth={2.5} />
+                                    </button>
+                                    <button
                                         onClick={() => {
                                             if (window.confirm(t('admin.deleteConfirm'))) {
                                                 deleteUserMutation.mutate(user.id);
                                             }
                                         }}
-                                        className="text-slate-400 hover:text-rose-600"
-                                    />
+                                        className="w-9 h-9 flex items-center justify-center rounded-xl bg-surface-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-border/50 transition-all active:scale-90 shadow-sm"
+                                        title={t('common.delete')}
+                                    >
+                                        <Trash2 size={16} strokeWidth={2.5} />
+                                    </button>
                                 </div>
                             </td>
                         </tr>

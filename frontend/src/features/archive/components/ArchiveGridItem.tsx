@@ -14,6 +14,8 @@ import api from '../../../api/client';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { useConfigStore } from '../../../store/useConfigStore';
 
+import { cn } from '../../../design-system';
+
 interface ArchiveFolderCardProps {
     folder: ArchiveFolder;
     index: number;
@@ -93,40 +95,47 @@ export const ArchiveFolderCard: React.FC<ArchiveFolderCardProps> = ({
             onClick={(e) => onClick(e, index)}
             onDoubleClick={(e) => { e.stopPropagation(); onNavigate(folder); }}
             onContextMenu={handleContextMenu}
-            className={`group rounded-xl border p-4 transition-all duration-300 cursor-pointer relative flex flex-col justify-between min-h-[120px] ${isSelected
-                ? 'bg-indigo-50 border-indigo-500 shadow-md shadow-indigo-100 ring-4 ring-indigo-500/5'
-                : 'bg-white border-slate-200/60 hover:shadow-lg hover:shadow-indigo-500/5 hover:border-indigo-100'
-                }`}
+            className={cn(
+                "group rounded-2xl border p-5 transition-all duration-500 cursor-pointer relative flex flex-col justify-between min-h-[140px] animate-slide-up active:scale-[0.98]",
+                isSelected
+                    ? 'bg-primary/5 border-primary shadow-m3-1 ring-2 ring-primary/5'
+                    : 'bg-surface border-border hover:shadow-teams-card hover:border-primary/20 hover:bg-surface-2'
+            )}
+            style={{ animationDelay: `${index * 20}ms` }}
         >
             {canDelete && (
                 <button
                     onClick={(e) => { e.stopPropagation(); onDelete(folder); }}
-                    className="absolute top-3 right-3 p-2 rounded-xl bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10"
+                    className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-destructive/5 text-destructive hover:bg-destructive hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 flex items-center justify-center shadow-sm"
                     title={t('archive.delete')}
                 >
-                    <Trash2 size={14} />
+                    <Trash2 size={14} strokeWidth={2.5} />
                 </button>
             )}
             <div>
-                <div className="flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-500 group-hover:bg-amber-100 transition-colors">
-                        <FolderIcon size={24} fill="currentColor" fillOpacity={0.2} />
+                <div className="flex items-start justify-between mb-5">
+                    <div className="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-600 shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
+                        <FolderIcon size={28} strokeWidth={2} fill="currentColor" fillOpacity={0.2} />
                     </div>
                 </div>
-                <h3 className="font-bold text-slate-900 truncate pr-2" title={folder.name}>
+                <h3 className={cn(
+                    "font-black text-foreground truncate pr-6 tracking-tight leading-none",
+                    isSelected ? "text-primary" : ""
+                )} title={folder.name}>
                     {folder.name}
                 </h3>
             </div>
-            <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-slate-400 mt-4 pt-4 border-t border-slate-50">
-                <div className="flex items-center space-x-1">
-                    <UserIcon size={10} />
-                    <span className="truncate max-w-[80px]">{folder.owner_name}</span>
+            <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-muted-foreground mt-5 pt-4 border-t border-border/40 opacity-60">
+                <div className="flex items-center space-x-1.5">
+                    <UserIcon size={10} strokeWidth={3} />
+                    <span className="truncate max-w-[90px]">{folder.owner_name}</span>
                 </div>
-                <div className="flex items-center space-x-1">
-                    <Clock size={10} />
+                <div className="flex items-center space-x-1.5 tabular-nums">
+                    <Clock size={10} strokeWidth={3} />
                     <span>{formatDate(folder.created_at, t)}</span>
                 </div>
             </div>
+            {isSelected && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full" />}
         </div>
     );
 };
@@ -240,23 +249,26 @@ export const ArchiveFileCard: React.FC<ArchiveFileCardProps> = ({
                 }
             }}
             onContextMenu={handleContextMenu}
-            className={`group rounded-xl border p-4 transition-all duration-300 relative overflow-hidden flex flex-col justify-between min-h-[120px] ${isSelected
-                ? 'bg-indigo-50 border-indigo-500 shadow-md shadow-indigo-100 ring-4 ring-indigo-500/5'
-                : 'bg-white border-slate-200/60 hover:shadow-lg hover:shadow-indigo-500/5 hover:border-indigo-100'
-                }`}
+            className={cn(
+                "group rounded-2xl border p-5 transition-all duration-500 cursor-pointer relative overflow-hidden flex flex-col justify-between min-h-[140px] animate-slide-up active:scale-[0.98]",
+                isSelected
+                    ? 'bg-primary/5 border-primary shadow-m3-1 ring-2 ring-primary/5'
+                    : 'bg-surface border-border hover:shadow-teams-card hover:border-primary/20 hover:bg-surface-2'
+            )}
+            style={{ animationDelay: `${index * 20}ms` }}
         >
             {canDelete && (
                 <button
                     onClick={(e) => { e.stopPropagation(); onDelete(file); }}
-                    className="absolute top-3 right-3 p-2 rounded-xl bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10"
+                    className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-destructive/5 text-destructive hover:bg-destructive hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 flex items-center justify-center shadow-sm"
                     title={t('archive.delete')}
                 >
-                    <Trash2 size={14} />
+                    <Trash2 size={14} strokeWidth={2.5} />
                 </button>
             )}
             <div>
-                <div className="flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-indigo-500 group-hover:bg-indigo-50 transition-colors overflow-hidden shrink-0">
+                <div className="flex items-start justify-between mb-5">
+                    <div className="w-14 h-14 bg-surface-3 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-sm overflow-hidden shrink-0 group-hover:scale-110 group-hover:rotate-2">
                         {file.mime_type?.startsWith('image/') ? (
                             <img
                                 src={`${useConfigStore.getState().serverUrl || api.defaults.baseURL}/archive/files/${file.id}/view?token=${useAuthStore.getState().token}`}
@@ -265,29 +277,34 @@ export const ArchiveFileCard: React.FC<ArchiveFileCardProps> = ({
                                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                             />
                         ) : (
-                            getFileIcon(file.mime_type)
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            React.cloneElement(getFileIcon(file.mime_type) as React.ReactElement<any>, { size: 28, strokeWidth: 2 })
                         )}
                     </div>
                 </div>
 
-                <h3 className="font-bold text-slate-900 truncate pr-2 group-hover:text-indigo-600 transition-colors" title={file.title}>
+                <h3 className={cn(
+                    "font-black text-foreground truncate pr-6 tracking-tight transition-colors leading-none",
+                    isSelected ? "text-primary" : "group-hover:text-primary"
+                )} title={file.title}>
                     {file.title}
                 </h3>
             </div>
 
-            <div className="flex flex-col space-y-2 mt-4 pt-4 border-t border-slate-50">
-                <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-slate-400">
-                    <div className="flex items-center space-x-1">
-                        <UserIcon size={10} />
-                        <span className="truncate max-w-[80px]">{file.owner_name}</span>
+            <div className="flex flex-col space-y-2 mt-5 pt-4 border-t border-border/40 opacity-70">
+                <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+                    <div className="flex items-center space-x-1.5">
+                        <UserIcon size={10} strokeWidth={3} />
+                        <span className="truncate max-w-[90px]">{file.owner_name}</span>
                     </div>
-                    <span>{formatSize(file.file_size)}</span>
+                    <span className="tabular-nums">{formatSize(file.file_size)}</span>
                 </div>
-                <div className="flex items-center space-x-1 text-[10px] font-black uppercase tracking-wider text-slate-400">
-                    <Clock size={10} />
+                <div className="flex items-center space-x-1.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-60 tabular-nums">
+                    <Clock size={10} strokeWidth={3} />
                     <span>{formatDate(file.created_at, t)}</span>
                 </div>
             </div>
+            {isSelected && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full" />}
         </div>
     );
 };

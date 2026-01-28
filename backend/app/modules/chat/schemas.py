@@ -49,8 +49,9 @@ class LastMessageInfo(BaseModel):
     class Config:
         from_attributes = True
         json_encoders = {
-            datetime: lambda v: v.strftime('%Y-%m-%dT%H:%M:%SZ') if v else None
+            datetime: lambda v: v.strftime("%Y-%m-%dT%H:%M:%SZ") if v else None
         }
+
 
 class ChannelResponse(ChannelBase):
     id: int
@@ -75,7 +76,7 @@ class ChannelResponse(ChannelBase):
     class Config:
         from_attributes = True
         json_encoders = {
-            datetime: lambda v: v.strftime('%Y-%m-%dT%H:%M:%SZ') if v else None
+            datetime: lambda v: v.strftime("%Y-%m-%dT%H:%M:%SZ") if v else None
         }
 
 
@@ -101,7 +102,7 @@ class MessageResponse(MessageBase):
     parent_id: Optional[int] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
-    
+
     class Config:
         from_attributes = True
 
@@ -111,7 +112,7 @@ class MessageParentInfo(BaseModel):
     content: str
     username: str
     full_name: Optional[str] = None
-    
+
     class Config:
         from_attributes = True
 
@@ -129,4 +130,3 @@ class MessageWithUser(MessageResponse):
     reply_count: int = 0
     parent: Optional[MessageParentInfo] = None
     invitation_id: Optional[int] = None  # For system messages with invitations
-

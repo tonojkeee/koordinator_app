@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useUnreadStore } from '../../store/useUnreadStore';
 import { useTranslation } from 'react-i18next';
-import { Avatar } from '../../design-system';
+import { Avatar, cn } from '../../design-system';
 
 export const SidebarNav = () => {
   const { t } = useTranslation();
@@ -53,58 +53,65 @@ export const SidebarNav = () => {
       icon: Shield,
       label: t('zsspd.title'),
       to: '/zsspd',
-      iconClassName: 'text-amber-400'
+      iconClassName: 'text-amber-500' // Material Amber for security/shield
     },
   ];
 
   return (
-    <nav className="hidden md:flex flex-col w-[68px] bg-teams-sidebar items-center py-3 space-y-1 text-[#b8b8b8] shrink-0 z-50 fixed inset-y-0 left-0 shadow-xl">
-      <div className="mb-3">
-        <div className="w-10 h-10 bg-[#464775] rounded-xl flex items-center justify-center shadow-md">
-          <img src="/icon.png" alt="Logo" className="w-6 h-6 object-contain" />
+    <nav className="hidden md:flex flex-col w-[68px] bg-teams-sidebar-rail border-r border-border items-center py-3 space-y-1.5 shrink-0 z-50 fixed inset-y-0 left-0">
+      <div className="mb-4">
+        <div className="w-10 h-10 flex items-center justify-center transition-transform hover:scale-110 duration-300">
+          <img src="/icon.png" alt="Logo" className="w-7 h-7 object-contain animate-spin-slow" />
         </div>
       </div>
 
-      {navItems.map((item) => (
-        <SidebarItem key={item.to} {...item} />
-      ))}
+      <div className="flex flex-col items-center space-y-1 w-full px-2">
+        {navItems.map((item) => (
+          <SidebarItem key={item.to} {...item} />
+        ))}
+      </div>
 
       <div className="flex-1" />
 
-      <SidebarItem
-        to="/help"
-        icon={HelpCircle}
-        label={t('help.title')}
-      />
-
-      {user?.role === 'admin' && (
+      <div className="flex flex-col items-center space-y-1 w-full px-2 pb-2">
         <SidebarItem
-          to="/admin"
-          icon={Shield}
-          label={t('admin.dashboard')}
+          to="/help"
+          icon={HelpCircle}
+          label={t('help.title')}
         />
-      )}
 
-      <SidebarItem
-        to="/settings"
-        label={user?.full_name || ''}
-        customIcon={
-          <Avatar
-            src={user?.avatar_url}
-            name={user?.full_name || user?.username || ''}
-            size="sm"
-            className="ring-2 ring-[#464775] w-8 h-8"
+        {user?.role === 'admin' && (
+          <SidebarItem
+            to="/admin"
+            icon={Shield}
+            label={t('admin.dashboard')}
           />
-        }
-      />
+        )}
 
-      <button
-        onClick={() => logout()}
-        className="group relative flex flex-col items-center justify-center w-12 h-12 rounded-lg transition-all duration-200 hover:text-white hover:bg-[#3D3D3D] text-[#b8b8b8] mt-1"
-        title={t('common.logout')}
-      >
-        <LogOut size={22} strokeWidth={1.5} />
-      </button>
+        <SidebarItem
+          to="/settings"
+          label={user?.full_name || ''}
+          customIcon={
+            <div className="relative">
+              <Avatar
+                src={user?.avatar_url}
+                name={user?.full_name || user?.username || ''}
+                size="sm"
+                className="w-8 h-8 rounded-full border border-border shadow-sm group-hover:border-primary/50 transition-colors"
+              />
+              <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-teams-sidebar-rail rounded-full" />
+            </div>
+          }
+        />
+
+        <button
+          onClick={() => logout()}
+          className="group relative flex items-center justify-center w-12 h-12 rounded-lg transition-all duration-200 hover:bg-destructive/10 text-muted-foreground hover:text-destructive mt-1"
+          title={t('common.logout')}
+        >
+          <LogOut size={20} strokeWidth={2} />
+        </button>
+      </div>
     </nav>
   );
 };
@@ -123,33 +130,47 @@ const SidebarItem = ({ to, icon: Icon, customIcon, label, badge, warningBadge, i
   return (
     <NavLink
       to={to}
-      className={({ isActive }) =>
-        `group relative flex flex-col items-center justify-center w-[58px] h-[58px] rounded-lg transition-all duration-200 mb-1 ${isActive
-          ? 'text-[#5B5FC7] bg-white shadow-md'
-          : 'hover:text-white hover:bg-[#3D3D3D]'
-        }`
-      }
-      title={label}
+      className={({ isActive }) => {
+        const baseClass = "group relative flex flex-col items-center justify-center w-[52px] h-[52px] rounded-xl transition-all duration-300";
+        return isActive
+          ? `${baseClass} text-primary bg-surface shadow-m3-1 scale-[1.05] is-active`
+          : `${baseClass} text-muted-foreground hover:text-foreground hover:bg-surface-2`;
+      }}
     >
-      {customIcon ? customIcon : Icon && <Icon size={26} strokeWidth={1.5} className={iconClassName} />}
+      <div className="relative">
+        {customIcon ? customIcon : Icon && (
+          <NavLink to={to}>
+            {({ isActive }) => (
+              <Icon
+                size={24}
+                strokeWidth={isActive ? 2.5 : 2}
+                className={cn(iconClassName, "transition-transform group-hover:scale-110")}
+              />
+            )}
+          </NavLink>
+        )}
 
-      <span className="text-[10px] font-medium mt-0.5 max-w-full truncate px-1 opacity-90">
-          {/* Label is hidden in classic Teams rail but often useful. We'll keep it small or hide it depending on preference.
-              Let's keep it very subtle or hide it if we want strict Teams look. Teams has labels. */}
-          {/* {label} */}
-      </span>
+        {badge !== undefined && badge > 0 && (
+          <div className="absolute -top-2 -right-2 min-w-[18px] h-[18px] bg-destructive text-white rounded-full flex items-center justify-center text-[9px] font-black shadow-m3-1 border-2 border-teams-sidebar-rail animate-scale-in">
+            {badge > 99 ? '99+' : badge}
+          </div>
+        )}
 
-      {badge !== undefined && badge > 0 && (
-        <div className="absolute top-1 right-1 min-w-[18px] h-[18px] bg-[#C4314B] rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm ring-2 ring-[#2D2D2D]">
-          {badge > 99 ? '99+' : badge}
-        </div>
-      )}
+        {warningBadge !== undefined && warningBadge > 0 && (
+          <div className="absolute -bottom-2 -right-2 min-w-[18px] h-[18px] bg-amber-500 text-white rounded-full flex items-center justify-center text-[9px] font-black shadow-m3-1 border-2 border-teams-sidebar-rail animate-scale-in">
+            {warningBadge > 99 ? '99+' : warningBadge}
+          </div>
+        )}
+      </div>
 
-      {warningBadge !== undefined && warningBadge > 0 && (
-        <div className="absolute bottom-1 right-1 min-w-[18px] h-[18px] bg-amber-500 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-900 shadow-sm ring-2 ring-[#2D2D2D]">
-          {warningBadge > 99 ? '99+' : warningBadge}
-        </div>
-      )}
+      {/* Indicator bar for active state */}
+      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full scale-y-0 transition-transform duration-300 origin-left group-[.active]:scale-y-100" />
+
+      {/* Tooltip appearance */}
+      <div className="absolute left-[72px] px-2 py-1.5 bg-foreground text-background text-[11px] font-bold rounded-md opacity-0 pointer-events-none group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200 whitespace-nowrap z-50 shadow-m3-2">
+        {label}
+        <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 border-8 border-transparent border-r-foreground" />
+      </div>
     </NavLink>
   );
 };

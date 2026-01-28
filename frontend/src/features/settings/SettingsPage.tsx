@@ -182,7 +182,6 @@ const SettingsPage: React.FC = () => {
         { id: 'notifications', title: t('settings.notifications'), icon: Bell, desc: t('settings.notificationsDesc'), onClick: () => setActiveSection('notifications') },
         { id: 'privacy', title: t('settings.privacy'), icon: Lock, desc: t('settings.privacyDesc'), onClick: () => setActiveSection('privacy') },
         { id: 'permissions', title: t('settings.permissions'), icon: Shield, desc: t('settings.permissionsDesc') },
-        { id: 'permissions', title: t('settings.permissions'), icon: Shield, desc: t('settings.permissionsDesc') },
         ...(window.electron ? [{
             id: 'system',
             title: t('settings.system_integration'),
@@ -193,78 +192,82 @@ const SettingsPage: React.FC = () => {
     ];
 
     return (
-        <div className="flex-1 overflow-y-auto bg-[#F5F5F5] animate-in fade-in duration-300">
+        <div className="flex-1 flex flex-col bg-background overflow-hidden animate-fade-in">
             {/* Header with Design System */}
             <Header
                 title={t('settings.subtitle')}
                 subtitle={t('settings.title')}
-                icon={<SettingsIcon size={20} />}
+                icon={<SettingsIcon size={20} strokeWidth={2} />}
                 iconColor="indigo"
                 sticky={true}
             />
 
-            <div className="p-8 max-w-4xl">
-                <div className="flex items-center space-x-6 mb-8 p-6 bg-white rounded-lg border border-[#E0E0E0] shadow-sm">
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                        className="hidden"
-                        accept="image/*"
-                    />
-                    <div
-                        className="relative group cursor-pointer"
-                        onClick={() => fileInputRef.current?.click()}
-                    >
-                        <Avatar
-                            src={user?.avatar_url}
-                            name={user?.full_name || user?.username || ''}
-                            size="xl"
-                            className="shadow-md"
+            <div className="flex-1 overflow-y-auto px-6 pb-6 pt-2 custom-scrollbar">
+                <div className="max-w-4xl mx-auto pb-20 animate-slide-up">
+                    <div className="flex items-center space-x-6 mb-8 p-8 bg-surface rounded-2xl border border-border shadow-m3-1 transition-shadow hover:shadow-m3-2 group/profile">
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            className="hidden"
+                            accept="image/*"
                         />
-                        <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <span className="text-[10px] font-bold uppercase text-white tracking-widest">{t('settings.change')}</span>
-                        </div>
-                        {uploadMutation.isPending && (
-                            <div className="absolute inset-0 bg-white/80 rounded-full flex items-center justify-center">
-                                <div className="w-8 h-8 border-2 border-[#5B5FC7] border-t-transparent rounded-full animate-spin" />
-                            </div>
-                        )}
-                    </div>
-                    <div>
-                        <h2 className="text-2xl font-bold text-[#242424]">{user?.full_name || user?.username}</h2>
-                        <p className="text-[#616161]">{user?.email}</p>
-                        <button
-                            onClick={() => fileInputRef.current?.click()}
-                            className="mt-2 text-sm text-[#5B5FC7] font-semibold hover:underline active:scale-95 transition-transform"
-                        >
-                            {t('settings.changePhoto')}
-                        </button>
-                    </div>
-
-                </div>
-
-                <div className="space-y-3">
-                    {sections.map((section) => (
                         <div
-                            key={section.id}
-                            onClick={section.onClick}
-                            className="flex items-center p-4 rounded-lg bg-white border border-[#E0E0E0] hover:bg-[#F5F5F5] hover:border-[#BDBDBD] transition-all cursor-pointer group shadow-sm"
+                            className="relative group cursor-pointer"
+                            onClick={() => fileInputRef.current?.click()}
                         >
-                            <div className="w-10 h-10 bg-[#F0F0F0] rounded-md flex items-center justify-center text-[#616161] group-hover:bg-white group-hover:text-[#5B5FC7] transition-colors">
-                                <section.icon size={20} strokeWidth={1.5} />
+                            <Avatar
+                                src={user?.avatar_url}
+                                name={user?.full_name || user?.username || ''}
+                                size="xl"
+                                className="shadow-m3-1 ring-4 ring-primary/5 group-hover:ring-primary/10 transition-all"
+                            />
+                            <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span className="text-[10px] font-black uppercase text-white tracking-widest">{t('settings.change')}</span>
                             </div>
-                            <div className="ml-4 flex-1">
-                                <h3 className="font-bold text-[#242424] text-sm">{section.title}</h3>
-                                <p className="text-xs text-[#616161]">{section.desc}</p>
-                            </div>
-                            <div className="text-[#BDBDBD] group-hover:text-[#5B5FC7] transition-colors">
-                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                            </div>
+                            {uploadMutation.isPending && (
+                                <div className="absolute inset-0 bg-surface/80 rounded-full flex items-center justify-center">
+                                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                </div>
+                            )}
                         </div>
-                    ))}
+                        <div className="flex-1">
+                            <h2 className="text-2xl font-black text-foreground tracking-tight leading-none mb-1">{user?.full_name || user?.username}</h2>
+                            <p className="text-muted-foreground font-bold text-sm opacity-70">{user?.email}</p>
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                className="mt-3 text-xs text-primary font-black uppercase tracking-widest hover:text-teams-brandHover transition-colors flex items-center gap-2 group-hover/profile:translate-x-1 transition-transform"
+                            >
+                                <span>{t('settings.changePhoto')}</span>
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4.5 9L7.5 6L4.5 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        {sections.map((section) => (
+                            <div
+                                key={section.id}
+                                onClick={section.onClick}
+                                className="flex items-center p-5 rounded-2xl bg-surface border border-border hover:bg-surface-2 hover:border-primary/20 hover:shadow-m3-1 transition-all cursor-pointer group shadow-sm active:scale-[0.99]"
+                            >
+                                <div className="w-12 h-12 bg-surface-2 rounded-xl flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+                                    <section.icon size={22} strokeWidth={2} />
+                                </div>
+                                <div className="ml-5 flex-1">
+                                    <h3 className="font-black text-foreground text-sm tracking-tight uppercase tracking-[0.05em]">{section.title}</h3>
+                                    <p className="text-xs text-muted-foreground font-medium opacity-70">{section.desc}</p>
+                                </div>
+                                <div className="text-muted-foreground/30 group-hover:text-primary transition-colors group-hover:translate-x-1 transition-transform">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
 

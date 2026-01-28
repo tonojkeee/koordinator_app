@@ -1,4 +1,5 @@
 """Response enrichers for chat module"""
+
 from sqlalchemy import select, func, and_
 from sqlalchemy.orm import defer, selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,7 +12,9 @@ from app.modules.auth.models import User
 from app.modules.chat.websocket import manager
 
 
-async def bulk_enrich_channels(db: AsyncSession, channels: list[Channel], current_user_id: int) -> list[ChannelResponse]:
+async def bulk_enrich_channels(
+    db: AsyncSession, channels: list[Channel], current_user_id: int
+) -> list[ChannelResponse]:
     """
     Efficiently enrich a list of channels avoiding N+1 queries.
     """
@@ -53,7 +56,7 @@ async def bulk_enrich_channels(db: AsyncSession, channels: list[Channel], curren
         # Fetch full message objects with senders
         stmt_msgs = (
             select(Message)
-            .options(selectinload(Message.user)) # User is relationship
+            .options(selectinload(Message.user))  # User is relationship
             .where(Message.id.in_(max_msg_ids))
         )
         result_msgs = await db.execute(stmt_msgs)
@@ -71,7 +74,7 @@ async def bulk_enrich_channels(db: AsyncSession, channels: list[Channel], curren
             .where(
                 and_(
                     ChannelMember.channel_id.in_(dm_channel_ids),
-                    ChannelMember.user_id != current_user_id
+                    ChannelMember.user_id != current_user_id,
                 )
             )
             .options(defer(User.hashed_password))
@@ -86,9 +89,11 @@ async def bulk_enrich_channels(db: AsyncSession, channels: list[Channel], curren
 
     for channel in channels:
         resp = ChannelResponse.from_orm(channel)
-        resp.is_owner = (channel.created_by == current_user_id)
+        resp.is_owner = channel.created_by == current_user_id
         resp.members_count = member_counts.get(channel.id, 0)
-        resp.online_count = await manager.get_online_count(channel.id) # Redis call, fast enough
+        resp.online_count = await manager.get_online_count(
+            channel.id
+        )  # Redis call, fast enough
 
         # User specific info (from service attachment)
         member_info = getattr(channel, "current_user_member_info", {})
@@ -109,7 +114,9 @@ async def bulk_enrich_channels(db: AsyncSession, channels: list[Channel], curren
             # But user_last_read varies per channel.
             # We can do it in a loop or complex query. For 10-20 channels, loop is okay-ish if simple count.
             # Let's keep existing Service call for unread count to minimize risk, or implement bulk unread later.
-            resp.unread_count = await ChatService.get_unread_count(db, channel.id, current_user_id)
+            resp.unread_count = await ChatService.get_unread_count(
+                db, channel.id, current_user_id
+            )
         else:
             resp.unread_count = 0
 
@@ -122,7 +129,9 @@ async def bulk_enrich_channels(db: AsyncSession, channels: list[Channel], curren
                 user_info.is_online = other_user.id in online_user_ids
                 resp.other_user = user_info
             else:
-                resp.display_name = "Self" if channel.created_by == current_user_id else "Unknown"
+                resp.display_name = (
+                    "Self" if channel.created_by == current_user_id else "Unknown"
+                )
         else:
             resp.display_name = channel.name
 
@@ -134,10 +143,12 @@ async def bulk_enrich_channels(db: AsyncSession, channels: list[Channel], curren
                 id=last_msg.id,
                 content=last_msg.content[:100] if last_msg.content else "",
                 sender_id=last_msg.user_id,
-                sender_name=sender.full_name or sender.username if sender else "Система",
+                sender_name=(
+                    sender.full_name or sender.username if sender else "Система"
+                ),
                 sender_full_name=sender.full_name if sender else None,
                 sender_rank=sender.rank if sender else None,
-                created_at=last_msg.created_at
+                created_at=last_msg.created_at,
             )
         else:
             resp.last_message = None
@@ -147,17 +158,21 @@ async def bulk_enrich_channels(db: AsyncSession, channels: list[Channel], curren
     return responses
 
 
-async def enrich_channel(db: AsyncSession, channel: Channel, current_user_id: int) -> ChannelResponse:
+async def enrich_channel(
+    db: AsyncSession, channel: Channel, current_user_id: int
+) -> ChannelResponse:
     """
     Enrich channel response with DM metadata, counts, and last message.
     """
     resp = ChannelResponse.from_orm(channel)
 
     # Set if current user is the owner
-    resp.is_owner = (channel.created_by == current_user_id)
+    resp.is_owner = channel.created_by == current_user_id
 
     # Get member count
-    member_count_stmt = select(func.count(ChannelMember.id)).where(ChannelMember.channel_id == channel.id)
+    member_count_stmt = select(func.count(ChannelMember.id)).where(
+        ChannelMember.channel_id == channel.id
+    )
     result = await db.execute(member_count_stmt)
     resp.members_count = result.scalar() or 0
 
@@ -166,8 +181,7 @@ async def enrich_channel(db: AsyncSession, channel: Channel, current_user_id: in
 
     # Get unread count and last_read_message_id for current user
     stmt = select(ChannelMember).where(
-        ChannelMember.channel_id == channel.id,
-        ChannelMember.user_id == current_user_id
+        ChannelMember.channel_id == channel.id, ChannelMember.user_id == current_user_id
     )
     result = await db.execute(stmt)
     member = result.scalars().first()
@@ -175,7 +189,9 @@ async def enrich_channel(db: AsyncSession, channel: Channel, current_user_id: in
     if member:
         resp.is_member = True
         resp.last_read_message_id = member.last_read_message_id
-        resp.unread_count = await ChatService.get_unread_count(db, channel.id, current_user_id)
+        resp.unread_count = await ChatService.get_unread_count(
+            db, channel.id, current_user_id
+        )
         resp.user_role = member.role
     else:
         resp.is_member = False
@@ -184,8 +200,7 @@ async def enrich_channel(db: AsyncSession, channel: Channel, current_user_id: in
 
     # Get max last_read_message_id from others
     others_read_stmt = select(func.max(ChannelMember.last_read_message_id)).where(
-        ChannelMember.channel_id == channel.id,
-        ChannelMember.user_id != current_user_id
+        ChannelMember.channel_id == channel.id, ChannelMember.user_id != current_user_id
     )
     others_read_result = await db.execute(others_read_stmt)
     resp.others_read_id = others_read_result.scalar() or 0
@@ -206,10 +221,7 @@ async def enrich_channel(db: AsyncSession, channel: Channel, current_user_id: in
 
 
 async def enrich_direct_channel(
-    db: AsyncSession,
-    channel: Channel,
-    current_user_id: int,
-    resp: ChannelResponse
+    db: AsyncSession, channel: Channel, current_user_id: int, resp: ChannelResponse
 ) -> ChannelResponse:
     """Enrich direct message channel with other user info"""
     stmt = (
@@ -221,33 +233,42 @@ async def enrich_direct_channel(
     )
     result = await db.execute(stmt)
     other_user: Optional[User] = result.scalar_one_or_none()
-    
+
     if other_user:
         resp.display_name = other_user.full_name or other_user.username
         user_info = UserBasicInfo.from_orm(other_user)
         user_info.is_online = other_user.id in await manager.get_online_user_ids()
         resp.other_user = user_info
     else:
-        resp.display_name = "Self" if channel.created_by == current_user_id else "Unknown"
-    
+        resp.display_name = (
+            "Self" if channel.created_by == current_user_id else "Unknown"
+        )
+
     return resp
 
 
 async def enrich_last_message(
-    db: AsyncSession,
-    channel: Channel,
-    resp: ChannelResponse
+    db: AsyncSession, channel: Channel, resp: ChannelResponse
 ) -> ChannelResponse:
     """Enrich channel with last message preview"""
-    last_msg_stmt = select(Message).where(Message.channel_id == channel.id).order_by(Message.id.desc()).limit(1)
+    last_msg_stmt = (
+        select(Message)
+        .where(Message.channel_id == channel.id)
+        .order_by(Message.id.desc())
+        .limit(1)
+    )
     last_msg_result = await db.execute(last_msg_stmt)
     last_msg: Optional[Message] = last_msg_result.scalar_one_or_none()
-    
+
     if last_msg:
-        sender_stmt = select(User).options(defer(User.hashed_password)).where(User.id == last_msg.user_id)
+        sender_stmt = (
+            select(User)
+            .options(defer(User.hashed_password))
+            .where(User.id == last_msg.user_id)
+        )
         sender_result = await db.execute(sender_stmt)
         sender: Optional[User] = sender_result.scalar_one_or_none()
-        
+
         resp.last_message = LastMessageInfo(
             id=last_msg.id,
             content=last_msg.content[:100] if last_msg.content else "",
@@ -255,42 +276,39 @@ async def enrich_last_message(
             sender_name=sender.full_name or sender.username if sender else "Система",
             sender_full_name=sender.full_name if sender else None,
             sender_rank=sender.rank if sender else None,
-            created_at=last_msg.created_at
+            created_at=last_msg.created_at,
         )
     else:
         # Explicitly set to None if no message found
         resp.last_message = None
-    
+
     return resp
 
 
 async def enrich_channel_settings(
-    db: AsyncSession,
-    channel: Channel,
-    current_user_id: int,
-    resp: ChannelResponse
+    db: AsyncSession, channel: Channel, current_user_id: int, resp: ChannelResponse
 ) -> ChannelResponse:
     """Enrich channel with user-specific settings (pinned, muted)"""
     # Set pinning status
-    if hasattr(channel, 'is_pinned'):
+    if hasattr(channel, "is_pinned"):
         resp.is_pinned = channel.is_pinned
     else:
         stmt = select(ChannelMember.is_pinned).where(
             ChannelMember.channel_id == channel.id,
-            ChannelMember.user_id == current_user_id
+            ChannelMember.user_id == current_user_id,
         )
         result = await db.execute(stmt)
         resp.is_pinned = result.scalar() or False
 
     # Set mute status
-    if hasattr(channel, 'mute_until'):
+    if hasattr(channel, "mute_until"):
         resp.mute_until = channel.mute_until
     else:
         stmt = select(ChannelMember.mute_until).where(
             ChannelMember.channel_id == channel.id,
-            ChannelMember.user_id == current_user_id
+            ChannelMember.user_id == current_user_id,
         )
         result = await db.execute(stmt)
         resp.mute_until = result.scalar()
-    
+
     return resp

@@ -3,6 +3,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 from app.modules.auth.schemas import UserResponse
 
+
 class OverviewStats(BaseModel):
     total_users: int
     online_users: int
@@ -15,11 +16,13 @@ class OverviewStats(BaseModel):
     tasks_on_review: int
     tasks_overdue: int
 
+
 class ActivityStat(BaseModel):
     date: str
     messages: int
     new_users: int
     new_tasks: int
+
 
 class StorageStat(BaseModel):
     name: str
@@ -27,18 +30,22 @@ class StorageStat(BaseModel):
     count: int
     color: str
 
+
 class UnitStat(BaseModel):
     name: str
     value: int
+
 
 class TaskUnitStat(BaseModel):
     name: str
     total: int
     completed: int
 
+
 class TopUserStat(BaseModel):
     user: UserResponse
     count: int
+
 
 class ActivityLogEvent(BaseModel):
     id: str

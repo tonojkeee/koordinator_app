@@ -27,7 +27,7 @@ async def handle_document_shared(event) -> None:
         msg_data = MessageCreate(
             channel_id=event.channel_id,
             content=msg_content,
-            document_id=event.document_id
+            document_id=event.document_id,
         )
 
         # Create message
@@ -36,25 +36,28 @@ async def handle_document_shared(event) -> None:
         )
 
         # Broadcast message to channel
-        await manager.broadcast_to_channel(event.channel_id, {
-            "id": msg.id,
-            "channel_id": msg.channel_id,
-            "user_id": msg.user_id,
-            "username": event.sender_username,
-            "full_name": event.sender_full_name,
-            "avatar_url": event.sender_avatar_url,
-            "content": msg.content,
-            "document_id": event.document_id,
-            "document_title": event.document_title,
-            "created_at": msg.created_at.isoformat(),
-            "type": "message"
-        })
+        await manager.broadcast_to_channel(
+            event.channel_id,
+            {
+                "id": msg.id,
+                "channel_id": msg.channel_id,
+                "user_id": msg.user_id,
+                "username": event.sender_username,
+                "full_name": event.sender_full_name,
+                "avatar_url": event.sender_avatar_url,
+                "content": msg.content,
+                "document_id": event.document_id,
+                "document_title": event.document_title,
+                "created_at": msg.created_at.isoformat(),
+                "type": "message",
+            },
+        )
 
 
 async def handle_invitation_created(event) -> None:
     """
     Handle InvitationCreated event.
-    
+
     Sends email notification and WebSocket notification to invitee.
     Also creates a notification message in the user's "Уведомления" channel with action buttons.
     """
@@ -64,45 +67,54 @@ async def handle_invitation_created(event) -> None:
     from app.modules.chat.schemas import MessageCreate
     from app.core.tasks import send_notification_email
     import logging
-    
+
     logger = logging.getLogger(__name__)
-    
+
     async with AsyncSessionLocal() as db:
         try:
             # Check if invitee is an existing user
             # Ensure email is lowercase for matching
             invitee_email = event.invitee_email.lower()
-            logger.info(f"Processing invitation event: id={event.invitation_id}, email={invitee_email}")
-            
+            logger.info(
+                f"Processing invitation event: id={event.invitation_id}, email={invitee_email}"
+            )
+
             invitee_user = await UserService.get_user_by_email(db, invitee_email)
-            
+
             if invitee_user:
-                logger.info(f"Invitee user found: id={invitee_user.id}, username={invitee_user.username}")
+                logger.info(
+                    f"Invitee user found: id={invitee_user.id}, username={invitee_user.username}"
+                )
                 # Create or get notifications channel for user
-                notifications_channel = await UserService.get_or_create_notifications_channel(db, invitee_user.id)
-                
+                notifications_channel = (
+                    await UserService.get_or_create_notifications_channel(
+                        db, invitee_user.id
+                    )
+                )
+
                 if not notifications_channel:
-                    logger.error(f"Failed to get/create notifications channel for user {invitee_user.id}")
+                    logger.error(
+                        f"Failed to get/create notifications channel for user {invitee_user.id}"
+                    )
                     return
-                
+
                 # Create notification message with action buttons
                 notification_text = f"📩 Приглашение в канал '{event.channel_name}' от {event.inviter_name}"
                 if event.message:
                     notification_text += f"\n💬 Сообщение: {event.message}"
-                
+
                 # Add action buttons data to message content
                 notification_text += f"\n\n[INVITATION_ACTIONS:{event.invitation_id}]"
-                
+
                 msg_data = MessageCreate(
-                    channel_id=notifications_channel.id,
-                    content=notification_text
+                    channel_id=notifications_channel.id, content=notification_text
                 )
-                
+
                 # Create system message (user_id=None for system messages)
                 notification_msg = await ChatService.create_message(
                     db, msg_data, user_id=None, invitation_id=event.invitation_id
                 )
-                
+
                 # Send WebSocket notifications
                 try:
                     # Send invitation notification to user
@@ -113,10 +125,10 @@ async def handle_invitation_created(event) -> None:
                         "channel_name": event.channel_name,
                         "inviter_name": event.inviter_name,
                         "message": event.message,
-                        "created_at": event.created_at
+                        "created_at": event.created_at,
                     }
                     await manager.broadcast_to_user(invitee_user.id, notification_data)
-                    
+
                     # Send new message notification
                     message_notification = {
                         "type": "new_message",
@@ -135,34 +147,45 @@ async def handle_invitation_created(event) -> None:
                             "sender_id": None,
                             "content": notification_msg.content,
                             "created_at": notification_msg.created_at.isoformat(),
-                            "invitation_id": event.invitation_id
-                        }
+                            "invitation_id": event.invitation_id,
+                        },
                     }
-                    await manager.broadcast_to_user(invitee_user.id, message_notification)
-                    
+                    await manager.broadcast_to_user(
+                        invitee_user.id, message_notification
+                    )
+
                     # Broadcast to notifications channel
-                    await manager.broadcast_to_channel(notifications_channel.id, {
-                        "id": notification_msg.id,
-                        "channel_id": notification_msg.channel_id,
-                        "user_id": None,
-                        "username": "Система",
-                        "full_name": "Система",
-                        "avatar_url": None,
-                        "content": notification_msg.content,
-                        "created_at": notification_msg.created_at.isoformat(),
-                        "invitation_id": event.invitation_id,
-                        "type": "new_message"
-                    })
-                    
-                    logger.info(f"WebSocket notifications sent for invitation {event.invitation_id}")
+                    await manager.broadcast_to_channel(
+                        notifications_channel.id,
+                        {
+                            "id": notification_msg.id,
+                            "channel_id": notification_msg.channel_id,
+                            "user_id": None,
+                            "username": "Система",
+                            "full_name": "Система",
+                            "avatar_url": None,
+                            "content": notification_msg.content,
+                            "created_at": notification_msg.created_at.isoformat(),
+                            "invitation_id": event.invitation_id,
+                            "type": "new_message",
+                        },
+                    )
+
+                    logger.info(
+                        f"WebSocket notifications sent for invitation {event.invitation_id}"
+                    )
                 except Exception as ws_error:
-                    logger.warning(f"WebSocket notification failed: {ws_error}", exc_info=True)
-                
-                logger.info(f"System notification created for user {invitee_user.id} regarding invitation {event.invitation_id}")
-                
+                    logger.warning(
+                        f"WebSocket notification failed: {ws_error}", exc_info=True
+                    )
+
+                logger.info(
+                    f"System notification created for user {invitee_user.id} regarding invitation {event.invitation_id}"
+                )
+
                 # Prepare and send email notification
                 subject = f"Приглашение в канал '{event.channel_name}'"
-                
+
                 # Create email body with better formatting and direct link
                 email_body = f"""
                 <!DOCTYPE html>
@@ -192,7 +215,7 @@ async def handle_invitation_created(event) -> None:
                             <p><strong>Пригласил:</strong> {event.inviter_name}</p>
                             <p><strong>Дата приглашения:</strong> {event.created_at}</p>
                 """
-                
+
                 if event.message:
                     email_body += f"""
                             <div class="message-box">
@@ -200,7 +223,7 @@ async def handle_invitation_created(event) -> None:
                                 "{event.message}"
                             </div>
                     """
-                
+
                 email_body += f"""
                             <div class="actions">
                                 <p>Войдите в систему, чтобы принять или отклонить приглашение:</p>
@@ -215,18 +238,20 @@ async def handle_invitation_created(event) -> None:
                 </body>
                 </html>
                 """
-                
+
                 # Send email notification
                 try:
                     send_notification_email.delay(invitee_user.id, subject, email_body)
-                    logger.info(f"Email notification queued for user {invitee_user.id} about invitation to channel '{event.channel_name}'")
+                    logger.info(
+                        f"Email notification queued for user {invitee_user.id} about invitation to channel '{event.channel_name}'"
+                    )
                 except Exception as email_error:
                     logger.warning(f"Failed to queue email notification: {email_error}")
             else:
                 # For non-existing users, we could implement external email sending
                 # For now, just log it
                 logger.info(f"Invitation sent to external email: {event.invitee_email}")
-                
+
         except Exception as e:
             logger.error(f"Error handling invitation created event: {e}", exc_info=True)
 
@@ -256,7 +281,9 @@ async def handle_user_created(event) -> None:
     import logging
 
     logger = logging.getLogger(__name__)
-    logger.info(f"Creating notifications channel for new user {event.username} (ID: {event.user_id})")
+    logger.info(
+        f"Creating notifications channel for new user {event.username} (ID: {event.user_id})"
+    )
 
     async with AsyncSessionLocal() as db:
         try:
@@ -274,19 +301,24 @@ async def handle_user_created(event) -> None:
                 .where(
                     Channel.name == "notifications",
                     Channel.is_system == True,
-                    ChannelMember.user_id == event.user_id
+                    ChannelMember.user_id == event.user_id,
                 )
             )
             result = await db.execute(stmt)
             existing = result.scalar_one_or_none()
 
             if existing:
-                logger.info(f"Notifications channel already exists for user {event.user_id}")
+                logger.info(
+                    f"Notifications channel already exists for user {event.user_id}"
+                )
                 return
 
             await ChatService.create_notifications_channel(db, event.user_id)
-            logger.info(f"Successfully created notifications channel for user {event.user_id}")
+            logger.info(
+                f"Successfully created notifications channel for user {event.user_id}"
+            )
 
         except Exception as e:
-            logger.error(f"Failed to create notifications channel for user {event.username}: {e}")
-
+            logger.error(
+                f"Failed to create notifications channel for user {event.username}: {e}"
+            )

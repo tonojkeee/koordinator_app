@@ -14,8 +14,17 @@ from pathlib import Path
 import bleach
 from bleach.css_sanitizer import CSSSanitizer
 
-from app.modules.email.models import EmailMessage, EmailAccount, EmailAttachment, EmailFolder
-from app.modules.email.schemas import EmailMessageCreate, EmailMessageUpdate, EmailFolderCreate
+from app.modules.email.models import (
+    EmailMessage,
+    EmailAccount,
+    EmailAttachment,
+    EmailFolder,
+)
+from app.modules.email.schemas import (
+    EmailMessageCreate,
+    EmailMessageUpdate,
+    EmailFolderCreate,
+)
 from app.modules.auth.models import User
 from email import message_from_bytes, encoders
 from email.header import decode_header
@@ -29,22 +38,56 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # HTML sanitization configuration
 ALLOWED_TAGS = [
-    'p', 'br', 'strong', 'em', 'u', 'a', 'ul', 'ol', 'li',
-    'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-    'table', 'tr', 'td', 'th', 'thead', 'tbody', 'div', 'span',
-    'img', 'hr'
+    "p",
+    "br",
+    "strong",
+    "em",
+    "u",
+    "a",
+    "ul",
+    "ol",
+    "li",
+    "blockquote",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "table",
+    "tr",
+    "td",
+    "th",
+    "thead",
+    "tbody",
+    "div",
+    "span",
+    "img",
+    "hr",
 ]
 
 ALLOWED_ATTRIBUTES = {
-    'a': ['href', 'title', 'target', 'rel'],
-    'img': ['src', 'alt', 'title', 'width', 'height', 'align'],
-    '*': ['class', 'style']
+    "a": ["href", "title", "target", "rel"],
+    "img": ["src", "alt", "title", "width", "height", "align"],
+    "*": ["class", "style"],
 }
 
 ALLOWED_STYLES = [
-    'color', 'background-color', 'font-family', 'font-size', 'font-weight',
-    'text-align', 'text-decoration', 'padding', 'margin', 'border',
-    'border-collapse', 'border-radius', 'width', 'height', 'line-height'
+    "color",
+    "background-color",
+    "font-family",
+    "font-size",
+    "font-weight",
+    "text-align",
+    "text-decoration",
+    "padding",
+    "margin",
+    "border",
+    "border-collapse",
+    "border-radius",
+    "width",
+    "height",
+    "line-height",
 ]
 
 
@@ -63,27 +106,35 @@ def sanitize_html(html: str) -> str:
         tags=ALLOWED_TAGS,
         attributes=ALLOWED_ATTRIBUTES,
         css_sanitizer=css_sanitizer,
-        strip=True
+        strip=True,
     )
 
 
-async def get_user_email_account(db: AsyncSession, user_id: int) -> Optional[EmailAccount]:
-    result = await db.execute(select(EmailAccount).where(EmailAccount.user_id == user_id))
+async def get_user_email_account(
+    db: AsyncSession, user_id: int
+) -> Optional[EmailAccount]:
+    result = await db.execute(
+        select(EmailAccount).where(EmailAccount.user_id == user_id)
+    )
     return result.scalar_one_or_none()
 
-async def create_email_account(db: AsyncSession, user_id: int, email_address: str) -> EmailAccount:
+
+async def create_email_account(
+    db: AsyncSession, user_id: int, email_address: str
+) -> EmailAccount:
     account = EmailAccount(user_id=user_id, email_address=email_address)
     db.add(account)
     await db.commit()
     await db.refresh(account)
     return account
 
+
 async def get_emails(
     db: AsyncSession,
     account_id: int,
     folder: str = "inbox",
     skip: int = 0,
-    limit: int = 50
+    limit: int = 50,
 ) -> List[EmailMessage]:
     if folder == "inbox":
         stmt = select(EmailMessage).where(
@@ -92,7 +143,7 @@ async def get_emails(
                 EmailMessage.is_sent == False,
                 EmailMessage.is_deleted == False,
                 EmailMessage.is_spam == False,
-                EmailMessage.folder_id.is_(None)
+                EmailMessage.folder_id.is_(None),
             )
         )
     elif folder == "sent":
@@ -101,15 +152,12 @@ async def get_emails(
                 EmailMessage.account_id == account_id,
                 EmailMessage.is_sent == True,
                 EmailMessage.is_deleted == False,
-                EmailMessage.is_spam == False
+                EmailMessage.is_spam == False,
             )
         )
     elif folder == "trash":
         stmt = select(EmailMessage).where(
-            and_(
-                EmailMessage.account_id == account_id,
-                EmailMessage.is_deleted == True
-            )
+            and_(EmailMessage.account_id == account_id, EmailMessage.is_deleted == True)
         )
     elif folder == "archive":
         stmt = select(EmailMessage).where(
@@ -117,7 +165,7 @@ async def get_emails(
                 EmailMessage.account_id == account_id,
                 EmailMessage.is_archived == True,
                 EmailMessage.is_deleted == False,
-                EmailMessage.is_spam == False
+                EmailMessage.is_spam == False,
             )
         )
     elif folder == "starred":
@@ -126,7 +174,7 @@ async def get_emails(
                 EmailMessage.account_id == account_id,
                 EmailMessage.is_starred == True,
                 EmailMessage.is_deleted == False,
-                EmailMessage.is_spam == False
+                EmailMessage.is_spam == False,
             )
         )
     elif folder == "important":
@@ -135,7 +183,7 @@ async def get_emails(
                 EmailMessage.account_id == account_id,
                 EmailMessage.is_important == True,
                 EmailMessage.is_deleted == False,
-                EmailMessage.is_spam == False
+                EmailMessage.is_spam == False,
             )
         )
     elif folder == "spam":
@@ -143,7 +191,7 @@ async def get_emails(
             and_(
                 EmailMessage.account_id == account_id,
                 EmailMessage.is_spam == True,
-                EmailMessage.is_deleted == False
+                EmailMessage.is_deleted == False,
             )
         )
     else:
@@ -154,17 +202,25 @@ async def get_emails(
                 and_(
                     EmailMessage.account_id == account_id,
                     EmailMessage.folder_id == f_id,
-                    EmailMessage.is_deleted == False
+                    EmailMessage.is_deleted == False,
                 )
             )
         except ValueError:
             return []
 
-    stmt = stmt.order_by(desc(EmailMessage.received_at)).offset(skip).limit(limit).options(selectinload(EmailMessage.attachments))
+    stmt = (
+        stmt.order_by(desc(EmailMessage.received_at))
+        .offset(skip)
+        .limit(limit)
+        .options(selectinload(EmailMessage.attachments))
+    )
     result = await db.execute(stmt)
     return list(result.scalars().all())
 
-async def get_email_attachment(db: AsyncSession, attachment_id: int, user_id: int) -> Optional[EmailAttachment]:
+
+async def get_email_attachment(
+    db: AsyncSession, attachment_id: int, user_id: int
+) -> Optional[EmailAttachment]:
     """Get email attachment and verify ownership"""
     stmt = select(EmailAttachment).where(EmailAttachment.id == attachment_id)
     result = await db.execute(stmt)
@@ -174,7 +230,11 @@ async def get_email_attachment(db: AsyncSession, attachment_id: int, user_id: in
         return None
 
     # Get the message to find the account
-    stmt_message = select(EmailMessage).where(EmailMessage.id == attachment.message_id).options(selectinload(EmailMessage.attachments))
+    stmt_message = (
+        select(EmailMessage)
+        .where(EmailMessage.id == attachment.message_id)
+        .options(selectinload(EmailMessage.attachments))
+    )
     result_message = await db.execute(stmt_message)
     message = result_message.scalar_one_or_none()
 
@@ -188,8 +248,15 @@ async def get_email_attachment(db: AsyncSession, attachment_id: int, user_id: in
 
     return attachment
 
-async def get_email_by_id(db: AsyncSession, message_id: int, account_id: Optional[int]) -> Optional[EmailMessage]:
-    stmt = select(EmailMessage).where(EmailMessage.id == message_id).options(selectinload(EmailMessage.attachments))
+
+async def get_email_by_id(
+    db: AsyncSession, message_id: int, account_id: Optional[int]
+) -> Optional[EmailMessage]:
+    stmt = (
+        select(EmailMessage)
+        .where(EmailMessage.id == message_id)
+        .options(selectinload(EmailMessage.attachments))
+    )
     result = await db.execute(stmt)
     message = result.scalar_one_or_none()
 
@@ -199,9 +266,16 @@ async def get_email_by_id(db: AsyncSession, message_id: int, account_id: Optiona
 
     return message
 
+
 from app.core.config_service import ConfigService
 
-async def send_email(db: AsyncSession, account_id: int, email_data: EmailMessageCreate, files: List[tuple] = []) -> EmailMessage:
+
+async def send_email(
+    db: AsyncSession,
+    account_id: int,
+    email_data: EmailMessageCreate,
+    files: List[tuple] = [],
+) -> EmailMessage:
     # 1. Fetch sender account
     account = await db.get(EmailAccount, account_id)
     if not account:
@@ -219,7 +293,7 @@ async def send_email(db: AsyncSession, account_id: int, email_data: EmailMessage
         body_html=email_data.body_html,
         is_important=email_data.is_important,
         is_sent=True,
-        is_read=True
+        is_read=True,
     )
     db.add(db_message)
     await db.commit()
@@ -260,17 +334,25 @@ async def send_email(db: AsyncSession, account_id: int, email_data: EmailMessage
                 message_id=db_message.id,
                 file_name=filename,
                 file_path=str(file_path),
-                file_size=len(content)
+                file_size=len(content),
             )
             db.add(attachment)
 
             # Add to email message
             from email.mime.base import MIMEBase
-            part = MIMEBase(*content_type.split('/', 1) if '/' in content_type else ('application', 'octet-stream'))
+
+            part = MIMEBase(
+                *(
+                    content_type.split("/", 1)
+                    if "/" in content_type
+                    else ("application", "octet-stream")
+                )
+            )
             part.set_payload(content)
             import email.encoders
+
             email.encoders.encode_base64(part)
-            part.add_header('Content-Disposition', f'attachment; filename="{filename}"')
+            part.add_header("Content-Disposition", f'attachment; filename="{filename}"')
             smtp_msg.attach(part)
 
         except Exception as e:
@@ -286,19 +368,27 @@ async def send_email(db: AsyncSession, account_id: int, email_data: EmailMessage
         async with aiosmtplib.SMTP(hostname=smtp_host, port=int(smtp_port)) as smtp:
             await smtp.send_message(smtp_msg)
 
-        logger.info(f"Email sent via SMTP ({smtp_host}:{smtp_port}) to {email_data.to_address}")
+        logger.info(
+            f"Email sent via SMTP ({smtp_host}:{smtp_port}) to {email_data.to_address}"
+        )
     except Exception as e:
         logger.error(f"Failed to send email: {e}")
         # Note: Message is already saved as Sent. We might want to mark as failed later.
 
     # Re-fetch with attachments to avoid MissingGreenlet on response serialization
-    stmt = select(EmailMessage).where(EmailMessage.id == db_message.id).options(selectinload(EmailMessage.attachments))
+    stmt = (
+        select(EmailMessage)
+        .where(EmailMessage.id == db_message.id)
+        .options(selectinload(EmailMessage.attachments))
+    )
     result = await db.execute(stmt)
     db_message = result.scalar_one()
 
     return db_message
 
+
 # --- Incoming Email Processing ---
+
 
 async def _extract_email_body(msg) -> tuple[str, str]:
     """Extract plain text and HTML body from email message"""
@@ -314,7 +404,7 @@ async def _extract_email_body(msg) -> tuple[str, str]:
                 try:
                     payload = part.get_payload(decode=True)
                     if payload:
-                        body_text += payload.decode('utf-8', errors='ignore')
+                        body_text += payload.decode("utf-8", errors="ignore")
                 except (UnicodeDecodeError, LookupError, ValueError) as e:
                     logger.warning(f"Failed to decode text/plain part: {e}")
                     pass
@@ -322,7 +412,9 @@ async def _extract_email_body(msg) -> tuple[str, str]:
                 try:
                     payload = part.get_payload(decode=True)
                     if payload:
-                        body_html += sanitize_html(payload.decode('utf-8', errors='ignore'))
+                        body_html += sanitize_html(
+                            payload.decode("utf-8", errors="ignore")
+                        )
                 except (UnicodeDecodeError, LookupError, ValueError) as e:
                     logger.warning(f"Failed to decode text/html part: {e}")
                     pass
@@ -330,7 +422,7 @@ async def _extract_email_body(msg) -> tuple[str, str]:
         try:
             payload = msg.get_payload(decode=True)
             if payload:
-                content = payload.decode('utf-8', errors='ignore')
+                content = payload.decode("utf-8", errors="ignore")
                 ctype = msg.get_content_type()
                 if ctype == "text/html":
                     body_html = sanitize_html(content)
@@ -346,20 +438,24 @@ async def _extract_email_body(msg) -> tuple[str, str]:
 async def _get_attachment_settings(db: AsyncSession) -> tuple[int, int, set]:
     """Get attachment validation settings from database"""
     max_mb_str = await ConfigService.get_value(db, "email_max_attachment_size_mb", "25")
-    max_total_mb_str = await ConfigService.get_value(db, "email_max_total_attachment_size_mb", "50")
-    allowed_types_str = await ConfigService.get_value(db, "email_allowed_file_types", "")
-    
+    max_total_mb_str = await ConfigService.get_value(
+        db, "email_max_total_attachment_size_mb", "50"
+    )
+    allowed_types_str = await ConfigService.get_value(
+        db, "email_allowed_file_types", ""
+    )
+
     try:
         max_bytes = int(max_mb_str) * 1024 * 1024
         max_total_bytes = int(max_total_mb_str) * 1024 * 1024
     except (ValueError, TypeError):
         max_bytes = 25 * 1024 * 1024
         max_total_bytes = 50 * 1024 * 1024
-        
+
     allowed_exts = set()
     if allowed_types_str:
         allowed_exts = {t.strip().lower() for t in allowed_types_str.split(",")}
-    
+
     return max_bytes, max_total_bytes, allowed_exts
 
 
@@ -369,7 +465,7 @@ async def _save_email_attachments(
     message_id: int,
     max_bytes: int,
     max_total_bytes: int,
-    allowed_exts: set
+    allowed_exts: set,
 ) -> None:
     """Save email attachments to disk and database"""
     from pathlib import Path
@@ -388,7 +484,9 @@ async def _save_email_attachments(
                 # Check file extension
                 ext = Path(filename).suffix.lower()
                 if allowed_exts and ext not in allowed_exts:
-                    logger.warning(f"Skipping attachment with disallowed extension: {filename}")
+                    logger.warning(
+                        f"Skipping attachment with disallowed extension: {filename}"
+                    )
                     continue
 
                 # Get file content and size
@@ -401,11 +499,15 @@ async def _save_email_attachments(
 
                 # Check size limits
                 if file_size > max_bytes:
-                    logger.warning(f"Skipping oversized attachment: {filename} ({file_size} bytes)")
+                    logger.warning(
+                        f"Skipping oversized attachment: {filename} ({file_size} bytes)"
+                    )
                     continue
 
                 if total_size + file_size > max_total_bytes:
-                    logger.warning(f"Total attachment size exceeded, skipping: {filename}")
+                    logger.warning(
+                        f"Total attachment size exceeded, skipping: {filename}"
+                    )
                     continue
 
                 total_size += file_size
@@ -427,7 +529,7 @@ async def _save_email_attachments(
                     message_id=message_id,
                     file_name=filename,
                     file_path=str(file_path),
-                    file_size=file_size
+                    file_size=file_size,
                 )
                 db.add(attachment)
 
@@ -435,9 +537,7 @@ async def _save_email_attachments(
 
 
 async def _find_or_create_email_account(
-    db: AsyncSession,
-    recipient: str,
-    accounts_dict: dict
+    db: AsyncSession, recipient: str, accounts_dict: dict
 ) -> Optional[EmailAccount]:
     """Find existing email account or auto-create if internal user"""
     clean_recipient = recipient.strip()
@@ -456,26 +556,35 @@ async def _find_or_create_email_account(
         try:
             from app.core.config_service import ConfigService
             from app.core.config import get_settings
+
             settings = get_settings()
-            
+
             username = clean_recipient.split("@")[0]
             stmt_user = select(User).where(User.username == username)
             res_user = await db.execute(stmt_user)
             user = res_user.scalar_one_or_none()
-            
+
             # Use DB config with fallback to app settings
-            email_domain = await ConfigService.get_value(db, "internal_email_domain", settings.internal_email_domain)
-            
+            email_domain = await ConfigService.get_value(
+                db, "internal_email_domain", settings.internal_email_domain
+            )
+
             if user and clean_recipient.endswith(f"@{email_domain}"):
                 account = EmailAccount(user_id=user.id, email_address=clean_recipient)
                 db.add(account)
                 await db.flush()
                 accounts_dict[clean_recipient] = account
-                logger.info(f"Email: Auto-created account for user {user.username} with address {clean_recipient}")
+                logger.info(
+                    f"Email: Auto-created account for user {user.username} with address {clean_recipient}"
+                )
             else:
-                logger.warning(f"Email: No account found for recipient {clean_recipient} and no matching user for domain {email_domain}")
+                logger.warning(
+                    f"Email: No account found for recipient {clean_recipient} and no matching user for domain {email_domain}"
+                )
         except Exception as e:
-            logger.error(f"Email: Failed to auto-create account for {clean_recipient}: {e}")
+            logger.error(
+                f"Email: Failed to auto-create account for {clean_recipient}: {e}"
+            )
 
     if account:
         accounts_dict[clean_recipient] = account
@@ -484,10 +593,7 @@ async def _find_or_create_email_account(
 
 
 async def process_incoming_email(
-    db: AsyncSession,
-    sender: str,
-    recipients: List[str],
-    content: bytes
+    db: AsyncSession, sender: str, recipients: List[str], content: bytes
 ) -> None:
     """Process incoming email from SMTP server and save to database"""
     # Parse email message
@@ -523,7 +629,9 @@ async def process_incoming_email(
         await _find_or_create_email_account(db, recipient, accounts_dict)
 
     if not accounts_dict:
-        logger.warning(f"Email: Rejected incoming email from {sender} - no valid internal recipients found in {recipients}")
+        logger.warning(
+            f"Email: Rejected incoming email from {sender} - no valid internal recipients found in {recipients}"
+        )
         return
 
     # Create email messages for each recipient account
@@ -541,31 +649,40 @@ async def process_incoming_email(
             body_html=body_html,
             received_at=datetime.now(timezone.utc),
             is_read=False,
-            is_important=str(email_msg.get("X-Priority", "")).strip() == "1" or \
-                         str(email_msg.get("Importance", "")).lower().strip() == "high" or \
-                         str(email_msg.get("Priority", "")).lower().strip() == "urgent"
+            is_important=str(email_msg.get("X-Priority", "")).strip() == "1"
+            or str(email_msg.get("Importance", "")).lower().strip() == "high"
+            or str(email_msg.get("Priority", "")).lower().strip() == "urgent",
         )
         db.add(db_msg)
         await db.flush()
 
         # Notify user via WebSocket
         try:
-            await websocket_manager.broadcast_to_user(account.user_id, {
-                "type": "new_email",
-                "id": db_msg.id,
-                "subject": subject,
-                "from_address": sender,
-                "received_at": db_msg.received_at.isoformat()
-            })
+            await websocket_manager.broadcast_to_user(
+                account.user_id,
+                {
+                    "type": "new_email",
+                    "id": db_msg.id,
+                    "subject": subject,
+                    "from_address": sender,
+                    "received_at": db_msg.received_at.isoformat(),
+                },
+            )
         except Exception as ws_err:
-            logger.warning(f"Failed to send email notification to user {account.user_id}: {ws_err}")
+            logger.warning(
+                f"Failed to send email notification to user {account.user_id}: {ws_err}"
+            )
 
-        await _save_email_attachments(db, email_msg, db_msg.id, max_bytes, max_total_bytes, allowed_exts)
+        await _save_email_attachments(
+            db, email_msg, db_msg.id, max_bytes, max_total_bytes, allowed_exts
+        )
 
     await db.commit()
 
 
-async def update_email_message(db: AsyncSession, message_id: int, account_id: int, updates: EmailMessageUpdate) -> Optional[EmailMessage]:
+async def update_email_message(
+    db: AsyncSession, message_id: int, account_id: int, updates: EmailMessageUpdate
+) -> Optional[EmailMessage]:
     message = await get_email_by_id(db, message_id, account_id)
     if not message:
         return None
@@ -578,26 +695,32 @@ async def update_email_message(db: AsyncSession, message_id: int, account_id: in
     # Re-fetch to ensure relationships are loaded and prevent MissingGreenlet
     return await get_email_by_id(db, message_id, account_id)
 
+
 async def delete_email_message(db: AsyncSession, message_id: int, account_id: int):
     message = await get_email_by_id(db, message_id, account_id)
     if not message:
         return
-    
+
     await db.delete(message)
     await db.commit()
 
 
-async def rename_folder(db: AsyncSession, folder_id: int, account_id: int, new_name: str) -> Optional[EmailFolder]:
-    stmt = select(EmailFolder).where(EmailFolder.id == folder_id, EmailFolder.account_id == account_id)
+async def rename_folder(
+    db: AsyncSession, folder_id: int, account_id: int, new_name: str
+) -> Optional[EmailFolder]:
+    stmt = select(EmailFolder).where(
+        EmailFolder.id == folder_id, EmailFolder.account_id == account_id
+    )
     result = await db.execute(stmt)
     folder = result.scalar_one_or_none()
     if not folder or folder.is_system:
         return None
-        
+
     folder.name = new_name
     import re
-    folder.slug = re.sub(r'[^a-z0-9]+', '-', new_name.lower()).strip('-')
-    
+
+    folder.slug = re.sub(r"[^a-z0-9]+", "-", new_name.lower()).strip("-")
+
     await db.commit()
     await db.refresh(folder)
     return folder
@@ -606,8 +729,9 @@ async def rename_folder(db: AsyncSession, folder_id: int, account_id: int, new_n
 async def empty_folder(db: AsyncSession, account_id: int, folder_type: str):
     if folder_type not in ["trash", "spam"]:
         return
-        
+
     from sqlalchemy import delete
+
     if folder_type == "trash":
         stmt = delete(EmailMessage).where(
             and_(EmailMessage.account_id == account_id, EmailMessage.is_deleted == True)
@@ -616,20 +740,25 @@ async def empty_folder(db: AsyncSession, account_id: int, folder_type: str):
         stmt = delete(EmailMessage).where(
             and_(EmailMessage.account_id == account_id, EmailMessage.is_spam == True)
         )
-        
+
     await db.execute(stmt)
     await db.commit()
 
+
 async def get_folders(db: AsyncSession, account_id: int) -> List[EmailFolder]:
     """Get all folders for account"""
-    stmt = select(EmailFolder).where(EmailFolder.account_id == account_id).order_by(EmailFolder.name)
+    stmt = (
+        select(EmailFolder)
+        .where(EmailFolder.account_id == account_id)
+        .order_by(EmailFolder.name)
+    )
     result = await db.execute(stmt)
     return list(result.scalars().all())
 
 
 async def get_email_stats(db: AsyncSession, account_id: int) -> dict:
     """Get email statistics for account"""
-    
+
     # Count inbox messages (not sent, not deleted, no folder)
     inbox_count = await db.scalar(
         select(func.count(EmailMessage.id)).where(
@@ -637,32 +766,29 @@ async def get_email_stats(db: AsyncSession, account_id: int) -> dict:
                 EmailMessage.account_id == account_id,
                 EmailMessage.is_sent == False,
                 EmailMessage.is_deleted == False,
-                EmailMessage.folder_id.is_(None)
+                EmailMessage.folder_id.is_(None),
             )
         )
     )
-    
+
     # Count sent messages
     sent_count = await db.scalar(
         select(func.count(EmailMessage.id)).where(
             and_(
                 EmailMessage.account_id == account_id,
                 EmailMessage.is_sent == True,
-                EmailMessage.is_deleted == False
+                EmailMessage.is_deleted == False,
             )
         )
     )
-    
+
     # Count trash messages
     trash_count = await db.scalar(
         select(func.count(EmailMessage.id)).where(
-            and_(
-                EmailMessage.account_id == account_id,
-                EmailMessage.is_deleted == True
-            )
+            and_(EmailMessage.account_id == account_id, EmailMessage.is_deleted == True)
         )
     )
-    
+
     # Count archived messages
     archived_count = await db.scalar(
         select(func.count(EmailMessage.id)).where(
@@ -670,11 +796,11 @@ async def get_email_stats(db: AsyncSession, account_id: int) -> dict:
                 EmailMessage.account_id == account_id,
                 EmailMessage.is_archived == True,
                 EmailMessage.is_deleted == False,
-                EmailMessage.is_spam == False
+                EmailMessage.is_spam == False,
             )
         )
     )
-    
+
     # Count starred messages
     starred_count = await db.scalar(
         select(func.count(EmailMessage.id)).where(
@@ -682,11 +808,11 @@ async def get_email_stats(db: AsyncSession, account_id: int) -> dict:
                 EmailMessage.account_id == account_id,
                 EmailMessage.is_starred == True,
                 EmailMessage.is_deleted == False,
-                EmailMessage.is_spam == False
+                EmailMessage.is_spam == False,
             )
         )
     )
-    
+
     # Count important messages
     important_count = await db.scalar(
         select(func.count(EmailMessage.id)).where(
@@ -694,7 +820,7 @@ async def get_email_stats(db: AsyncSession, account_id: int) -> dict:
                 EmailMessage.account_id == account_id,
                 EmailMessage.is_important == True,
                 EmailMessage.is_deleted == False,
-                EmailMessage.is_spam == False
+                EmailMessage.is_spam == False,
             )
         )
     )
@@ -704,22 +830,22 @@ async def get_email_stats(db: AsyncSession, account_id: int) -> dict:
             and_(
                 EmailMessage.account_id == account_id,
                 EmailMessage.is_spam == True,
-                EmailMessage.is_deleted == False
+                EmailMessage.is_deleted == False,
             )
         )
     )
-    
+
     # Count total messages (not deleted)
     total_count = await db.scalar(
         select(func.count(EmailMessage.id)).where(
             and_(
                 EmailMessage.account_id == account_id,
                 EmailMessage.is_deleted == False,
-                EmailMessage.is_spam == False
+                EmailMessage.is_spam == False,
             )
         )
     )
-    
+
     # Count unread messages (only incoming, not sent)
     unread_count = await db.scalar(
         select(func.count(EmailMessage.id)).where(
@@ -728,11 +854,11 @@ async def get_email_stats(db: AsyncSession, account_id: int) -> dict:
                 EmailMessage.is_read == False,
                 EmailMessage.is_deleted == False,
                 EmailMessage.is_sent == False,
-                EmailMessage.is_spam == False
+                EmailMessage.is_spam == False,
             )
         )
     )
-    
+
     return {
         "inbox": inbox_count or 0,
         "sent": sent_count or 0,
@@ -742,36 +868,43 @@ async def get_email_stats(db: AsyncSession, account_id: int) -> dict:
         "spam": spam_count or 0,
         "trash": trash_count or 0,
         "total": total_count or 0,
-        "unread": unread_count or 0
+        "unread": unread_count or 0,
     }
 
 
-async def create_folder(db: AsyncSession, account_id: int, folder_data: EmailFolderCreate) -> EmailFolder:
+async def create_folder(
+    db: AsyncSession, account_id: int, folder_data: EmailFolderCreate
+) -> EmailFolder:
     # Generate slug
     import re
-    slug = re.sub(r'[^a-z0-9]+', '-', folder_data.name.lower()).strip('-')
+
+    slug = re.sub(r"[^a-z0-9]+", "-", folder_data.name.lower()).strip("-")
     if not slug:
-        slug = 'folder-' + str(uuid.uuid4())[:8]
-        
+        slug = "folder-" + str(uuid.uuid4())[:8]
+
     folder = EmailFolder(
-        account_id=account_id,
-        name=folder_data.name,
-        slug=slug,
-        is_system=False
+        account_id=account_id, name=folder_data.name, slug=slug, is_system=False
     )
     db.add(folder)
     await db.commit()
     await db.refresh(folder)
     return folder
 
+
 async def delete_folder(db: AsyncSession, folder_id: int, account_id: int):
-    stmt = select(EmailFolder).where(EmailFolder.id == folder_id, EmailFolder.account_id == account_id)
+    stmt = select(EmailFolder).where(
+        EmailFolder.id == folder_id, EmailFolder.account_id == account_id
+    )
     result = await db.execute(stmt)
     folder = result.scalar_one_or_none()
     if folder:
         # Before deleting folder, "unfolder" messages or move to inbox?
         # For simplicity, move to inbox (set folder_id to None)
-        await db.execute(update(EmailMessage).where(EmailMessage.folder_id == folder_id).values(folder_id=None))
+        await db.execute(
+            update(EmailMessage)
+            .where(EmailMessage.folder_id == folder_id)
+            .values(folder_id=None)
+        )
         await db.delete(folder)
         await db.commit()
 
@@ -784,7 +917,7 @@ async def get_unread_count(db: AsyncSession, account_id: int) -> dict:
                 EmailMessage.account_id == account_id,
                 EmailMessage.is_read == False,
                 EmailMessage.is_deleted == False,
-                EmailMessage.is_sent == False  # Only count incoming messages
+                EmailMessage.is_sent == False,  # Only count incoming messages
             )
         )
     )
@@ -800,7 +933,7 @@ async def mark_all_as_read(db: AsyncSession, account_id: int) -> dict:
                 EmailMessage.account_id == account_id,
                 EmailMessage.is_read == False,
                 EmailMessage.is_deleted == False,
-                EmailMessage.is_sent == False
+                EmailMessage.is_sent == False,
             )
         )
         .values(is_read=True)

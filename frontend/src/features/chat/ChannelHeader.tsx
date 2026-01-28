@@ -1,22 +1,9 @@
 import { Hash, Users, Bell, BellOff, Info, LogOut, Download, UserPlus, Settings } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatName } from '../../utils/formatters';
-import OwnerIndicator from './components/OwnerIndicator';
+import { Header, cn } from '../../design-system';
 
 import type { Channel, User } from '../../types';
-
-interface InviteButtonProps {
-  onClick: () => void;
-}
-const InviteButton: React.FC<InviteButtonProps> = ({ onClick }) => (
-  <button
-    onClick={onClick}
-    className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition-all"
-    title="Пригласить участников"
-  >
-    <UserPlus size={18} />
-  </button>
-);
 
 interface ChannelHeaderProps {
   channel: Channel & { is_direct?: boolean; other_user?: User; display_name?: string; name?: string; is_owner?: boolean; is_member?: boolean; members_count?: number; online_count?: number; visibility?: 'public' | 'private'; is_system?: boolean };
@@ -50,125 +37,125 @@ const ChannelHeader: React.FC<ChannelHeaderProps> = ({
 }) => {
   const { t } = useTranslation();
 
+  const getIcon = () => {
+    if (channel?.is_direct && channel.other_user) {
+      return (
+        <span className="text-[10px] font-bold uppercase">
+          {channel.other_user.full_name
+            ? channel.other_user.full_name.split(' ').map((n: string) => n[0]).join('')
+            : channel.other_user.username.slice(0, 2)
+          }
+        </span>
+      );
+    }
+    if (channel?.is_system) return <Settings size={20} />;
+    return <Hash size={20} />;
+  };
+
+  const getSubtitle = () => (
+    <div className="flex items-center gap-2">
+      <div className={cn(
+        "w-1.5 h-1.5 rounded-full transition-all duration-500",
+        channel?.is_direct
+          ? (isDmPartnerOnline ? 'bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-muted-foreground/30')
+          : (isConnected ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-destructive shadow-[0_0_8px_rgba(176,0,32,0.4)]')
+      )} />
+      <span className="font-bold text-muted-foreground opacity-80 tracking-tight">
+        {channel?.is_system ? (
+          t('chat.system_channel')
+        ) : channel?.is_direct ? (
+          isDmPartnerOnline ? t('chat.online') : formatLastSeen(dmPartner?.last_seen)
+        ) : (
+          t('chat.channelStatus', {
+            count: channel?.members_count || 0,
+            label: t('common.participants', { count: channel?.members_count || 0 }),
+            online: channel?.online_count || 0
+          })
+        )}
+      </span>
+    </div>
+  );
+
   return (
-    <>
-      <div className="shrink-0 border-b border-[#E0E0E0] bg-white shadow-sm z-10">
-        <div className="flex items-center justify-between px-4 h-[60px]">
-          {/* Left: Icon + Title */}
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white bg-[#5B5FC7] shrink-0">
-              {channel?.is_direct && channel.other_user ? (
-                <span className="text-xs font-bold uppercase">
-                  {channel.other_user.full_name
-                    ? channel.other_user.full_name.split(' ').map((n: string) => n[0]).join('')
-                    : channel.other_user.username.slice(0, 2)
-                  }
-                </span>
-              ) : channel?.is_system ? (
-                <Settings size={18} />
-              ) : (
-                <Hash size={18} />
+    <Header
+      title={channel?.is_direct && channel.other_user
+        ? formatName(channel.other_user.full_name, channel.other_user.username)
+        : channel?.display_name || channel?.name || `${t('chat.channel')} ${channel?.id}`
+      }
+      subtitle={getSubtitle()}
+      icon={getIcon()}
+      iconColor="indigo"
+      sticky={true}
+      className="px-6 py-3"
+      actions={
+        <div className="flex items-center gap-1.5">
+          {channel?.visibility === 'private' && channel?.is_member && onOpenInviteModal && !channel?.is_system && (
+            <button
+              onClick={onOpenInviteModal}
+              className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all active:scale-90"
+              title="Пригласить участников"
+            >
+              <UserPlus size={19} strokeWidth={2} />
+            </button>
+          )}
+
+          <button
+            onClick={() => setIsMuteModalOpen(true)}
+            className={cn(
+              "w-9 h-9 flex items-center justify-center rounded-xl transition-all active:scale-90",
+              isMuted
+                ? 'text-destructive bg-destructive/5 hover:bg-destructive/10'
+                : 'text-muted-foreground hover:text-primary hover:bg-primary/5'
+            )}
+            title={isMuted ? t('chat.notifications.unmute') : t('chat.notifications.mute')}
+          >
+            {isMuted ? <BellOff size={19} strokeWidth={2} /> : <Bell size={19} strokeWidth={2} />}
+          </button>
+
+          {!channel?.is_system && (
+            <button
+              onClick={handleExportChat}
+              className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all active:scale-90"
+              title={t('chat.export_history')}
+            >
+              <Download size={19} strokeWidth={2} />
+            </button>
+          )}
+
+          <button
+            className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-xl transition-all active:scale-90"
+            title={t('common.info')}
+          >
+            <Info size={19} strokeWidth={2} />
+          </button>
+
+          {channel && !channel.is_direct && !channel.is_system && (
+            <button
+              onClick={() => setShowParticipants(!showParticipants)}
+              className={cn(
+                "w-9 h-9 flex items-center justify-center rounded-xl transition-all active:scale-90 shadow-sm border",
+                showParticipants
+                  ? 'bg-primary text-white border-primary shadow-m3-1'
+                  : 'bg-surface text-muted-foreground border-border hover:border-primary/30 hover:text-primary'
               )}
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <h2 className="text-base font-bold text-[#242424] truncate flex items-center gap-2">
-                {channel?.is_direct && channel.other_user
-                  ? formatName(channel.other_user.full_name, channel.other_user.username)
-                  : channel?.display_name || channel?.name || `${t('chat.channel')} ${channel?.id}`
-                }
-                {channel?.visibility === 'private' && !channel?.is_direct && !channel?.is_system && (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-500">
-                    <Users size={12} />
-                    <span className="text-slate-400">{t('chat.private_channel')}</span>
-                  </span>
-                )}
-                {channel?.is_owner && !channel?.is_direct && (
-                  <OwnerIndicator size="sm" tooltip={t('chat.youAreOwner')} />
-                )}
-              </h2>
-              <div className="flex items-center gap-2 text-xs text-[#616161]">
-                <div className={`w-1.5 h-1.5 rounded-full ${channel?.is_direct
-                  ? (isDmPartnerOnline ? 'bg-green-500 animate-pulse' : 'bg-slate-300')
-                  : (isConnected ? 'bg-green-500' : 'bg-rose-500')
-                  }`} />
-                <span className="font-medium">
-                  {channel?.is_system ? (
-                    t('chat.system_channel')
-                  ) : channel?.is_direct ? (
-                    isDmPartnerOnline ? t('chat.online') : formatLastSeen(dmPartner?.last_seen)
-                  ) : (
-                    t('chat.channelStatus', {
-                      count: channel?.members_count || 0,
-                      label: t('common.participants', { count: channel?.members_count || 0 }),
-                      online: channel?.online_count || 0
-                    })
-                  )}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right: Action Buttons */}
-          <div className="flex items-center gap-1">
-            {channel?.visibility === 'private' && channel?.is_member && onOpenInviteModal && !channel?.is_system && (
-              <InviteButton onClick={onOpenInviteModal} />
-            )}
-
-            <button
-              onClick={() => setIsMuteModalOpen(true)}
-              className={`w-8 h-8 flex items-center justify-center rounded-md transition-all ${isMuted
-                ? 'text-[#C4314B] hover:bg-rose-50'
-                : 'text-[#616161] hover:text-[#5B5FC7] hover:bg-[#F5F5F5]'
-                }`}
-              title={isMuted ? t('chat.notifications.unmute') : t('chat.notifications.mute')}
+              title={t('chat.participants')}
             >
-              {isMuted ? <BellOff size={18} strokeWidth={1.5} /> : <Bell size={18} strokeWidth={1.5} />}
+              <Users size={19} strokeWidth={2} />
             </button>
+          )}
 
-            {!channel?.is_system && (
-              <button
-                onClick={handleExportChat}
-                className="w-8 h-8 flex items-center justify-center text-[#616161] hover:text-[#5B5FC7] hover:bg-[#F5F5F5] rounded-md transition-all"
-                title={t('chat.export_history')}
-              >
-                <Download size={18} strokeWidth={1.5} />
-              </button>
-            )}
-
+          {channel && !channel.is_direct && !channel.is_system && channel.is_member && !channel.is_owner && (
             <button
-              className="w-8 h-8 flex items-center justify-center text-[#616161] hover:text-[#5B5FC7] hover:bg-[#F5F5F5] rounded-md transition-all"
-              title={t('common.info')}
+              onClick={onLeaveChannel}
+              className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-xl transition-all active:scale-90"
+              title={t('chat.leave_channel')}
             >
-              <Info size={18} strokeWidth={1.5} />
+              <LogOut size={19} strokeWidth={2} />
             </button>
-
-            {channel && !channel.is_direct && !channel.is_system && (
-              <button
-                onClick={() => setShowParticipants(!showParticipants)}
-                className={`w-8 h-8 flex items-center justify-center rounded-md transition-all ${showParticipants
-                  ? 'bg-[#E0E7FF] text-[#5B5FC7]'
-                  : 'text-[#616161] hover:text-[#5B5FC7] hover:bg-[#F5F5F5]'
-                  }`}
-                title={t('chat.participants')}
-              >
-                <Users size={18} strokeWidth={1.5} />
-              </button>
-            )}
-
-            {channel && !channel.is_direct && !channel.is_system && channel.is_member && !channel.is_owner && (
-              <button
-                onClick={onLeaveChannel}
-                className="w-8 h-8 flex items-center justify-center text-[#616161] hover:text-[#C4314B] hover:bg-rose-50 rounded-md transition-all"
-                title={t('chat.leave_channel')}
-              >
-                <LogOut size={18} strokeWidth={1.5} />
-              </button>
-            )}
-          </div>
+          )}
         </div>
-      </div>
-    </>
+      }
+    />
   );
 };
 

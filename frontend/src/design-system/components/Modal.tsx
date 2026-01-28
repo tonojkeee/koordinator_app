@@ -156,9 +156,9 @@ export const Modal = React.memo<ModalProps>(({
   const modalContent = (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-[2px] animate-in fade-in duration-200",
-        // Responsive padding (Requirements 11.5)
-        "p-2 sm:p-4"
+        "fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-300",
+        // Responsive padding
+        "p-4 sm:p-6"
       )}
       onClick={handleOverlayClick}
       role="dialog"
@@ -168,11 +168,11 @@ export const Modal = React.memo<ModalProps>(({
       <div
         ref={modalRef}
         className={cn(
-          'bg-white rounded-md shadow-lg relative animate-in zoom-in-95 duration-150 border border-[#E0E0E0]',
+          'bg-surface rounded-3xl shadow-m3-4 relative animate-in scale-in duration-300 border border-border/50',
           // Use responsive size classes
           responsiveSizeClasses[size],
-          // Responsive max height to prevent overflow on mobile
-          'max-h-[90vh] sm:max-h-[85vh] overflow-y-auto flex flex-col',
+          // Responsive max height
+          'max-h-[90vh] sm:max-h-[85vh] overflow-hidden flex flex-col',
           className
         )}
         onClick={(e) => e.stopPropagation()}
@@ -181,12 +181,12 @@ export const Modal = React.memo<ModalProps>(({
       >
         {/* Header */}
         {(title || showCloseButton) && (
-          <div className="flex items-center justify-between p-4 px-6 border-b border-[#E0E0E0] shrink-0">
+          <div className="flex items-center justify-between p-6 px-8 border-b border-border/60 shrink-0 bg-surface-1/30">
             {title && (
               typeof title === 'string' ? (
                 <h2
                   id="modal-title"
-                  className="text-base font-bold text-[#242424]"
+                  className="text-xl font-black text-foreground uppercase tracking-tight"
                 >
                   {title}
                 </h2>
@@ -199,24 +199,24 @@ export const Modal = React.memo<ModalProps>(({
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="p-1 hover:bg-[#F5F5F5] rounded-md transition-colors"
+                className="p-2 hover:bg-surface-3 rounded-xl text-muted-foreground hover:text-foreground transition-all active:scale-90"
                 aria-label="Close modal"
                 type="button"
               >
-                <X className="w-5 h-5 text-[#616161]" />
+                <X className="w-6 h-6 stroke-[2.5]" />
               </button>
             )}
           </div>
         )}
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto flex-1 text-sm text-[#242424]">
+        <div className="p-8 overflow-y-auto flex-1 text-sm text-foreground font-bold leading-relaxed scrollbar-thin">
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 p-4 px-6 bg-white border-t border-[#E0E0E0] shrink-0">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 p-6 px-8 bg-surface-1/30 border-t border-border/60 shrink-0">
             {footer}
           </div>
         )}

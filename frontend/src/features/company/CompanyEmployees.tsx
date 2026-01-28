@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import type { User } from '../../types';
-import { Search, Building2, Phone, MessageSquare, Loader2, Mail, CheckSquare, Square, Calendar } from 'lucide-react';
+import { Search, Building2, Phone, MessageSquare, Loader2, Mail, CheckSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Avatar } from '../../design-system';
+import { Avatar, cn } from '../../design-system';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../api/client';
 
@@ -29,7 +29,7 @@ const CompanyEmployees: React.FC<CompanyEmployeesProps> = ({
     pendingDMUserId,
     currentUser
 }) => {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const [itemsPerPage] = useState(24);
     const [currentPage, setCurrentPage] = useState(1);
     const [viewingUser, setViewingUser] = useState<User | null>(null);
@@ -74,7 +74,6 @@ const CompanyEmployees: React.FC<CompanyEmployeesProps> = ({
         return [...acc, ...groupedUsers[unit]];
     }, [] as User[]);
 
-    const totalPages = Math.ceil(flatSortedUsers.length / itemsPerPage);
     const paginatedUsers = flatSortedUsers.slice(
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage
@@ -86,208 +85,188 @@ const CompanyEmployees: React.FC<CompanyEmployeesProps> = ({
     }, [users.length]);
 
     return (
-        <div className="flex-1 flex flex-col h-full overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-500">
-            {/* Content Area */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
-                {/* List Header Labels */}
-                {users.length > 0 && !isLoading && (
-                    <div className="sticky top-0 z-20 bg-slate-50/95 backdrop-blur-md border-b border-slate-200/50">
-                        <div className="max-w-7xl mx-auto hidden lg:grid lg:grid-cols-[40px_2fr_1.2fr_1fr_0.8fr_40px] xl:grid-cols-[40px_2.5fr_1.2fr_1fr_1fr_1fr_40px] gap-4 px-8 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                            <div className="flex justify-center shrink-0">#</div>
-                            <div>{t('common.fullName')}</div>
-                            <div>{t('common.email')}</div>
-                            <div>{t('common.phoneNumber')}</div>
-                            <div>{t('common.cabinet')}</div>
-                            <div className="hidden xl:block">{t('common.birthDate')}</div>
-                            <div className="text-center">{t('common.actions')}</div>
-                        </div>
+        <div className="w-full h-full flex flex-col">
+            {/* List Header Labels */}
+            {users.length > 0 && !isLoading && (
+                <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border mb-4 px-6">
+                    <div className="max-w-7xl mx-auto hidden lg:grid lg:grid-cols-[48px_2.5fr_1.5fr_1.2fr_1fr_48px] gap-6 py-4 text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">
+                        <div className="flex justify-center shrink-0">#</div>
+                        <div>{t('common.fullName')}</div>
+                        <div>{t('common.email')}</div>
+                        <div>{t('common.phoneNumber')}</div>
+                        <div>{t('common.cabinet')}</div>
+                        <div className="text-center">{t('common.actions')}</div>
                     </div>
-                )}
+                </div>
+            )}
 
-                <div className="px-4 lg:px-8 py-4">
-                    {isLoading ? (
-                        <div className="h-64 flex flex-col items-center justify-center text-slate-300">
-                            <Loader2 className="animate-spin mb-4" size={32} />
-                            <p className="text-[10px] font-bold uppercase tracking-widest leading-none">{t('users.syncDirectory')}</p>
+            <div className="flex-1 overflow-y-auto px-6 pb-10 custom-scrollbar">
+                {isLoading ? (
+                    <div className="h-64 flex flex-col items-center justify-center space-y-4 animate-fade-in">
+                        <Loader2 className="animate-spin text-primary" size={40} />
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-70">{t('users.syncDirectory')}</p>
+                    </div>
+                ) : users.length === 0 ? (
+                    <div className="h-64 flex flex-col items-center justify-center animate-scale-in">
+                        <div className="w-20 h-20 bg-surface-2 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                            <Search size={40} className="text-muted-foreground/20" />
                         </div>
-                    ) : users.length === 0 ? (
-                        <div className="h-64 flex flex-col items-center justify-center text-slate-300">
-                            <Search size={48} className="opacity-20 mb-4" />
-                            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">{t('users.noUsersFound')}</p>
-                        </div>
-                    ) : (
-                        <div className="max-w-7xl mx-auto pb-10 space-y-1">
-                            <div className="space-y-1">
-                                {paginatedUsers.map((user, index) => {
-                                    const currentUnit = user.unit_name || t('company.no_unit');
-                                    const prevUser = index > 0 ? paginatedUsers[index - 1] : null;
-                                    const prevUnit = prevUser?.unit_name || t('company.no_unit');
-                                    const showHeader = index === 0 || currentUnit !== prevUnit;
+                        <p className="text-sm font-black uppercase tracking-widest text-muted-foreground opacity-60">{t('users.noUsersFound')}</p>
+                    </div>
+                ) : (
+                    <div className="max-w-7xl mx-auto space-y-2">
+                        {paginatedUsers.map((user, index) => {
+                            const currentUnit = user.unit_name || t('company.no_unit');
+                            const prevUser = index > 0 ? paginatedUsers[index - 1] : null;
+                            const prevUnit = prevUser?.unit_name || t('company.no_unit');
+                            const showHeader = index === 0 || currentUnit !== prevUnit;
 
-                                    return (
-                                        <React.Fragment key={user.id}>
-                                            {showHeader && (
-                                                <div className="pt-4 pb-2 px-6 flex items-center space-x-2">
-                                                    <div className="w-1 h-1 rounded-full bg-slate-400" />
-                                                    <h3 className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">
-                                                        {currentUnit}
-                                                    </h3>
-                                                    <div className="h-px flex-1 bg-slate-200" />
-                                                </div>
-                                            )}
+                            return (
+                                <React.Fragment key={user.id}>
+                                    {showHeader && (
+                                        <div className="pt-8 pb-3 px-2 flex items-center gap-4 animate-fade-in">
+                                            <h3 className="text-[11px] font-black text-primary uppercase tracking-[0.15em] whitespace-nowrap bg-primary/5 px-3 py-1 rounded-full border border-primary/10 shadow-sm">
+                                                {currentUnit}
+                                            </h3>
+                                            <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
+                                        </div>
+                                    )}
 
-                                            <div
-                                                onClick={() => onToggleSelection(user.id)}
-                                                className={`group flex flex-col lg:grid lg:grid-cols-[40px_2fr_1.2fr_1fr_0.8fr_40px] xl:grid-cols-[40px_2.5fr_1.2fr_1fr_1fr_1fr_40px] items-center gap-4 px-4 lg:px-6 py-2.5 rounded-lg transition-all border cursor-pointer ${selectedUserIds.includes(user.id)
-                                                    ? 'bg-indigo-50 border-indigo-200'
-                                                    : 'bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300'
-                                                    }`}
-                                            >
-                                                {/* Selection Checkbox */}
-                                                <div className="hidden lg:flex justify-center items-center">
-                                                    {currentUser?.id !== user.id && (
-                                                        <div className={`transition-all duration-200 ${selectedUserIds.includes(user.id) ? 'scale-110' : 'scale-100 group-hover:scale-105 opacity-40 group-hover:opacity-100'}`}>
-                                                            {selectedUserIds.includes(user.id) ? (
-                                                                <div className="text-indigo-600 bg-white shadow-sm rounded-lg p-1 border border-indigo-100">
-                                                                    <CheckSquare size={18} />
-                                                                </div>
-                                                            ) : (
-                                                                <div className="text-slate-300 bg-slate-50 rounded-lg p-1 border border-slate-100">
-                                                                    <Square size={18} />
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </div>
+                                    <div
+                                        onClick={() => onToggleSelection(user.id)}
+                                        className={cn(
+                                            "group flex flex-col lg:grid lg:grid-cols-[48px_2.5fr_1.5fr_1.2fr_1fr_48px] items-center gap-6 px-5 py-3.5 rounded-2xl transition-all duration-300 border cursor-pointer relative overflow-hidden animate-slide-up",
+                                            selectedUserIds.includes(user.id)
+                                                ? 'bg-primary/5 border-primary shadow-m3-1 scale-[1.01] z-10'
+                                                : 'bg-surface border-border hover:bg-surface-2 hover:border-primary/20 hover:shadow-teams-card'
+                                        )}
+                                        style={{ animationDelay: `${index * 30}ms` }}
+                                    >
+                                        {/* Selection indicator on left */}
+                                        {selectedUserIds.includes(user.id) && (
+                                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full" />
+                                        )}
 
-                                                {/* Identity */}
-                                                <div
-                                                    className="flex items-center space-x-4 w-full min-w-0 cursor-pointer group/identity"
-                                                    onClick={(e) => handleViewUser(e, user)}
-                                                >
-                                                    <Avatar
-                                                        src={user.avatar_url}
-                                                        name={user.full_name || user.username}
-                                                        size="md"
-                                                        status={onlineUserIds.has(user.id) ? 'online' : 'offline'}
-                                                        className="shrink-0 shadow-sm group-hover/identity:ring-2 group-hover/identity:ring-indigo-500/50 transition-all"
-                                                    />
-                                                    <div className="flex flex-col justify-center min-w-0 gap-1 py-1">
-                                                        <div className="flex items-center space-x-1.5 min-w-0">
-                                                            {user.rank && (
-                                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-tight shrink-0">
-                                                                    {user.rank}
-                                                                </span>
-                                                            )}
-                                                            <span className="text-sm font-bold text-slate-800 break-words leading-tight group-hover/identity:text-indigo-600 transition-colors" title={user.full_name || user.username}>
-                                                                {user.full_name}
-                                                            </span>
-                                                        </div>
-                                                        <span className="text-[11px] font-bold text-indigo-500/80 uppercase tracking-wider leading-none">
-                                                            @{user.username}
-                                                        </span>
-                                                        {user.position && (
-                                                            <span className="text-xs font-medium text-slate-500/90 italic line-clamp-1 leading-none" title={user.position}>
-                                                                {user.position}
-                                                            </span>
-                                                        )}
+                                        {/* Selection Checkbox */}
+                                        <div className="hidden lg:flex justify-center items-center">
+                                            {currentUser?.id !== user.id && (
+                                                <div className={cn(
+                                                    "transition-all duration-300",
+                                                    selectedUserIds.includes(user.id) ? 'scale-110' : 'scale-90 opacity-0 group-hover:opacity-100 group-hover:scale-100'
+                                                )}>
+                                                    <div className={cn(
+                                                        "rounded-lg p-1.5 border transition-all",
+                                                        selectedUserIds.includes(user.id)
+                                                            ? 'bg-primary text-white border-primary shadow-m3-1'
+                                                            : 'bg-surface border-border text-muted-foreground'
+                                                    )}>
+                                                        <CheckSquare size={18} strokeWidth={2.5} />
                                                     </div>
                                                 </div>
+                                            )}
+                                        </div>
 
-                                                {/* Meta Fields */}
-                                                <div className="hidden lg:flex items-center space-x-2 min-w-0">
-                                                    <Mail size={13} className="text-slate-400 shrink-0" />
-                                                    <span className="text-xs text-slate-700 truncate" title={user.email}>{user.email}</span>
-                                                </div>
-                                                <div className="hidden lg:flex items-center space-x-2 min-w-0">
-                                                    <Phone size={13} className="text-slate-400 shrink-0" />
-                                                    <span className="text-xs text-slate-700 truncate">{user.phone_number || '—'}</span>
-                                                </div>
-                                                <div className="hidden lg:flex items-center space-x-2 min-w-0">
-                                                    <Building2 size={13} className="text-slate-400 shrink-0" />
-                                                    <span className="text-xs text-slate-700 truncate">
-                                                        {user.cabinet ? t('company.cabinet_prefix', { cabinet: user.cabinet }) : '—'}
+                                        {/* Identity */}
+                                        <div
+                                            className="flex items-center space-x-5 w-full min-w-0 cursor-pointer group/identity"
+                                            onClick={(e) => handleViewUser(e, user)}
+                                        >
+                                            <div className="relative">
+                                                <Avatar
+                                                    src={user.avatar_url}
+                                                    name={user.full_name || user.username}
+                                                    size="md"
+                                                    status={onlineUserIds.has(user.id) ? 'online' : 'offline'}
+                                                    className="shrink-0 shadow-sm ring-4 ring-transparent group-hover/identity:ring-primary/10 transition-all duration-300"
+                                                />
+                                            </div>
+                                            <div className="flex flex-col justify-center min-w-0 gap-0.5">
+                                                <div className="flex items-center space-x-2 min-w-0">
+                                                    {user.rank && (
+                                                        <span className="text-[9px] font-black bg-surface-3 text-muted-foreground px-1.5 py-0.5 rounded uppercase tracking-widest shrink-0 border border-border/50">
+                                                            {user.rank}
+                                                        </span>
+                                                    )}
+                                                    <span className="text-sm font-black text-foreground break-words leading-none group-hover/identity:text-primary transition-colors tracking-tight" title={user.full_name || user.username}>
+                                                        {user.full_name}
                                                     </span>
                                                 </div>
-                                                <div className="hidden xl:flex items-center space-x-2 min-w-0">
-                                                    <Calendar size={13} className="text-slate-400 shrink-0" />
-                                                    <span className="text-xs text-slate-700 truncate">
-                                                        {user.birth_date ? new Date(user.birth_date).toLocaleDateString(i18n.language) : '—'}
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-[10px] font-bold text-primary opacity-80 uppercase tracking-widest leading-none">
+                                                        @{user.username}
                                                     </span>
-                                                </div>
-
-                                                {/* DM Button */}
-                                                <div className="flex justify-center w-full lg:w-auto mt-2 lg:mt-0">
-                                                    {currentUser?.id !== user.id ? (
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                onStartDM(user.id);
-                                                            }}
-                                                            disabled={isDMPending}
-                                                            className={`p-2 rounded-lg transition-all flex items-center justify-center ${pendingDMUserId === user.id
-                                                                ? 'bg-indigo-600 text-white'
-                                                                : 'bg-slate-100 text-slate-500 hover:bg-indigo-600 hover:text-white border border-slate-200 hover:border-indigo-600'
-                                                                }`}
-                                                            title={t('users.writeMessage')}
-                                                        >
-                                                            {isDMPending && pendingDMUserId === user.id ? (
-                                                                <Loader2 size={15} className="animate-spin" />
-                                                            ) : (
-                                                                <>
-                                                                    <MessageSquare size={15} />
-                                                                    <span className="lg:hidden text-xs font-semibold ml-2">{t('users.writeMessage')}</span>
-                                                                </>
-                                                            )}
-                                                        </button>
-                                                    ) : (
-                                                        <div className="bg-slate-100 text-slate-400 w-full lg:w-9 h-9 rounded-lg flex items-center justify-center">
-                                                            <span className="text-[9px] font-bold uppercase">{t('company.current_user_badge')}</span>
-                                                        </div>
+                                                    {user.position && (
+                                                        <>
+                                                            <div className="w-1 h-1 rounded-full bg-border" />
+                                                            <span className="text-[11px] font-bold text-muted-foreground line-clamp-1 leading-none opacity-80 italic" title={user.position}>
+                                                                {user.position}
+                                                            </span>
+                                                        </>
                                                     )}
                                                 </div>
                                             </div>
-                                        </React.Fragment>
-                                    );
-                                })}
-                            </div>
+                                        </div>
 
-                            {/* Pagination */}
-                            {totalPages > 1 && (
-                                <div className="mt-4 flex items-center justify-center space-x-2 py-4 border-t border-slate-200">
-                                    <button
-                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                        disabled={currentPage === 1}
-                                        className="px-4 h-8 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 transition-all text-xs font-medium"
-                                    >
-                                        {t('common.back')}
-                                    </button>
-                                    <div className="flex items-center space-x-1">
-                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                                            <button
-                                                key={page}
-                                                onClick={() => setCurrentPage(page)}
-                                                className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${currentPage === page
-                                                    ? 'bg-indigo-600 text-white'
-                                                    : 'text-slate-600 hover:bg-slate-100'
-                                                    }`}
-                                            >
-                                                {page}
-                                            </button>
-                                        ))}
+                                        {/* Meta Fields */}
+                                        <div className="hidden lg:flex items-center space-x-3 min-w-0 opacity-70 group-hover:opacity-100 transition-opacity">
+                                            <div className="w-8 h-8 bg-surface-3 rounded-lg flex items-center justify-center text-muted-foreground shrink-0 border border-border/50">
+                                                <Mail size={14} strokeWidth={2} />
+                                            </div>
+                                            <span className="text-xs text-foreground font-bold truncate" title={user.email}>{user.email}</span>
+                                        </div>
+                                        <div className="hidden lg:flex items-center space-x-3 min-w-0 opacity-70 group-hover:opacity-100 transition-opacity">
+                                            <div className="w-8 h-8 bg-surface-3 rounded-lg flex items-center justify-center text-muted-foreground shrink-0 border border-border/50">
+                                                <Phone size={14} strokeWidth={2} />
+                                            </div>
+                                            <span className="text-xs text-foreground font-bold truncate">{user.phone_number || '—'}</span>
+                                        </div>
+                                        <div className="hidden lg:flex items-center space-x-3 min-w-0 opacity-70 group-hover:opacity-100 transition-opacity">
+                                            <div className="w-8 h-8 bg-surface-3 rounded-lg flex items-center justify-center text-muted-foreground shrink-0 border border-border/50">
+                                                <Building2 size={14} strokeWidth={2} />
+                                            </div>
+                                            <span className="text-xs text-foreground font-bold truncate">
+                                                {user.cabinet ? t('company.cabinet_prefix', { cabinet: user.cabinet }) : '—'}
+                                            </span>
+                                        </div>
+
+                                        {/* DM Button */}
+                                        <div className="flex justify-center w-full lg:w-auto mt-4 lg:mt-0">
+                                            {currentUser?.id !== user.id ? (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onStartDM(user.id);
+                                                    }}
+                                                    disabled={isDMPending}
+                                                    className={cn(
+                                                        "w-10 h-10 rounded-xl transition-all flex items-center justify-center border shadow-sm active:scale-90",
+                                                        pendingDMUserId === user.id
+                                                            ? 'bg-primary text-white border-primary shadow-m3-1'
+                                                            : 'bg-surface-2 text-muted-foreground hover:bg-primary hover:text-white border-border hover:border-primary'
+                                                    )}
+                                                    title={t('users.writeMessage')}
+                                                >
+                                                    {isDMPending && pendingDMUserId === user.id ? (
+                                                        <Loader2 size={18} className="animate-spin" />
+                                                    ) : (
+                                                        <>
+                                                            <MessageSquare size={18} strokeWidth={2.5} />
+                                                            <span className="lg:hidden text-xs font-black ml-2 uppercase tracking-widest">{t('users.writeMessage')}</span>
+                                                        </>
+                                                    )}
+                                                </button>
+                                            ) : (
+                                                <div className="bg-surface-3 text-muted-foreground/40 w-10 h-10 rounded-xl flex items-center justify-center border border-border/50 shadow-inner">
+                                                    <span className="text-[8px] font-black uppercase text-center leading-tight">{t('company.current_user_badge').split(' ').join('\n')}</span>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                    <button
-                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                        disabled={currentPage === totalPages}
-                                        className="px-4 h-8 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 transition-all text-xs font-medium"
-                                    >
-                                        {t('common.next')}
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
+                                </React.Fragment>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
 
             <UserProfileModal

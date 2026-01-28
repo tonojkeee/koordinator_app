@@ -21,35 +21,35 @@ import { cva } from 'class-variance-authority';
 import { cn } from '../utils/cn';
 
 const cardVariants = cva(
-  // Base styles - Teams-like
-  'bg-white border rounded-md transition-all duration-200 ease-out',
+  // Base styles - Teams/Material 3 Hybrid
+  'bg-card text-card-foreground border border-border rounded-lg transition-all duration-300 ease-in-out',
   {
     variants: {
       selected: {
-        true: 'bg-[#F0F0F0] border-[#5B5FC7] ring-1 ring-[#5B5FC7]',
-        false: 'border-[#E0E0E0] hover:border-[#BDBDBD]',
+        true: 'ring-2 ring-primary border-transparent bg-primary/5',
+        false: '',
       },
       hoverable: {
-        true: 'cursor-pointer hover:shadow-sm active:scale-[0.99]',
+        true: 'cursor-pointer hover:shadow-teams-card hover:bg-surface-1 active:scale-[0.99]',
         false: '',
       },
       padding: {
         none: '',
         sm: 'p-3',
-        md: 'p-4',
-        lg: 'p-6',
-        xl: 'p-8',
+        md: 'p-5',
+        lg: 'p-7',
+        xl: 'p-10',
       },
       variant: {
-        default: 'shadow-none',
-        elevated: 'shadow-sm',
-        outlined: 'border',
+        default: 'shadow-sm hover:shadow-m3-1',
+        elevated: 'shadow-m3-1 border-transparent hover:shadow-m3-2',
+        outlined: 'border border-border bg-transparent shadow-none',
         ghost: 'border-0 shadow-none bg-transparent',
       },
     },
     defaultVariants: {
       selected: false,
-      hoverable: true,
+      hoverable: false,
       padding: 'md',
       variant: 'default',
     },

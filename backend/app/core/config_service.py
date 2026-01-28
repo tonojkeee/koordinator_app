@@ -3,21 +3,19 @@ from sqlalchemy import select
 from app.core.models import SystemSetting
 from typing import Any, Optional
 
+
 class ConfigService:
     """Centralized configuration service (moved from admin)"""
 
     @staticmethod
     async def get_value(
-        db: AsyncSession,
-        key: str,
-        default: Any = None,
-        group: Optional[str] = None
+        db: AsyncSession, key: str, default: Any = None, group: Optional[str] = None
     ) -> Any:
         """Get configuration value with default"""
         stmt = select(SystemSetting).where(SystemSetting.key == key)
         if group:
             stmt = stmt.where(SystemSetting.group == group)
-        
+
         result = await db.execute(stmt)
         setting = result.scalar_one_or_none()
         if setting is None:
@@ -25,16 +23,9 @@ class ConfigService:
         return setting.value
 
     @staticmethod
-    async def set_value(
-        db: AsyncSession,
-        key: str,
-        value: Any,
-        group: str = "general"
-    ):
+    async def set_value(db: AsyncSession, key: str, value: Any, group: str = "general"):
         """Set configuration value"""
-        result = await db.execute(
-            select(SystemSetting).where(SystemSetting.key == key)
-        )
+        result = await db.execute(select(SystemSetting).where(SystemSetting.key == key))
         setting = result.scalar_one_or_none()
 
         if setting:

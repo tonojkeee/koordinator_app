@@ -332,55 +332,58 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
   const getUnreadDisplay = (channel: Channel) => unreadCounts[channel.id] || 0;
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#F0F0F0] border-r border-[#E0E0E0] shadow-[1px_0_0_0_rgba(0,0,0,0.05)]">
-      <div className="h-[60px] px-4 flex items-center justify-between bg-white shadow-sm shrink-0 z-10">
-        <h2 className="text-lg font-bold text-[#242424] flex items-center gap-2">
-           {t('chat.title')}
+    <div className="w-full h-full flex flex-col bg-surface-1 border-r border-border shadow-sm">
+      <div className="h-[64px] px-5 flex items-center justify-between bg-surface shrink-0 z-10 border-b border-border/60">
+        <h2 className="text-sm font-black text-foreground uppercase tracking-[0.2em] flex items-center gap-2.5 opacity-90">
+          {t('chat.title')}
         </h2>
         <div className="flex items-center space-x-0.5">
-          <button className="p-2 text-[#616161] hover:bg-[#F5F5F5] hover:text-[#242424] rounded-md transition-colors" title={t('common.filter')}>
-            <Filter size={18} strokeWidth={1.5} />
+          <button className="p-2 text-muted-foreground hover:bg-surface-2 hover:text-foreground rounded-xl transition-all active:scale-90" title={t('common.filter')}>
+            <Filter size={18} strokeWidth={2.5} />
           </button>
           <button
             onClick={() => {
               queryClient.invalidateQueries({ queryKey: ['channels'] });
               queryClient.invalidateQueries({ queryKey: ['channel'] });
             }}
-            className="p-2 text-[#616161] hover:bg-[#F5F5F5] hover:text-[#242424] rounded-md transition-colors"
+            className="p-2 text-muted-foreground hover:bg-surface-2 hover:text-foreground rounded-xl transition-all active:scale-90"
             title={t('common.refresh')}
           >
-            <Search size={18} strokeWidth={1.5} />
+            <Search size={18} strokeWidth={2.5} />
           </button>
           <button
             onClick={() => setIsCreating(true)}
-            className="p-2 text-[#616161] hover:bg-[#F5F5F5] hover:text-[#5B5FC7] rounded-md transition-colors"
+            className="p-2 text-muted-foreground hover:bg-surface-2 hover:text-primary rounded-xl transition-all active:scale-90"
             title={t('chat.create_channel')}
           >
-            <Edit size={18} strokeWidth={1.5} />
+            <Edit size={18} strokeWidth={2.5} />
           </button>
         </div>
       </div>
 
-      <div className="px-3 py-3 bg-[#F0F0F0]">
+      <div className="px-4 py-4 bg-transparent shrink-0">
         <div className="relative group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#616161] group-focus-within:text-[#5B5FC7] transition-colors" size={16} />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 group-focus-within:text-primary transition-colors" size={16} strokeWidth={2.5} />
           <input
             type="text"
             placeholder={t('common.search') || 'Search'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white border border-[#E0E0E0] rounded-md pl-9 pr-4 py-2 text-sm text-[#242424] focus:outline-none focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7] transition-all placeholder:text-[#888888] shadow-sm"
+            className="w-full bg-surface border border-border rounded-xl pl-10 pr-4 py-2 text-sm text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-muted-foreground/40 shadow-sm font-bold"
           />
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-2 space-y-6 pb-4 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-2 space-y-7 pb-6 custom-scrollbar animate-fade-in">
         {isLoading && channels.length === 0 ? (
-          <div className="flex justify-center py-4"><Loader2 className="animate-spin text-[#5B5FC7]" /></div>
+          <div className="flex flex-col items-center justify-center py-10 space-y-3 opacity-50">
+            <Loader2 className="animate-spin text-primary" size={24} strokeWidth={3} />
+            <span className="text-[10px] font-black uppercase tracking-widest">{t('common.loading')}</span>
+          </div>
         ) : (
           <>
             {systemChannels.length > 0 && (
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 {systemChannels.map((channel) => {
                   const contextOptions: ContextMenuOption[] = [
                     {
@@ -414,9 +417,9 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
             )}
 
             {pinnedChannels.length > 0 && (
-              <div className="space-y-0.5">
-                <div className="flex items-center space-x-2 px-3 py-1 text-[11px] font-bold text-[#616161] uppercase tracking-wider opacity-80">
-                  <Pin size={10} className="text-[#616161]" />
+              <div className="space-y-1.5">
+                <div className="flex items-center space-x-2 px-3 mb-1 text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em] opacity-60">
+                  <Pin size={10} className="text-muted-foreground" strokeWidth={3} />
                   <span>{t('chat.fileNotification.pinned')}</span>
                 </div>
                 {pinnedChannels.map((channel) => {
@@ -468,10 +471,10 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
             )}
 
             {publicChannels.length > 0 && (
-              <div className="space-y-0.5">
-                <div className="flex items-center justify-between px-3 py-1 text-[11px] font-bold text-[#616161] uppercase tracking-wider opacity-80">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between px-3 mb-1 text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em] opacity-60">
                   <div className="flex items-center space-x-2">
-                    <Layers size={10} className="text-[#616161]" />
+                    <Layers size={10} className="text-muted-foreground" strokeWidth={3} />
                     <span>{t('chat.publicSpace')}</span>
                   </div>
                 </div>
@@ -524,9 +527,9 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
             )}
 
             {privateChannels.length > 0 && (
-              <div className="space-y-0.5">
-                <div className="flex items-center space-x-2 px-3 py-1 text-[11px] font-bold text-[#616161] uppercase tracking-wider opacity-80">
-                  <Lock size={10} className="text-[#616161]" />
+              <div className="space-y-1.5">
+                <div className="flex items-center space-x-2 px-3 mb-1 text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em] opacity-60">
+                  <Lock size={10} className="text-muted-foreground" strokeWidth={3} />
                   <span>{t('chat.privateSpace')}</span>
                 </div>
                 {privateChannels.map((channel) => {
@@ -578,9 +581,9 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
             )}
 
             {directChannels.length > 0 && (
-              <div className="space-y-0.5">
-                <div className="flex items-center space-x-2 px-3 py-1 text-[11px] font-bold text-[#616161] uppercase tracking-wider opacity-80">
-                  <MessageSquare size={10} className="text-[#616161]" />
+              <div className="space-y-1.5">
+                <div className="flex items-center space-x-2 px-3 mb-1 text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em] opacity-60">
+                  <MessageSquare size={10} className="text-muted-foreground" strokeWidth={3} />
                   <span>{t('chat.directMessages')}</span>
                 </div>
                 {directChannels.map((channel) => {
@@ -680,8 +683,8 @@ const ChannelItem = ({
       className={`
         group relative flex items-center px-3 py-2 mx-2 rounded-md cursor-pointer transition-all duration-200
         ${isActive
-          ? 'bg-white shadow-sm ring-1 ring-[#E0E0E0] z-10'
-          : 'hover:bg-[#EBEBEB]'
+          ? 'bg-surface shadow-elevation-1 ring-1 ring-border z-10'
+          : 'hover:bg-accent/50 hover:text-accent-foreground'
         }
       `}
     >
@@ -690,34 +693,34 @@ const ChannelItem = ({
           src={channel.is_direct ? channel.other_user?.avatar_url : undefined}
           name={channel.display_name || channel.name}
           size="sm"
-          className="rounded-md"
+          className="rounded-md ring-1 ring-border/50"
         />
         {channel.visibility === 'private' && !channel.is_direct && (
-          <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-500 rounded-full flex items-center justify-center border-2 border-[#F0F0F0]">
+          <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-500 rounded-full flex items-center justify-center border-2 border-surface">
             <Lock size={8} className="text-white" />
           </div>
         )}
         {channel.is_system && (
-          <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-slate-500 rounded-full flex items-center justify-center border-2 border-[#F0F0F0]">
+          <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-slate-500 rounded-full flex items-center justify-center border-2 border-surface">
             <Settings size={8} className="text-white" />
           </div>
         )}
         {channel.is_direct && (
-          <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-[#F0F0F0] rounded-full ${channel.other_user?.is_online ? 'bg-green-500' : 'bg-slate-300'}`} />
+          <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-surface rounded-full ${channel.other_user?.is_online ? 'bg-green-500' : 'bg-slate-300'}`} />
         )}
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-baseline mb-0">
-          <h3 className={`text-[13px] font-semibold truncate flex items-center ${isActive ? 'text-[#242424]' : 'text-[#424242]'} ${unread > 0 ? 'font-bold' : ''}`}>
-            {channel.other_user?.rank && <span className="text-slate-500 mr-1.5 font-bold text-[10px]">{abbreviateRank(channel.other_user.rank)}</span>}
+          <h3 className={`text-[13px] font-semibold truncate flex items-center ${isActive ? 'text-foreground' : 'text-foreground/80'} ${unread > 0 ? 'font-bold' : ''}`}>
+            {channel.other_user?.rank && <span className="text-muted-foreground mr-1.5 font-bold text-[10px]">{abbreviateRank(channel.other_user.rank)}</span>}
             <span className="truncate">{channel.display_name || channel.name}</span>
             {channel.is_owner && !channel.is_direct && !channel.is_system && (
               <Crown size={10} className="text-amber-500 ml-1.5 shrink-0" fill="currentColor" />
             )}
           </h3>
           {channel.last_message && (
-            <span className={`text-[10px] ml-2 shrink-0 ${unread > 0 ? 'text-[#5B5FC7] font-bold' : 'text-[#888888]'}`}>
+            <span className={`text-[10px] ml-2 shrink-0 ${unread > 0 ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
               {new Date(channel.last_message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
@@ -732,33 +735,33 @@ const ChannelItem = ({
               return (
                 <div className="flex items-center w-full min-w-0">
                   {showSender && (
-                    <span className="shrink-0 font-semibold text-[10px] uppercase tracking-wide text-[#616161] mr-1">
+                    <span className="shrink-0 font-semibold text-[10px] uppercase tracking-wide text-muted-foreground mr-1">
                       {isMe ? t('chat.you') || 'Вы' : (
-                         channel.last_message?.sender_full_name?.split(' ')[0] || channel.last_message?.sender_name
+                        channel.last_message?.sender_full_name?.split(' ')[0] || channel.last_message?.sender_name
                       )}:
                     </span>
                   )}
-                  <span className={`text-[11px] truncate w-full ${unread ? 'text-[#242424] font-medium' : 'text-[#616161]'}`}>
+                  <span className={`text-[11px] truncate w-full ${unread ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
                     {channel.last_message.content}
                   </span>
                 </div>
               );
             })() : (
-              <span className="text-[11px] text-[#888888] italic">{t('chat.no_messages')}</span>
+              <span className="text-[11px] text-muted-foreground italic">{t('chat.no_messages')}</span>
             )}
           </div>
           {unread > 0 && (
-            <span className="shrink-0 min-w-[16px] h-[16px] bg-[#C4314B] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 shadow-sm">
+            <span className="shrink-0 min-w-[16px] h-[16px] bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center px-1 shadow-sm animate-scale-in">
               {unread > 99 ? '99+' : unread}
             </span>
           )}
         </div>
       </div>
 
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/95 rounded-md p-0.5 shadow-sm z-20 border border-slate-100">
+      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity bg-surface-1/95 rounded-md p-0.5 shadow-sm z-20 border border-border backdrop-blur-sm">
         <button
           onClick={(e) => { e.stopPropagation(); onMute(); }}
-          className="p-1 text-[#616161] hover:text-[#5B5FC7] transition-colors rounded-sm hover:bg-[#F5F5F5]"
+          className="p-1 text-muted-foreground hover:text-primary transition-colors rounded-sm hover:bg-muted"
           title={channel.mute_until && new Date(channel.mute_until) > new Date() ? t('chat.notifications.unmute') : t('chat.notifications.mute')}
         >
           <BellOff size={12} fill={channel.mute_until && new Date(channel.mute_until) > new Date() ? "currentColor" : "none"} />
@@ -766,7 +769,7 @@ const ChannelItem = ({
         {!isSystem && (
           <button
             onClick={(e) => onPin(e, channel.id)}
-            className="p-1 text-[#616161] hover:text-[#5B5FC7] transition-colors rounded-sm hover:bg-[#F5F5F5]"
+            className="p-1 text-muted-foreground hover:text-primary transition-colors rounded-sm hover:bg-muted"
             title={channel.is_pinned ? t('chat.unpin') : t('chat.pin')}
           >
             <Pin size={12} fill={channel.is_pinned ? "currentColor" : "none"} />
@@ -775,7 +778,7 @@ const ChannelItem = ({
         {!isSystem && (channel.created_by === currentUser?.id || currentUser?.role === 'admin') && (
           <button
             onClick={(e) => onDelete(e, channel.id)}
-            className="p-1 text-[#616161] hover:text-[#C4314B] transition-colors rounded-sm hover:bg-[#F5F5F5]"
+            className="p-1 text-muted-foreground hover:text-destructive transition-colors rounded-sm hover:bg-destructive/10"
             title={t('chat.deleteChat')}
           >
             <Trash2 size={12} />

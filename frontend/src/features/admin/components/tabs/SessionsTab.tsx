@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Activity, Clock } from 'lucide-react';
+import { Activity, Clock, Loader2 } from 'lucide-react';
 
 import { Card, Avatar } from '../../../../design-system';
 import { formatDuration } from '../../utils';
@@ -12,81 +12,86 @@ import type { SessionsTabProps } from '../../types';
 import type { User } from '../../../../types';
 
 export const SessionsTab: React.FC<SessionsTabProps> = ({ t, sessions, isLoading }) => (
-    <Card variant="elevated" padding="none" hoverable={false} className="overflow-hidden animate-in fade-in duration-300">
+    <Card variant="default" padding="none" hoverable={false} className="overflow-hidden animate-fade-in shadow-m3-1 border-border/60">
         {/* Header */}
-        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white/30">
-            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-3">
+        <div className="p-8 border-b border-border flex justify-between items-center bg-surface-1/50">
+            <h3 className="text-lg font-black text-foreground flex items-center gap-4 uppercase tracking-tight">
+                <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-600 shadow-sm">
+                    <Activity size={20} strokeWidth={2.5} />
+                </div>
                 {t('admin.activeSessions')}
-                <span className="px-3 py-1 bg-emerald-500 text-white text-[10px] font-bold rounded-full shadow-lg shadow-emerald-100 animate-pulse">
-                    {sessions?.length || 0} {t('common.online').toUpperCase()}
+                <span className="px-3 py-1 bg-emerald-500 text-white text-[9px] font-black rounded-full shadow-m3-1 animate-pulse uppercase tracking-[0.2em] ml-2">
+                    {sessions?.length || 0} {t('common.online')}
                 </span>
             </h3>
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto custom-scrollbar">
             <table className="w-full text-left border-collapse">
                 <thead>
-                    <tr className="bg-slate-50/50 border-b border-slate-100/50">
-                        <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    <tr className="bg-surface-2/80 border-b border-border">
+                        <th className="px-8 py-5 text-[9px] font-black text-muted-foreground uppercase tracking-[0.25em]">
                             {t('admin.user')}
                         </th>
-                        <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th className="px-8 py-5 text-[9px] font-black text-muted-foreground uppercase tracking-[0.25em]">
                             {t('common.unit')}
                         </th>
-                        <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th className="px-8 py-5 text-[9px] font-black text-muted-foreground uppercase tracking-[0.25em]">
                             {t('admin.sessionDuration')}
                         </th>
-                        <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right">
+                        <th className="px-8 py-5 text-[9px] font-black text-muted-foreground uppercase tracking-[0.25em] text-right">
                             {t('admin.actions')}
                         </th>
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100/50">
+                <tbody className="divide-y divide-border/40">
                     {isLoading ? (
                         <tr>
-                            <td colSpan={4} className="px-6 py-12 text-center">
-                                <div className="animate-spin inline-block w-6 h-6 border-4 border-indigo-500 border-t-transparent rounded-full" />
+                            <td colSpan={4} className="px-8 py-24 text-center">
+                                <Loader2 className="animate-spin mx-auto text-primary" size={32} strokeWidth={3} />
                             </td>
                         </tr>
                     ) : sessions && sessions.length > 0 ? (
                         sessions.map((user: User) => (
                             <tr
                                 key={user.id}
-                                className="hover:bg-indigo-50/30 transition-all duration-200 group"
+                                className="hover:bg-primary/5 transition-all duration-300 group active:bg-primary/10"
                             >
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-3">
-                                        <Avatar
-                                            src={user.avatar_url || undefined}
-                                            name={user.full_name || user.username}
-                                            size="sm"
-                                            status="online"
-                                            className="group-hover:scale-105 transition-transform"
-                                        />
+                                <td className="px-8 py-5">
+                                    <div className="flex items-center gap-4">
+                                        <div className="relative">
+                                            <Avatar
+                                                src={user.avatar_url || undefined}
+                                                name={user.full_name || user.username}
+                                                size="md"
+                                                status="online"
+                                                className="group-hover:scale-105 transition-transform duration-500 shadow-sm ring-4 ring-transparent group-hover:ring-primary/10"
+                                            />
+                                        </div>
                                         <div className="min-w-0">
-                                            <div className="font-semibold text-slate-900 text-sm truncate group-hover:text-indigo-600 transition-colors">
+                                            <div className="font-black text-foreground text-sm truncate group-hover:text-primary transition-colors tracking-tight">
                                                 {user.full_name || user.username}
                                             </div>
-                                            <div className="text-xs text-slate-400 truncate">
+                                            <div className="text-[10px] font-bold text-primary opacity-60 uppercase tracking-widest">
                                                 @{user.username}
                                             </div>
                                         </div>
                                     </div>
                                 </td>
-                                <td className="px-6 py-4">
-                                    <span className="text-xs font-semibold text-slate-600 bg-slate-50 px-2.5 py-1 rounded-lg">
+                                <td className="px-8 py-5">
+                                    <span className="text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-2.5 py-1 rounded-lg border border-primary/10 shadow-sm">
                                         {user.unit_name || user.unit?.name || t('admin.noUnit')}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4">
-                                    <span className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600">
-                                        <Clock size={12} />
+                                <td className="px-8 py-5">
+                                    <span className="flex items-center gap-2 text-xs font-bold text-foreground opacity-80 tabular-nums uppercase tracking-widest">
+                                        <Clock size={14} className="text-primary" strokeWidth={2.5} />
                                         {formatDuration(new Date(user.session_start || user.last_seen || new Date()), t)}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4 text-right">
-                                    <button className="px-3 py-1.5 bg-rose-50 text-rose-600 text-[10px] font-bold uppercase tracking-wide rounded-lg hover:bg-rose-500 hover:text-white transition-all">
+                                <td className="px-8 py-5 text-right">
+                                    <button className="px-4 py-2 bg-destructive/5 text-destructive text-[9px] font-black uppercase tracking-widest rounded-xl border border-destructive/10 hover:bg-destructive hover:text-white transition-all active:scale-95 shadow-sm">
                                         {t('common.delete')}
                                     </button>
                                 </td>
@@ -94,10 +99,12 @@ export const SessionsTab: React.FC<SessionsTabProps> = ({ t, sessions, isLoading
                         ))
                     ) : (
                         <tr>
-                            <td colSpan={4} className="px-6 py-12 text-center">
-                                <div className="flex flex-col items-center gap-3">
-                                    <Activity size={48} className="text-slate-200" />
-                                    <span className="text-slate-400 font-semibold text-xs uppercase tracking-wider">
+                            <td colSpan={4} className="px-8 py-20 text-center animate-scale-in">
+                                <div className="flex flex-col items-center gap-4">
+                                    <div className="w-20 h-20 bg-surface-2 rounded-full flex items-center justify-center shadow-inner">
+                                        <Activity size={48} className="text-muted-foreground/20" strokeWidth={1} />
+                                    </div>
+                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50">
                                         {t('admin.noActiveSessions')}
                                     </span>
                                 </div>

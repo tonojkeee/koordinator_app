@@ -33,9 +33,12 @@ logger = logging.getLogger("uvicorn.error")
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Lifespan events"""
-    
+
     # Security validation - SECRET_KEY
-    if not settings.secret_key or settings.secret_key == "your-secret-key-change-in-production":
+    if (
+        not settings.secret_key
+        or settings.secret_key == "your-secret-key-change-in-production"
+    ):
         if not settings.debug:
             raise RuntimeError(
                 "CRITICAL: SECRET_KEY must be configured in production! "
@@ -46,7 +49,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 "SECURITY WARNING: SECRET_KEY is not configured. "
                 "This is acceptable for development but MUST be set in production!"
             )
-    
+
     # Security validation - CORS
     if not settings.cors_origins or "*" in settings.cors_origins:
         if not settings.debug:
@@ -56,43 +59,52 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             )
         else:
             logger.info("Development mode: CORS accepting all origins")
-    
+
     # ========== STARTUP ==========
-    
+
     # Initialize database
     await init_db()
     app.state.engine = engine
 
     # Seed database with default data
     from scripts import seed_db
+
     await seed_db.main()
-    
+
     from datetime import datetime, timezone
+
     app.state.start_time = datetime.now(timezone.utc)
-    
+
     # Initialize Redis (optional, for scaling)
     from app.modules.chat.websocket import manager
+
     await manager.init_redis(settings.redis_url if settings.redis_url else None)
-    
+
     # Start WebSocket heartbeat
     import asyncio
+
     asyncio.create_task(manager.start_heartbeat())
 
     # Register event handlers
-    from app.modules.chat.handlers import register_event_handlers as register_chat_handlers
+    from app.modules.chat.handlers import (
+        register_event_handlers as register_chat_handlers,
+    )
+
     await register_chat_handlers(event_bus)
 
     from app.modules.email.handlers import register_email_handlers
+
     await register_email_handlers(event_bus)
 
     from app.modules.auth.handlers import register_auth_handlers
+
     await register_auth_handlers(event_bus)
 
     # Log startup info
     db_type = "MySQL" if settings.is_mysql else "SQLite"
     redis_status = "connected" if settings.redis_url else "disabled (in-memory mode)"
     logger.info(f"Server started: Database={db_type}, Redis={redis_status}")
-    
+
     # Register mDNS service for auto-discovery
     app.state.zeroconf = AsyncZeroconf()
     try:
@@ -101,13 +113,13 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
             # doesn't even have to be reachable
-            s.connect(('10.255.255.255', 1))
+            s.connect(("10.255.255.255", 1))
             local_ip = s.getsockname()[0]
         except Exception:
             local_ip = socket.gethostbyname(local_hostname)
         finally:
             s.close()
-                
+
         info = ServiceInfo(
             "_koordinator._tcp.local.",
             f"{local_hostname}._koordinator._tcp.local.",
@@ -118,16 +130,22 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 "name": settings.app_name,
                 "path": "/api",
                 "protocol": "https" if settings.use_https else "http",
-                "domain": settings.server_domain
+                "domain": settings.server_domain,
             },
-            server=settings.server_domain if settings.server_domain else f"{local_hostname}.local."
+            server=(
+                settings.server_domain
+                if settings.server_domain
+                else f"{local_hostname}.local."
+            ),
         )
         await app.state.zeroconf.async_register_service(info)
         app.state.zc_info = info
-        logger.info(f"mDNS: Service registered as {settings.app_name} at {local_ip}:5100")
+        logger.info(
+            f"mDNS: Service registered as {settings.app_name} at {local_ip}:5100"
+        )
     except Exception:
         logger.exception("mDNS: Failed to register service")
-    
+
     # Start internal SMTP server for receiving emails
     smtp_port = int(os.getenv("SMTP_SERVER_PORT", 2525))
     smtp_host = os.getenv("SMTP_SERVER_HOST", "0.0.0.0")
@@ -139,11 +157,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     except Exception as e:
         logger.error(f"Failed to start SMTP server: {e}")
         app.state.smtp_server = None
-    
+
     yield
-    
+
     # ========== SHUTDOWN ==========
-    
+
     # Stop SMTP server
     if hasattr(app.state, "smtp_server") and app.state.smtp_server:
         try:
@@ -151,17 +169,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             logger.info("SMTP Server stopped")
         except Exception as e:
             logger.error(f"Error stopping SMTP server: {e}")
-    
+
     # Graceful WebSocket shutdown
     await manager.graceful_shutdown()
-    
+
     # Close Redis connection
     from app.core.redis_manager import redis_manager
+
     await redis_manager.disconnect()
-    
+
     # Dispose database engine
     await engine.dispose()
-    
+
     # Unregister mDNS service
     if hasattr(app.state, "zeroconf"):
         try:
@@ -171,7 +190,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             logger.info("mDNS: Service unregistered")
         except Exception as e:
             logger.error(f"mDNS: Error during unregistration: {e}")
-            
+
     logger.info("Server shutdown complete")
 
 
@@ -179,7 +198,7 @@ app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
     debug=settings.debug,
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # CORS - in debug mode allow all origins (regex for credential support), otherwise use configured origins
@@ -209,10 +228,7 @@ if settings.debug:
 else:
     cors_params["allow_origins"] = cors_origins
 
-app.add_middleware(
-    CORSMiddleware,
-    **cors_params
-)
+app.add_middleware(CORSMiddleware, **cors_params)
 
 
 # Request ID middleware for tracing
@@ -221,11 +237,13 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
+
 class LoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next) -> Response:
         print(f"Incoming request: {request.method} {request.url.path}")
         response = await call_next(request)
         return response
+
 
 app.add_middleware(LoggingMiddleware)
 
@@ -241,21 +259,22 @@ class RequestIDMiddleware(BaseHTTPMiddleware):
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Add security headers to all responses"""
+
     async def dispatch(self, request: Request, call_next) -> Response:
         response = await call_next(request)
-        
+
         # X-Content-Type-Options: Prevent MIME type sniffing
         response.headers["X-Content-Type-Options"] = "nosniff"
-        
+
         # X-Frame-Options: Prevent clickjacking
         response.headers["X-Frame-Options"] = "DENY"
-        
+
         # X-XSS-Protection: Enable XSS filter (legacy browsers)
         response.headers["X-XSS-Protection"] = "1; mode=block"
-        
+
         # Referrer-Policy: Control referrer information
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        
+
         # Permissions-Policy: Control browser features
         response.headers["Permissions-Policy"] = (
             "geolocation=(), "
@@ -267,17 +286,19 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "gyroscope=(), "
             "accelerometer=()"
         )
-        
+
         # Strict-Transport-Security: Enforce HTTPS (only in production with HTTPS)
         if settings.use_https and not settings.debug:
             response.headers["Strict-Transport-Security"] = (
                 "max-age=31536000; includeSubDomains; preload"
             )
-        
+
         # Content-Security-Policy: Strict policy for API responses
         if request.url.path.startswith("/api"):
-            response.headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'"
-        
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'none'; frame-ancestors 'none'"
+            )
+
         return response
 
 
@@ -307,8 +328,12 @@ instrumentator = Instrumentator(
     inprogress_name="http_requests_inprogress",
     inprogress_labels=True,
 )
-instrumentator.instrument(app).expose(app, endpoint="/api/metrics", include_in_schema=False)
-instrumentator.expose(app, endpoint="/metrics", include_in_schema=False) # Keep legacy endpoint too
+instrumentator.instrument(app).expose(
+    app, endpoint="/api/metrics", include_in_schema=False
+)
+instrumentator.expose(
+    app, endpoint="/metrics", include_in_schema=False
+)  # Keep legacy endpoint too
 
 # Static files for avatars
 if not os.path.exists("static/avatars"):
@@ -320,7 +345,12 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 @app.get("/api")
 async def api_root() -> dict[str, str]:
     """API Root enpoint"""
-    return {"message": get_text("system.api_root"), "version": settings.app_version, "status": "running"}
+    return {
+        "message": get_text("system.api_root"),
+        "version": settings.app_version,
+        "status": "running",
+    }
+
 
 @app.get("/")
 async def root():
@@ -330,12 +360,17 @@ async def root():
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     FRONTEND_DIST = os.path.join(os.path.dirname(BASE_DIR), "frontend", "dist")
     index_path = os.path.join(FRONTEND_DIST, "index.html")
-    
+
     if os.path.exists(index_path):
         return FileResponse(index_path)
-    
+
     # Fallback to API message if frontend not found
-    return {"message": get_text("system.api_root"), "version": settings.app_version, "status": "running", "warning": "Frontend not found"}
+    return {
+        "message": get_text("system.api_root"),
+        "version": settings.app_version,
+        "status": "running",
+        "warning": "Frontend not found",
+    }
 
 
 @app.get("/health")
@@ -346,20 +381,20 @@ async def health(db: AsyncSession = Depends(get_db)) -> dict[str, Any]:
     Returns detailed status for monitoring systems.
     """
     from app.core.redis_manager import redis_manager
-    
+
     health_status = {
         "status": "healthy",
         "version": settings.app_version,
         "database": {
             "type": "mysql" if settings.is_mysql else "sqlite",
-            "status": "unknown"
+            "status": "unknown",
         },
         "redis": {
             "enabled": bool(settings.redis_url),
-            "status": "connected" if redis_manager.is_available else "fallback"
-        }
+            "status": "connected" if redis_manager.is_available else "fallback",
+        },
     }
-    
+
     # Test database connection
     try:
         await db.execute(text("SELECT 1"))
@@ -367,12 +402,13 @@ async def health(db: AsyncSession = Depends(get_db)) -> dict[str, Any]:
     except Exception as e:
         # Log detailed error internally for debugging
         import logging
+
         logger = logging.getLogger(__name__)
         logger.error(f"Health check database error: {e}", exc_info=True)
         # Return generic status to client (no error details)
         health_status["database"]["status"] = "error"
         health_status["status"] = "degraded"
-    
+
     return health_status
 
 
@@ -386,14 +422,25 @@ from fastapi import HTTPException
 # We are in backend/app/main.py, so cwd depends on where we run it. Usually backend/
 # If running from backend/, then ../frontend/dist
 # Let's make it robust based on current file path
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) # backend/app -> backend
+BASE_DIR = os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__))
+)  # backend/app -> backend
 FRONTEND_DIST = os.path.join(os.path.dirname(BASE_DIR), "frontend", "dist")
 
 if os.path.exists(os.path.join(FRONTEND_DIST, "assets")):
-    app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIST, "assets")), name="assets")
+    app.mount(
+        "/assets",
+        StaticFiles(directory=os.path.join(FRONTEND_DIST, "assets")),
+        name="assets",
+    )
 
 if os.path.exists(os.path.join(FRONTEND_DIST, "sounds")):
-    app.mount("/sounds", StaticFiles(directory=os.path.join(FRONTEND_DIST, "sounds")), name="sounds")
+    app.mount(
+        "/sounds",
+        StaticFiles(directory=os.path.join(FRONTEND_DIST, "sounds")),
+        name="sounds",
+    )
+
 
 @app.get("/{full_path:path}")
 async def serve_spa(full_path: str):
@@ -403,7 +450,11 @@ async def serve_spa(full_path: str):
     Prioritizes API routes (handled above) by returning 404 if path implies API but wasn't matched.
     """
     # If it looks like an API call but wasn't handled by routers, return 404
-    if full_path.startswith("api/") or full_path.startswith("docs") or full_path.startswith("openapi.json"):
+    if (
+        full_path.startswith("api/")
+        or full_path.startswith("docs")
+        or full_path.startswith("openapi.json")
+    ):
         raise HTTPException(status_code=404, detail="Not Found")
 
     # Try to serve static file from root of dist (e.g. icon.png, vite.svg)
@@ -415,5 +466,7 @@ async def serve_spa(full_path: str):
     index_path = os.path.join(FRONTEND_DIST, "index.html")
     if os.path.exists(index_path):
         return FileResponse(index_path)
-    
-    return {"message": "Frontend build not found. Please run 'npm run build' in frontend directory."}
+
+    return {
+        "message": "Frontend build not found. Please run 'npm run build' in frontend directory."
+    }

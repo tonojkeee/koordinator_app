@@ -6,6 +6,7 @@ from app.modules.auth.events import UserDeleted
 
 logger = logging.getLogger(__name__)
 
+
 async def handle_user_deleted_cleanup(event: Any):
     """
     Listener for UserDeleted event.
@@ -14,8 +15,10 @@ async def handle_user_deleted_cleanup(event: Any):
     if not isinstance(event, UserDeleted):
         return
 
-    logger.info(f"Cleaning up files for deleted user {event.username} (ID: {event.user_id})")
-    
+    logger.info(
+        f"Cleaning up files for deleted user {event.username} (ID: {event.user_id})"
+    )
+
     # 1. Delete user avatar
     if event.avatar_url:
         # Assuming avatar_url is like "/uploads/avatars/..."
@@ -26,6 +29,7 @@ async def handle_user_deleted_cleanup(event: Any):
                 logger.info(f"Deleted avatar: {avatar_path}")
             except OSError as e:
                 logger.error(f"Failed to delete avatar {avatar_path}: {e}")
+
 
 async def register_auth_handlers(bus: Any = None):
     bus = bus or event_bus

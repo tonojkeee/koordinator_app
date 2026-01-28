@@ -42,8 +42,8 @@ export interface HeaderProps {
   /**
    * Подзаголовок (опционально)
    */
-  subtitle?: string;
-  
+  subtitle?: React.ReactNode;
+
   /**
    * React элемент иконки модуля
    */
@@ -184,72 +184,77 @@ export const Header = React.memo<HeaderProps>(({
   return (
     <header
       className={cn(
-        // Outer container for floating effect
-        'px-6 pt-4 pb-2 z-40',
+        // Outer container with precise Teams-like padding
+        'px-6 py-4 z-40',
         sticky && 'sticky top-0 pointer-events-none',
         className
       )}
     >
       <div className={cn(
-        // Floating card style
-        'bg-white border border-[#E0E0E0] rounded-lg shadow-sm p-3',
-        'pointer-events-auto', // Re-enable pointer events
-        'flex flex-col gap-3'
+        // Refined Floating Surface: Using M3 Elevation and Teams-like hierarchy
+        'bg-surface border border-border rounded-xl shadow-m3-1 p-3.5',
+        'pointer-events-auto transition-shadow duration-300 hover:shadow-m3-2',
+        'flex flex-col gap-3.5'
       )}>
-        {/* Upper Level: Icon + Title + Search + Actions */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          {/* Icon + Title Section */}
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            {/* Module Icon */}
-            <HeaderIcon icon={icon} color={iconColor} className="rounded-md shadow-sm" />
+        {/* Main Content: Icon + Title + Search + Actions */}
+        <div className="flex items-center justify-between gap-6">
+          {/* Left: Icon + Title Section */}
+          <div className="flex items-center gap-4 min-w-0 flex-1">
+            {/* Module Icon - Enhanced with subtle shadow */}
+            <div className="shrink-0 shadow-sm rounded-lg overflow-hidden">
+              <HeaderIcon icon={icon} color={iconColor} />
+            </div>
 
             {/* Title Section */}
-            <div className="flex-1 min-w-0">
-              <AnimatedTitle title={title} className="text-base font-bold text-[#242424]" />
+            <div className="min-w-0 flex flex-col justify-center">
+              <AnimatedTitle title={title} className="text-lg font-black text-foreground tracking-tight" />
               {subtitle && (
-                <div className="text-[10px] font-semibold text-[#888888] uppercase tracking-wider leading-tight">
+                <div className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em] leading-none mt-1 opacity-70">
                   {subtitle}
                 </div>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-            {/* Search Input */}
+          {/* Right: Search + Actions Section - Tighter grouping */}
+          <div className="flex items-center gap-4 shrink-0">
+            {/* Search Input - Professional sizing */}
             {onSearchChange && (
-              <div className="w-full sm:w-64">
+              <div className="w-56 sm:w-72">
                 <SearchInput
                   placeholder={searchPlaceholder}
                   value={searchValue}
                   onChange={onSearchChange}
                   onClear={onSearchClear}
+                  className="bg-surface-2 border-transparent focus:bg-surface focus:border-primary/30"
                 />
               </div>
             )}
 
-            {/* Actions */}
+            {/* Actions - Unified spacing */}
             {actions && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 {actions}
               </div>
             )}
           </div>
         </div>
 
-        {/* Lower Level: Tab Navigation */}
+        {/* Optional Lower Level: Tab Navigation - More integrated look */}
         {((tabs && tabs.length > 0) || tabsActions) && (
-          <div className="flex items-center justify-between pt-1 border-t border-[#F0F0F0] mt-1 pt-2">
-            <div className="flex-1 overflow-x-auto">
+          <div className="flex items-center justify-between pt-3 border-t border-border/60">
+            <div className="flex-1 overflow-x-auto no-scrollbar">
               {tabs && tabs.length > 0 && (
                 <TabNavigation
                   tabs={tabs}
                   activeTab={activeTab}
                   onTabChange={onTabChange}
+                  className="bg-transparent border-none p-0 shadow-none"
                 />
               )}
             </div>
             {tabsActions && (
-              <div className="flex items-center pl-2 shrink-0">
+              <div className="flex items-center pl-4 shrink-0">
                 {tabsActions}
               </div>
             )}

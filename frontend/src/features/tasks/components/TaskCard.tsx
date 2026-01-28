@@ -10,7 +10,7 @@ import { TaskPriority, TaskStatus } from '../types';
 import TaskReportModal from './TaskReportModal';
 import TaskReturnModal from './TaskReturnModal';
 import { formatName, abbreviateRank } from '../../../utils/formatters';
-import { Card, ContextMenu, type ContextMenuOption } from '../../../design-system';
+import { Card, ContextMenu, type ContextMenuOption, Button, cn } from '../../../design-system';
 
 interface TaskCardProps {
     task: Task;
@@ -43,21 +43,21 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, variant, onConfirm, onDelete,
 
     const getStatusColor = () => {
         switch (task.status) {
-            case TaskStatus.COMPLETED: 
-                return 'bg-green-100 text-green-700 border-green-200';
-            case TaskStatus.OVERDUE: 
-                return 'bg-rose-100 text-rose-700 border-rose-200 animate-pulse';
-            case TaskStatus.ON_REVIEW: 
-                return 'bg-amber-100 text-amber-700 border-amber-200';
-            default: 
-                return 'bg-slate-100 text-slate-600 border-slate-200';
+            case TaskStatus.COMPLETED:
+                return 'bg-green-500/10 text-green-700 border-green-500/20';
+            case TaskStatus.OVERDUE:
+                return 'bg-destructive/10 text-destructive border-destructive/20 animate-pulse';
+            case TaskStatus.ON_REVIEW:
+                return 'bg-amber-500/10 text-amber-700 border-amber-500/20';
+            default:
+                return 'bg-surface-3 text-muted-foreground border-border/50';
         }
     };
 
     const getPriorityColor = () => {
         return task.priority === TaskPriority.HIGH
-            ? 'bg-rose-50 text-rose-600 border-rose-100'
-            : 'bg-blue-50 text-blue-600 border-blue-100';
+            ? 'bg-destructive/5 text-destructive border-destructive/10'
+            : 'bg-primary/5 text-primary border-primary/10';
     };
 
     const formatDate = (dateStr: string) => {
@@ -136,17 +136,20 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, variant, onConfirm, onDelete,
                         ${isOverdue && !isCompleted ? 'ring-2 ring-rose-500/20' : ''}
                     `}
                 >
-                    <div className="flex justify-between items-start mb-3">
+                    <div className="flex justify-between items-start mb-4">
                         <div className="flex-1 pr-4">
-                            <h3 className={`text-sm font-bold leading-tight ${isCompleted ? 'text-slate-500 line-through' : 'text-slate-800'}`}>
+                            <h3 className={cn(
+                                "text-sm font-black leading-tight tracking-tight transition-colors",
+                                isCompleted ? 'text-muted-foreground/50 line-through' : 'text-foreground group-hover:text-primary'
+                            )}>
                                 {task.title}
                             </h3>
                         </div>
                         <div className="flex gap-2 shrink-0">
-                            <span className={`px-2 py-0.5 rounded-lg text-[10px] uppercase font-bold border ${getPriorityColor()}`}>
+                            <span className={cn("px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border shadow-sm transition-all", getPriorityColor())}>
                                 {task.priority === TaskPriority.HIGH ? t('tasks.priority.high') : t('tasks.priority.medium')}
                             </span>
-                            <span className={`px-2 py-0.5 rounded-lg text-[10px] uppercase font-bold border ${getStatusColor()}`}>
+                            <span className={cn("px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest border shadow-sm transition-all", getStatusColor())}>
                                 {isOnReview ? t('tasks.status.on_review') :
                                     isOverdue ? t('tasks.status.overdue') :
                                         isCompleted ? t('tasks.status.completed') : t('tasks.status.in_progress')}
@@ -154,41 +157,41 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, variant, onConfirm, onDelete,
                         </div>
                     </div>
 
-                    <p className="text-xs text-slate-600 mb-4 line-clamp-6 whitespace-pre-wrap">
+                    <p className="text-xs text-muted-foreground font-medium mb-6 line-clamp-4 whitespace-pre-wrap leading-relaxed opacity-80 group-hover:opacity-100 transition-opacity">
                         {task.description}
                     </p>
 
                     {task.completion_report && (
-                        <div className="mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                            <div className="flex items-center gap-2 mb-1 text-xs font-bold text-slate-500 uppercase tracking-wide">
-                                <FileText size={12} />
+                        <div className="mb-5 bg-surface-2 p-3.5 rounded-2xl border border-border/50 shadow-inner group/report transition-colors hover:bg-surface-3/50">
+                            <div className="flex items-center gap-2 mb-1.5 text-[9px] font-black text-muted-foreground uppercase tracking-[0.15em] opacity-60">
+                                <FileText size={12} strokeWidth={2.5} />
                                 {t('tasks.card.report_label')}
                             </div>
-                            <p className="text-xs text-slate-700 italic whitespace-pre-wrap break-words">
+                            <p className="text-xs text-foreground font-bold italic whitespace-pre-wrap break-words leading-relaxed">
                                 "{task.completion_report}"
                             </p>
                         </div>
                     )}
 
                     {task.status === TaskStatus.IN_PROGRESS && task.return_reason && (
-                        <div className="mb-4 bg-rose-50 p-3 rounded-xl border border-rose-100">
-                            <div className="flex items-center gap-2 mb-1 text-xs font-bold text-rose-600 uppercase tracking-wide">
-                                <CornerUpLeft size={12} />
+                        <div className="mb-5 bg-destructive/5 p-3.5 rounded-2xl border border-destructive/10 shadow-inner">
+                            <div className="flex items-center gap-2 mb-1.5 text-[9px] font-black text-destructive uppercase tracking-[0.15em] opacity-80">
+                                <CornerUpLeft size={12} strokeWidth={2.5} />
                                 {t('tasks.card.return_label')}
                             </div>
-                            <p className="text-xs text-slate-700 italic whitespace-pre-wrap break-words">
+                            <p className="text-xs text-destructive font-bold italic whitespace-pre-wrap break-words leading-relaxed">
                                 "{task.return_reason}"
                             </p>
                         </div>
                     )}
 
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 border-t border-slate-100 pt-3">
+                    <div className="flex items-center justify-between text-[10px] text-muted-foreground font-bold border-t border-border/60 pt-4 uppercase tracking-widest">
                         <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-5 h-5 rounded-md bg-indigo-100/50 text-indigo-600 flex items-center justify-center">
-                                    {isIssuer ? <User size={12} /> : <UserCheck size={12} />}
+                            <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-lg bg-surface-2 text-muted-foreground flex items-center justify-center border border-border shadow-sm group-hover:bg-primary group-hover:text-white transition-all duration-500">
+                                    {isIssuer ? <User size={14} strokeWidth={2} /> : <UserCheck size={14} strokeWidth={2} />}
                                 </div>
-                                <span className="font-medium truncate max-w-[200px]" title={variant === 'received' ? task.issuer?.full_name : task.assignee?.full_name}>
+                                <span className="truncate max-w-[180px] group-hover:text-foreground transition-colors" title={variant === 'received' ? task.issuer?.full_name : task.assignee?.full_name}>
                                     {(() => {
                                         const user = variant === 'received' ? task.issuer : task.assignee;
                                         if (!user) return t(variant === 'received' ? 'tasks.card.fallback_issuer' : 'tasks.card.fallback_assignee');
@@ -202,63 +205,72 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, variant, onConfirm, onDelete,
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-2">
                             {isCompleted && task.completed_at ? (
-                                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-green-50 border border-green-100 text-green-700">
-                                    <CheckCircle2 size={12} />
-                                    <span className="font-bold text-[10px]">
+                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-700 shadow-sm">
+                                    <CheckCircle2 size={12} strokeWidth={3} />
+                                    <span className="font-black">
                                         {formatDate(task.completed_at)}
                                     </span>
                                 </div>
                             ) : (
-                                <>
-                                    <Clock size={12} className={isOverdue ? 'text-rose-500' : ''} />
-                                    <span className={`font-semibold ${isOverdue ? 'text-rose-600' : ''}`}>
+                                <div className={cn(
+                                    "flex items-center gap-2 px-2.5 py-1 rounded-full border shadow-sm transition-all",
+                                    isOverdue ? 'bg-destructive/10 border-destructive/20 text-destructive' : 'bg-surface-2 border-border text-muted-foreground'
+                                )}>
+                                    <Clock size={12} strokeWidth={3} />
+                                    <span className="font-black">
                                         {formatDate(task.deadline)}
                                     </span>
-                                </>
+                                </div>
                             )}
                         </div>
                     </div>
 
                     {!isCompleted && (
-                        <div className="mt-4 flex justify-end gap-2 items-center">
+                        <div className="mt-5 flex justify-end gap-3 items-center">
                             {isAssignee && (task.status === TaskStatus.IN_PROGRESS || task.status === TaskStatus.OVERDUE) && (
-                                <button
+                                <Button
                                     onClick={() => setIsReportModalOpen(true)}
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg shadow-indigo-600/20 active:scale-95 transition-all flex items-center gap-1.5"
+                                    variant="primary"
+                                    size="sm"
+                                    icon={<CornerDownRight size={16} strokeWidth={2.5} />}
+                                    className="font-black uppercase tracking-widest text-[9px] shadow-m3-2 rounded-xl px-4"
                                 >
-                                    <CornerDownRight size={14} />
                                     {t('tasks.card.report_button')}
-                                </button>
+                                </Button>
                             )}
 
                             {isIssuer && task.status === TaskStatus.ON_REVIEW && (
                                 <>
-                                    <button
+                                    <Button
                                         onClick={() => setIsReturnModalOpen(true)}
-                                        className="bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-lg text-xs font-bold active:scale-95 transition-all flex items-center gap-1.5"
+                                        variant="ghost"
+                                        size="sm"
+                                        icon={<XCircle size={16} strokeWidth={2.5} />}
+                                        className="font-black uppercase tracking-widest text-[9px] text-destructive hover:bg-destructive/10 rounded-xl px-4"
                                     >
-                                        <XCircle size={14} />
                                         {t('tasks.card.return_button')}
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
                                         onClick={() => onConfirm?.(task.id)}
-                                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg shadow-green-600/20 active:scale-95 transition-all flex items-center gap-1.5"
+                                        variant="primary"
+                                        size="sm"
+                                        icon={<CheckCircle2 size={16} strokeWidth={2.5} />}
+                                        className="font-black uppercase tracking-widest text-[9px] bg-green-600 hover:bg-green-700 shadow-m3-2 rounded-xl px-4 scale-105"
                                     >
-                                        <CheckCircle2 size={14} />
                                         {t('tasks.card.accept_button')}
-                                    </button>
+                                    </Button>
                                 </>
                             )}
 
                             {isIssuer && onDelete && (
                                 <button
                                     onClick={handleDelete}
-                                    className="ml-auto bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 px-3 py-1.5 rounded-lg text-xs font-bold active:scale-95 transition-all flex items-center gap-1.5"
+                                    className="ml-auto w-9 h-9 flex items-center justify-center bg-surface-2 border border-border text-muted-foreground hover:text-destructive hover:border-destructive/30 rounded-xl transition-all active:scale-90 shadow-sm"
                                     title={t('tasks.card.delete_button')}
                                 >
-                                    <Trash2 size={16} />
+                                    <Trash2 size={18} strokeWidth={2} />
                                 </button>
                             )}
                         </div>

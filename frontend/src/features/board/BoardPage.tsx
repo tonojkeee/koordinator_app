@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Upload, FileText, Loader2 } from 'lucide-react';
+import { Upload, FileText, Loader2, Inbox } from 'lucide-react';
 import { useDocumentsOwned, useDocumentsReceived } from './boardApi';
 import type { Document, DocumentShare } from './types';
 import DocumentList from './components/DocumentList';
@@ -22,7 +22,7 @@ const BoardPage: React.FC = () => {
         : receivedDocs?.filter(s => s.document.title.toLowerCase().includes(searchQuery.toLowerCase()));
 
     return (
-        <div className="flex-1 flex flex-col bg-[#F5F5F5] overflow-hidden animate-in">
+        <div className="flex-1 flex flex-col bg-background overflow-hidden animate-fade-in">
             {/* Header */}
             <Header
                 title={activeTab === 'owned' ? t('board.my_documents') : t('board.received_documents')}
@@ -34,8 +34,8 @@ const BoardPage: React.FC = () => {
                 onSearchChange={(e) => setSearchQuery(e.target.value)}
                 onSearchClear={() => setSearchQuery('')}
                 tabs={[
-                    { id: 'owned', label: t('board.my_documents'), badge: ownedDocs?.length },
-                    { id: 'received', label: t('board.received_documents'), badge: receivedDocs?.length }
+                    { id: 'owned', label: t('board.my_documents'), icon: <FileText size={16} strokeWidth={2} />, badge: ownedDocs?.length },
+                    { id: 'received', label: t('board.received_documents'), icon: <Inbox size={16} strokeWidth={2} />, badge: receivedDocs?.length }
                 ]}
                 activeTab={activeTab}
                 onTabChange={(id) => setActiveTab(id as 'owned' | 'received')}
@@ -44,6 +44,7 @@ const BoardPage: React.FC = () => {
                         variant="primary"
                         icon={<Upload size={16} />}
                         onClick={() => setIsUploadModalOpen(true)}
+                        className="shadow-m3-2"
                     >
                         {t('board.upload')}
                     </Button>
@@ -52,16 +53,16 @@ const BoardPage: React.FC = () => {
             />
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto px-6 pb-8 pt-4 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto px-6 pb-6 pt-2 custom-scrollbar">
                 {isLoading ? (
-                    <div className="flex flex-col items-center justify-center h-full space-y-4">
-                        <Loader2 className="animate-spin h-10 w-10 text-[#5B5FC7]" />
-                        <p className="font-bold text-[#888888] uppercase tracking-widest text-xs animate-pulse">{t('common.loading')}</p>
+                    <div className="flex flex-col items-center justify-center h-full space-y-4 animate-fade-in">
+                        <Loader2 className="animate-spin h-10 w-10 text-primary" />
+                        <p className="font-black text-muted-foreground uppercase tracking-[0.2em] text-[10px] opacity-70">{t('common.loading')}</p>
                     </div>
                 ) : (
                     <div
                         key={activeTab}
-                        className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both"
+                        className="animate-slide-up"
                     >
                         <DocumentList
                             documents={activeTab === 'owned' ? (currentDocs as Document[]) : undefined}
@@ -72,11 +73,11 @@ const BoardPage: React.FC = () => {
                 )}
 
                 {!isLoading && currentDocs?.length === 0 && (
-                    <div className="h-full flex flex-col items-center justify-center text-[#BDBDBD] space-y-6 animate-in slide-in-from-bottom-4">
-                        <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center border border-[#E0E0E0] shadow-sm">
-                            <FileText size={48} className="opacity-40 text-[#888888]" />
+                    <div className="h-full flex flex-col items-center justify-center space-y-6 animate-scale-in">
+                        <div className="w-24 h-24 rounded-full bg-surface-2 flex items-center justify-center border border-border shadow-m3-1 scale-110">
+                            <FileText size={48} className="text-muted-foreground/30" />
                         </div>
-                        <p className="font-bold uppercase tracking-widest text-sm opacity-80 text-[#616161]">
+                        <p className="font-black uppercase tracking-widest text-sm text-muted-foreground opacity-60">
                             {t('board.no_documents')}
                         </p>
                     </div>

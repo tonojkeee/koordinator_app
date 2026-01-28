@@ -30,14 +30,19 @@ const TaskReturnModal: React.FC<TaskReturnModalProps> = ({ isOpen, onClose, task
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title={t('tasks.return_modal.title')}
+            title={
+                <div className="flex flex-col">
+                    <span className="text-xl font-black text-foreground uppercase tracking-tight">{t('tasks.return_modal.title')}</span>
+                    <span className="text-[10px] font-black text-destructive uppercase tracking-[0.2em] mt-1 opacity-70">Возврат на доработку</span>
+                </div>
+            }
             size="md"
             footer={
                 <>
                     <Button
-                        variant="secondary"
+                        variant="ghost"
                         onClick={onClose}
-                        className="flex-1 sm:flex-none"
+                        className="flex-1 font-black uppercase tracking-widest text-xs"
                     >
                         {t('tasks.return_modal.cancel_button')}
                     </Button>
@@ -45,19 +50,19 @@ const TaskReturnModal: React.FC<TaskReturnModalProps> = ({ isOpen, onClose, task
                         variant="danger"
                         onClick={handleSubmit}
                         disabled={!reason.trim() || rejectTaskMutation.isPending}
-                        icon={<CornerUpLeft size={14} />}
+                        icon={<CornerUpLeft size={16} strokeWidth={2.5} />}
                         iconPosition="right"
-                        className="flex-1 sm:flex-none"
+                        className="flex-1 font-black uppercase tracking-widest text-xs shadow-m3-2"
                     >
                         {rejectTaskMutation.isPending ? t('tasks.return_modal.submitting') : t('tasks.return_modal.submit_button')}
                     </Button>
                 </>
             }
         >
-            <div className="space-y-4">
-                <p className="text-sm text-slate-600">{t('tasks.return_modal.description')}</p>
+            <div className="space-y-6">
+                <p className="text-sm text-muted-foreground font-bold opacity-80 leading-relaxed px-1">{t('tasks.return_modal.description')}</p>
                 <textarea
-                    className="w-full h-32 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all resize-none"
+                    className="w-full h-40 p-4 bg-surface-2 border border-border rounded-2xl text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-destructive/10 focus:border-destructive focus:bg-surface transition-all resize-none shadow-inner placeholder:text-muted-foreground/40"
                     placeholder={t('tasks.return_modal.placeholder')}
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}

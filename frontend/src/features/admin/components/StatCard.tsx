@@ -1,5 +1,6 @@
 import React from 'react';
 import type { TFunction } from 'i18next';
+import { cn } from '../../../design-system';
 
 interface StatCardProps {
     title: string;
@@ -23,27 +24,28 @@ export const StatCard: React.FC<StatCardProps> = ({
     t
 }) => {
     const colorStyles = {
-        indigo: 'bg-indigo-50/40 border-indigo-100/50 text-indigo-600',
-        emerald: 'bg-emerald-50/40 border-emerald-100/50 text-emerald-600',
-        violet: 'bg-violet-50/40 border-violet-100/50 text-violet-600',
-        amber: 'bg-amber-50/40 border-amber-100/50 text-amber-600',
-        rose: 'bg-rose-50/40 border-rose-100/50 text-rose-600',
+        indigo: 'bg-primary/10 border-primary/20 text-primary',
+        emerald: 'bg-green-500/10 border-green-500/20 text-green-700',
+        violet: 'bg-purple-500/10 border-purple-500/20 text-purple-700',
+        amber: 'bg-amber-500/10 border-amber-500/20 text-amber-700',
+        rose: 'bg-destructive/10 border-destructive/20 text-destructive',
     };
 
     const selectedColor = colorStyles[color];
 
     return (
-        <div className="group relative bg-white border p-5 rounded-2xl transition-all duration-500 hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1 overflow-hidden flex flex-col justify-between h-32">
+        <div className="group relative bg-surface border border-border p-6 rounded-2xl transition-all duration-500 hover:shadow-m3-2 hover:-translate-y-1 overflow-hidden flex flex-col justify-between h-36">
             {/* Background Accent */}
-            <div className={`absolute inset-0 opacity-[0.03] transition-opacity group-hover:opacity-[0.06] ${selectedColor.split(' ')[0]}`} />
+            <div className={cn("absolute inset-0 opacity-0 transition-opacity group-hover:opacity-[0.03]", selectedColor.split(' ')[0])} />
 
             <div className="flex justify-between items-start relative z-10">
-                <div className={`p-2.5 rounded-xl border transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 ${selectedColor}`}>
-                    <div className="w-5 h-5">{icon}</div>
+                <div className={cn("p-3 rounded-xl border transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-sm", selectedColor)}>
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                    <div className="w-5 h-5">{React.cloneElement(icon as React.ReactElement<any>, { strokeWidth: 2.5 } as any)}</div>
                 </div>
                 {trend && (
                     <div className="flex flex-col items-end">
-                        <span className="text-[10px] font-black px-2.5 py-1 bg-slate-50 text-slate-900 rounded-full border border-slate-100 shadow-sm group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-500 transition-all duration-300">
+                        <span className="text-[10px] font-black px-3 py-1 bg-surface-2 text-foreground rounded-full border border-border shadow-sm group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all duration-300 uppercase tracking-widest">
                             {trend}
                         </span>
                     </div>
@@ -54,23 +56,23 @@ export const StatCard: React.FC<StatCardProps> = ({
                 <div className="flex items-end justify-between gap-2 overflow-hidden">
                     <div className="flex flex-col min-w-0 flex-1">
                         <div className="flex items-baseline gap-2">
-                            <span className="text-3xl font-black tracking-tight text-slate-900 group-hover:text-indigo-600 transition-colors duration-300">
+                            <span className="text-3xl font-black tracking-tighter text-foreground group-hover:text-primary transition-colors duration-300">
                                 {value}
                             </span>
                             {isLive && (
-                                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-md border border-emerald-100 animate-pulse shrink-0">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                                    <span className="text-[8px] font-black uppercase tracking-widest">{t('common.online')}</span>
+                                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-green-500/10 text-green-700 rounded-lg border border-green-500/20 animate-pulse shrink-0 shadow-sm">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                                    <span className="text-[8px] font-black uppercase tracking-[0.2em]">{t('common.online')}</span>
                                 </div>
                             )}
                         </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-slate-500 transition-colors mt-1 truncate">
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground group-hover:text-primary/70 transition-colors mt-1.5 truncate opacity-70">
                             {title}
                         </span>
                     </div>
                     {subValue && (
-                        <div className="text-right shrink-0">
-                            <span className="text-[9px] font-bold text-slate-300 group-hover:text-slate-400 transition-colors uppercase tracking-tight">
+                        <div className="text-right shrink-0 pb-1">
+                            <span className="text-[10px] font-black text-muted-foreground group-hover:text-foreground transition-colors uppercase tracking-widest opacity-50 tabular-nums">
                                 {subValue}
                             </span>
                         </div>

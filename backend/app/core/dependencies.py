@@ -29,10 +29,12 @@ if TYPE_CHECKING:
 # SINGLETONS (cached for application lifetime)
 # ============================================================================
 
+
 @lru_cache()
 def get_settings() -> "Settings":
     """Get application settings (singleton)"""
     from app.core.config import get_settings as _get_settings
+
     return _get_settings()
 
 
@@ -57,6 +59,7 @@ def get_redis_manager() -> "redis_manager":
 # ============================================================================
 # FACTORY FUNCTIONS (request-scoped, created per request)
 # ============================================================================
+
 
 def get_config_service() -> "SystemSettingService":
     """
@@ -87,6 +90,7 @@ def get_auth_service(
     - event_bus: Event bus singleton
     """
     from app.modules.auth.service import AuthService
+
     return AuthService(db, event_bus)
 
 
@@ -102,6 +106,7 @@ def get_admin_service(
     - websocket_manager: WebSocket manager for broadcasts
     """
     from app.modules.admin.service import AdminService
+
     return AdminService(db, websocket_manager)
 
 

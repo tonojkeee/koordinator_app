@@ -71,7 +71,6 @@ class UserUpdate(BaseModel):
     preferences: Optional[dict] = None
 
 
-
 class AdminUserUpdate(BaseModel):
     username: Optional[str] = Field(None, min_length=3, max_length=50)
     full_name: Optional[str] = Field(None, max_length=100)
@@ -113,14 +112,14 @@ class UserResponse(UserBase):
     position: Optional[str] = None
     birth_date: Optional[datetime] = None
     preferences: dict = {}
-    
+
     class Config:
         from_attributes = True
 
 
 class Token(BaseModel):
     access_token: str
-    refresh_token: Optional[str] = None # Optional now as it might be in cookie
+    refresh_token: Optional[str] = None  # Optional now as it might be in cookie
     token_type: str = "bearer"
     csrf_token: Optional[str] = None  # CSRF token for state-changing operations
 
@@ -134,4 +133,4 @@ class RoleUpdate(BaseModel):
 
 
 class RefreshTokenRequest(BaseModel):
-    refresh_token: Optional[str] = None # Optional, can come from cookie
+    refresh_token: Optional[str] = None  # Optional, can come from cookie

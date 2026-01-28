@@ -2,6 +2,7 @@ import pytest
 from app.modules.auth.models import User
 from sqlalchemy import select
 
+
 @pytest.mark.asyncio
 async def test_database_connection(db_session):
     """Verify database connection and session handling"""
@@ -11,7 +12,7 @@ async def test_database_connection(db_session):
         email="test@example.com",
         hashed_password="hashed_secret",
         full_name="Test User",
-        is_active=True
+        is_active=True,
     )
     db_session.add(user)
     await db_session.commit()
@@ -25,6 +26,7 @@ async def test_database_connection(db_session):
 
     assert fetched_user is not None
     assert fetched_user.email == "test@example.com"
+
 
 @pytest.mark.asyncio
 async def test_api_health(client):

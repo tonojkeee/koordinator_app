@@ -10,10 +10,8 @@ from app.core.config import get_settings
 # Use a test database URL - can be overridden by env var
 # Default to SQLite for fast local testing if Postgres not available
 # But we prefer Postgres if TEST_DATABASE_URL is set
-TEST_DATABASE_URL = os.getenv(
-    "TEST_DATABASE_URL",
-    "sqlite+aiosqlite:///./test.db"
-)
+TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "sqlite+aiosqlite:///./test.db")
+
 
 @pytest_asyncio.fixture(scope="session")
 async def engine():
@@ -36,6 +34,7 @@ async def engine():
     if "sqlite" in TEST_DATABASE_URL and os.path.exists("./test.db"):
         os.remove("./test.db")
 
+
 @pytest_asyncio.fixture
 async def db_session(engine):
     """
@@ -45,7 +44,9 @@ async def db_session(engine):
     connection = await engine.connect()
     transaction = await connection.begin()
 
-    session_factory = async_sessionmaker(bind=connection, class_=AsyncSession, expire_on_commit=False)
+    session_factory = async_sessionmaker(
+        bind=connection, class_=AsyncSession, expire_on_commit=False
+    )
     session = session_factory()
 
     yield session
@@ -54,26 +55,35 @@ async def db_session(engine):
     await transaction.rollback()
     await connection.close()
 
+
 @pytest_asyncio.fixture
 async def client(db_session):
     """
     Create a test client with overridden database dependency.
     """
+
     async def override_get_db():
         yield db_session
 
     app.dependency_overrides[get_db] = override_get_db
 
     # Use ASGITransport for direct app testing without running server
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         yield ac
 
     app.dependency_overrides.clear()
 
+
 @pytest.fixture(autouse=True)
 def disable_rate_limiting():
     """Disable rate limiting for all tests"""
-    from app.core.rate_limit import rate_limit_auth, rate_limit_api, rate_limit_file_upload
+    from app.core.rate_limit import (
+        rate_limit_auth,
+        rate_limit_api,
+        rate_limit_file_upload,
+    )
 
     async def mock_rate_limit():
         return None

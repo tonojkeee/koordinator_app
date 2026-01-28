@@ -6,7 +6,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { LogIn, AlertCircle, Settings, User, Lock, Eye, EyeOff } from 'lucide-react';
 import { useConfigStore } from '../../store/useConfigStore';
 import { useTranslation } from 'react-i18next';
-
+import { Button, Input, Card } from '../../design-system';
 
 const LoginPage: React.FC = () => {
     const [username, setUsername] = useState('');
@@ -20,15 +20,10 @@ const LoginPage: React.FC = () => {
     const navigate = useNavigate();
     const setShowSetup = useConfigStore((state) => state.setShowSetup);
 
-
     const [registrationAllowed, setRegistrationAllowed] = useState(true);
 
     useEffect(() => {
-        // Fetch CSRF token first to ensure it's available for non-GET requests
-        api.get('/auth/csrf-token').then(() => {
-            // setCsrfToken was removed. Cookie is automatically handled.
-            // setCsrfToken(res.data.csrf_token);
-        }).finally(() => {
+        api.get('/auth/csrf-token').then(() => {}).finally(() => {
             api.get('/auth/config').then(res => {
                 if (res.data.allow_registration === false) {
                     setRegistrationAllowed(false);
@@ -36,7 +31,6 @@ const LoginPage: React.FC = () => {
             }).catch(() => { });
         });
     }, []);
-
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -54,13 +48,7 @@ const LoginPage: React.FC = () => {
                 },
             });
 
-            const { access_token, csrf_token } = loginRes.data;
-
-            // Сохраняем CSRF токен из ответа логина - removed manual save
-            if (csrf_token) {
-                // setCsrfToken(csrf_token);
-                console.log('🔐 CSRF token received in login response');
-            }
+            const { access_token } = loginRes.data;
 
             const userRes = await api.get('/auth/me', {
                 headers: {
@@ -79,123 +67,118 @@ const LoginPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[#F0F0F0]">
-            {/* Background Pattern */}
-            <div className="absolute inset-0 bg-[#F0F0F0]" style={{ backgroundImage: 'radial-gradient(#E0E0E0 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-background">
+            {/* Professional Background Pattern */}
+            <div className="absolute inset-0 z-0 opacity-40" style={{
+                backgroundImage: `radial-gradient(var(--teams-brand) 0.5px, transparent 0.5px)`,
+                backgroundSize: '32px 32px'
+            }} />
+            <div className="absolute inset-0 z-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
 
             {/* Connection Settings Trigger */}
             <button
                 onClick={() => setShowSetup(true)}
-                className="absolute top-4 right-4 p-2 text-[#616161] hover:text-[#242424] transition-colors z-20"
+                className="absolute top-6 right-6 p-2.5 text-muted-foreground hover:text-primary hover:bg-surface-2 rounded-xl transition-all z-20 active:scale-90 shadow-sm border border-border bg-surface/50 backdrop-blur-md"
                 title={t('auth.setup_connection_tooltip')}
             >
-                <Settings size={20} />
+                <Settings size={20} strokeWidth={2.5} />
             </button>
 
-            <div className="w-full max-w-md bg-white border border-[#E0E0E0] rounded-lg shadow-xl relative z-10 p-8 m-4">
-                <div className="text-center mb-8">
-                    <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-lg bg-[#5B5FC7] mb-4 shadow-sm">
-                        <img src="/icon.png" alt="Logo" className="w-8 h-8 object-contain brightness-0 invert" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-[#242424]">
-                        {t('auth.signInTitle')}
-                    </h2>
-                    <p className="mt-2 text-sm text-[#616161]">
-                        {t('auth.loginPrompt')}
-                    </p>
-                </div>
-
-                <form className="space-y-5" onSubmit={handleSubmit}>
-                    {error && (
-                        <div className="bg-[#C4314B]/10 border border-[#C4314B]/20 p-3 rounded-md flex items-start space-x-3 text-[#C4314B]">
-                            <AlertCircle className="shrink-0" size={18} />
-                            <p className="text-sm font-medium">{error}</p>
+            <div className="w-full max-w-[440px] relative z-10 p-4 animate-scale-in">
+                <Card className="p-10 shadow-m3-4 border-border/60 bg-surface/90 backdrop-blur-xl rounded-[2.5rem]">
+                    <div className="text-center mb-10">
+                        <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-2xl bg-primary mb-6 shadow-m3-2 transform transition-transform hover:scale-110 duration-500">
+                            <img src="/icon.png" alt="Logo" className="w-10 h-10 object-contain brightness-0 invert" />
                         </div>
-                    )}
-
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-xs font-bold text-[#616161] uppercase tracking-wide mb-1.5">
-                                {t('common.username')}
-                            </label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <User className="h-5 w-5 text-[#888888] group-focus-within:text-[#5B5FC7] transition-colors" />
-                                </div>
-                                <input
-                                    type="text"
-                                    required
-                                    className="w-full h-10 pl-10 pr-4 bg-[#F5F5F5] border border-transparent rounded-md text-[#242424] placeholder-[#888888] focus:outline-none focus:bg-white focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7] transition-all text-sm"
-                                    placeholder={t('auth.enterUsername')}
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-bold text-[#616161] uppercase tracking-wide mb-1.5">
-                                {t('common.password')}
-                            </label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Lock className="h-5 w-5 text-[#888888] group-focus-within:text-[#5B5FC7] transition-colors" />
-                                </div>
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    required
-                                    className="w-full h-10 pl-10 pr-10 bg-[#F5F5F5] border border-transparent rounded-md text-[#242424] placeholder-[#888888] focus:outline-none focus:bg-white focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7] transition-all text-sm"
-                                    placeholder="••••••••"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#888888] hover:text-[#5B5FC7] transition-colors focus:outline-none"
-                                >
-                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full h-10 flex items-center justify-center bg-[#5B5FC7] text-white text-sm font-bold rounded-md hover:bg-[#4f52b2] active:scale-[0.98] transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed mt-6"
-                    >
-                        {loading ? (
-                            <Loader2 className="animate-spin" size={18} />
-                        ) : (
-                            <span className="flex items-center space-x-2">
-                                <span>{t('auth.signInButton')}</span>
-                                <LogIn size={16} />
-                            </span>
-                        )}
-                    </button>
-                </form>
-
-                {registrationAllowed && (
-                    <div className="mt-6 text-center">
-                        <p className="text-sm text-[#616161]">
-                            {t('auth.noAccount')}{' '}
-                            <Link to="/register" className="text-[#5B5FC7] font-bold hover:underline">
-                                {t('auth.signUp')}
-                            </Link>
+                        <h2 className="text-3xl font-black text-foreground tracking-tighter uppercase mb-2">
+                            {t('auth.signInTitle')}
+                        </h2>
+                        <p className="text-muted-foreground font-bold text-sm opacity-70 uppercase tracking-widest">
+                            {t('auth.loginPrompt')}
                         </p>
                     </div>
-                )}
+
+                    <form className="space-y-6" onSubmit={handleSubmit}>
+                        {error && (
+                            <div className="bg-destructive/5 border border-destructive/10 p-4 rounded-2xl flex items-start space-x-3 text-destructive animate-slide-up">
+                                <AlertCircle className="shrink-0 mt-0.5" size={18} strokeWidth={2.5} />
+                                <p className="text-xs font-black uppercase tracking-tight leading-tight">{error}</p>
+                            </div>
+                        )}
+
+                        <div className="space-y-5">
+                            <Input
+                                label={t('common.username')}
+                                type="text"
+                                required
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                placeholder={t('auth.enterUsername')}
+                                leftIcon={<User size={18} strokeWidth={2.5} />}
+                                fullWidth
+                                className="bg-surface-2 border-border/50 focus:bg-surface"
+                            />
+
+                            <Input
+                                label={t('common.password')}
+                                type={showPassword ? "text" : "password"}
+                                required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="••••••••"
+                                leftIcon={<Lock size={18} strokeWidth={2.5} />}
+                                rightIcon={
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="text-muted-foreground hover:text-primary transition-colors focus:outline-none p-1"
+                                    >
+                                        {showPassword ? <EyeOff size={18} strokeWidth={2.5} /> : <Eye size={18} strokeWidth={2.5} />}
+                                    </button>
+                                }
+                                fullWidth
+                                className="bg-surface-2 border-border/50 focus:bg-surface"
+                            />
+                        </div>
+
+                        <Button
+                            type="submit"
+                            disabled={loading || !username || !password}
+                            variant="primary"
+                            size="lg"
+                            className="w-full font-black uppercase tracking-[0.2em] text-xs shadow-m3-2 py-7 rounded-2xl mt-8 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                            loading={loading}
+                            icon={<LogIn size={18} strokeWidth={2.5} />}
+                            iconPosition="right"
+                        >
+                            {t('auth.signInButton')}
+                        </Button>
+                    </form>
+
+                    {registrationAllowed && (
+                        <div className="mt-10 text-center border-t border-border/40 pt-8">
+                            <p className="text-[11px] font-black text-muted-foreground uppercase tracking-widest opacity-60">
+                                {t('auth.noAccount')}
+                            </p>
+                            <Link
+                                to="/register"
+                                className="inline-block mt-3 text-primary font-black uppercase tracking-[0.15em] text-[10px] hover:text-teams-brandHover transition-colors border-b-2 border-primary/20 hover:border-primary"
+                            >
+                                {t('auth.signUp')}
+                            </Link>
+                        </div>
+                    )}
+                </Card>
+
+                {/* Footer Info */}
+                <div className="mt-8 text-center opacity-30 group">
+                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em] transition-opacity group-hover:opacity-100">
+                        Coordinator System &bull; Secured Enterprise Edition
+                    </p>
+                </div>
             </div>
         </div>
     );
 };
-
-// Internal Loader
-const Loader2 = ({ className, size }: { className?: string, size?: number }) => (
-    <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-    </svg>
-);
 
 export default LoginPage;

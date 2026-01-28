@@ -8,7 +8,7 @@ import { useAuthStore } from '../../../store/useAuthStore';
 import { useConfigStore } from '../../../store/useConfigStore';
 import { useNavigate } from 'react-router-dom';
 import api from '../../../api/client';
-import { ContextMenu, type ContextMenuOption } from '../../../design-system';
+import { ContextMenu, type ContextMenuOption, Button } from '../../../design-system';
 
 interface DocumentListProps {
     documents?: Document[];
@@ -183,14 +183,14 @@ const DocumentListItem: React.FC<DocumentListItemProps> = ({
                 onClick={isElectron ? onDownload : onView}
                 onMouseEnter={onMouseEnter}
                 onMouseLeave={onMouseLeave}
-                className="group bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-300 cursor-pointer flex flex-col h-full"
+                className="group bg-surface p-3 rounded-2xl border border-border shadow-m3-1 hover:shadow-teams-card transition-all duration-500 cursor-pointer flex flex-col h-full relative overflow-hidden"
             >
-                <div className="relative mb-2.5 rounded-lg overflow-hidden aspect-[3/2] bg-slate-50 border border-slate-100 group-hover:border-indigo-100 transition-colors">
+                <div className="relative mb-3.5 rounded-xl overflow-hidden aspect-[16/10] bg-surface-2 border border-border group-hover:border-primary/20 transition-all duration-500">
                     {isImage ? (
                         <img
                             src={viewUrl}
                             alt={doc.title}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                             onError={(e) => {
                                 (e.target as HTMLImageElement).onerror = null;
                                 (e.target as HTMLImageElement).style.display = 'none';
@@ -198,60 +198,64 @@ const DocumentListItem: React.FC<DocumentListItemProps> = ({
                             }}
                         />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-indigo-200 group-hover:text-indigo-600 transition-colors">
-                            <FileText size={32} />
+                        <div className="w-full h-full flex items-center justify-center text-muted-foreground/20 group-hover:text-primary group-hover:bg-primary/5 transition-all duration-500">
+                            <FileText size={48} strokeWidth={1} />
                         </div>
                     )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </div>
 
-                <div className="flex-1 flex flex-col">
-                    <div className="flex items-start justify-between mb-1.5">
-                        <h3 className="text-xs font-bold text-slate-900 leading-tight line-clamp-2" title={doc.title}>{doc.title}</h3>
+                <div className="flex-1 flex flex-col min-w-0">
+                    <div className="flex items-start justify-between mb-2">
+                        <h3 className="text-sm font-black text-foreground leading-snug line-clamp-2 tracking-tight group-hover:text-primary transition-colors" title={doc.title}>{doc.title}</h3>
                         {type === 'owned' && (
                             <button
                                 onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
-                                className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all shrink-0 ml-2"
+                                className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all shrink-0 ml-2 opacity-0 group-hover:opacity-100"
                             >
-                                <Trash2 size={12} />
+                                <Trash2 size={14} strokeWidth={2} />
                             </button>
                         )}
                     </div>
 
                     {type === 'received' && (
-                        <div className="mt-auto pt-2 border-t border-slate-50 space-y-1">
-                            <div className="flex items-center justify-between text-[9px]">
-                                <div className="flex items-center text-slate-500">
-                                    <User size={10} className="mr-1 opacity-50" />
-                                    <span className="font-semibold text-slate-700">{doc.owner?.full_name || doc.owner?.username}</span>
+                        <div className="mt-auto pt-3 border-t border-border/60 space-y-2">
+                            <div className="flex items-center justify-between text-[10px]">
+                                <div className="flex items-center text-muted-foreground font-bold">
+                                    <User size={12} className="mr-1.5 opacity-50" strokeWidth={2.5} />
+                                    <span className="text-foreground tracking-tight">{doc.owner?.full_name || doc.owner?.username}</span>
                                 </div>
-                                <span className="text-slate-400">{share && new Date(share.created_at).toLocaleDateString()}</span>
+                                <span className="text-muted-foreground font-black opacity-50 uppercase tracking-widest">{share && new Date(share.created_at).toLocaleDateString()}</span>
                             </div>
                             <ChannelInfo share={share} docId={doc.id} />
                         </div>
                     )}
 
                     {type === 'owned' && (
-                        <div className="mt-auto pt-2 flex items-center text-[10px] text-slate-400">
-                            <Calendar size={12} className="mr-1.5 opacity-50" />
+                        <div className="mt-auto pt-3 flex items-center text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-60">
+                            <Calendar size={12} className="mr-2" strokeWidth={3} />
                             {new Date(doc.created_at).toLocaleDateString()}
                         </div>
                     )}
                 </div>
 
-                <div className="mt-3 flex space-x-2">
-                    <button
+                <div className="mt-4 flex space-x-2">
+                    <Button
                         onClick={(e) => { e.stopPropagation(); onView(); }}
-                        className="flex-1 flex items-center justify-center space-x-2 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-lg text-xs font-bold transition-all"
+                        variant="primary"
+                        size="sm"
+                        className="flex-1 font-black uppercase tracking-widest text-[10px] shadow-m3-1 rounded-xl h-9"
+                        icon={<Eye size={14} strokeWidth={3} />}
                     >
-                        <Eye size={14} />
-                        <span>{t('board.list.view')}</span>
-                    </button>
-                    <button
+                        {t('board.list.view')}
+                    </Button>
+                    <Button
                         onClick={(e) => { e.stopPropagation(); onDownload(); }}
-                        className="w-8 h-8 flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-slate-500 rounded-lg transition-all border border-slate-100"
-                    >
-                        <Download size={14} />
-                    </button>
+                        variant="secondary"
+                        size="sm"
+                        className="w-9 h-9 p-0 rounded-xl border-border shadow-sm active:scale-90"
+                        icon={<Download size={14} strokeWidth={3} />}
+                    />
                 </div>
             </div>
         </ContextMenu>

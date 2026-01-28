@@ -1,4 +1,9 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker, AsyncEngine
+from sqlalchemy.ext.asyncio import (
+    create_async_engine,
+    AsyncSession,
+    async_sessionmaker,
+    AsyncEngine,
+)
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.pool import NullPool
 from sqlalchemy import select, delete, func, text, event
@@ -16,7 +21,7 @@ settings = get_settings()
 def create_engine_with_pool() -> AsyncEngine:
     """
     Create database engine with appropriate connection pooling.
-    
+
     - SQLite: Uses NullPool (no pooling, single connection)
     - MySQL/PostgreSQL: Uses QueuePool with configurable size
     """
@@ -24,15 +29,13 @@ def create_engine_with_pool() -> AsyncEngine:
         "echo": settings.debug,
         "future": True,
     }
-    
+
     if settings.is_sqlite:
         # SQLite doesn't support connection pooling well
         # Use NullPool to create new connection each time
         logger.info("Database: Using SQLite with NullPool")
         return create_async_engine(
-            settings.database_url,
-            poolclass=NullPool,
-            **common_args
+            settings.database_url, poolclass=NullPool, **common_args
         )
     else:
         # MySQL/PostgreSQL - use connection pooling
@@ -47,7 +50,7 @@ def create_engine_with_pool() -> AsyncEngine:
             pool_timeout=settings.db_pool_timeout,
             pool_recycle=settings.db_pool_recycle,
             pool_pre_ping=True,  # Check connection health before use
-            **common_args
+            **common_args,
         )
 
 
@@ -68,7 +71,7 @@ AsyncSessionLocal = async_sessionmaker(
 def set_sqlite_pragma(dbapi_connection, connection_record):
     """
     Apply SQLite performance and concurrency optimizations.
-    
+
     - WAL Mode: Allows concurrent reads and writes
     - busy_timeout: Retries when database is locked
     - synchronous=NORMAL: Improved write performance safely in WAL mode
@@ -81,9 +84,9 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
         cursor.close()
 
 
-
 class Base(DeclarativeBase):
     """Base class for all models"""
+
     pass
 
 

@@ -25,31 +25,36 @@ class EmailStats(BaseModel):
 class UnreadCount(BaseModel):
     total: int
 
+
 # --- Attachment Schemas ---
 class EmailAttachmentBase(BaseModel):
     filename: str
     content_type: Optional[str] = None
     file_size: int
 
+
 class EmailAttachment(EmailAttachmentBase):
     id: int
     file_path: str
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
+
 
 # --- Email Message Schemas ---
 class EmailMessageBase(BaseModel):
     subject: Optional[str] = None
-    to_address: str # Comma separated for inputs
+    to_address: str  # Comma separated for inputs
     cc_address: Optional[str] = None
     bcc_address: Optional[str] = None
     body_text: Optional[str] = None
     body_html: Optional[str] = None
-    
+
+
 class EmailMessageCreate(EmailMessageBase):
     is_important: Optional[bool] = False
+
 
 class EmailMessageUpdate(BaseModel):
     is_read: Optional[bool] = None
@@ -59,6 +64,7 @@ class EmailMessageUpdate(BaseModel):
     is_important: Optional[bool] = None
     is_spam: Optional[bool] = None
     folder_id: Optional[int] = None
+
 
 class EmailMessage(EmailMessageBase):
     id: int
@@ -79,6 +85,7 @@ class EmailMessage(EmailMessageBase):
     class Config:
         from_attributes = True
 
+
 class EmailMessageList(BaseModel):
     id: int
     subject: Optional[str]
@@ -95,12 +102,15 @@ class EmailMessageList(BaseModel):
     class Config:
         from_attributes = True
 
+
 # --- Email Account Schemas ---
 class EmailAccountBase(BaseModel):
     email_address: str
 
+
 class EmailAccountCreate(EmailAccountBase):
     user_id: int
+
 
 class EmailAccount(EmailAccountBase):
     id: int
@@ -110,15 +120,19 @@ class EmailAccount(EmailAccountBase):
     class Config:
         from_attributes = True
 
+
 # --- Email Folder Schemas ---
 class EmailFolderBase(BaseModel):
     name: str
 
+
 class EmailFolderCreate(EmailFolderBase):
     pass
 
+
 class EmailFolderUpdate(BaseModel):
     name: str
+
 
 class EmailFolder(EmailFolderBase):
     id: int

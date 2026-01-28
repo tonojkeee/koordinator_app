@@ -30,37 +30,39 @@ class SystemSettingService:
             value, cached_type, expires = _settings_cache[key]
             if datetime.now(timezone.utc) < expires:
                 # Return cached value with proper type conversion
-                if cached_type == 'int':
+                if cached_type == "int":
                     return int(value)
-                elif cached_type == 'bool':
-                    return value.lower() == 'true'
-                elif cached_type == 'json':
+                elif cached_type == "bool":
+                    return value.lower() == "true"
+                elif cached_type == "json":
                     import json
+
                     return json.loads(value)
                 return value
-        
+
         # Fetch from DB
         setting = await db.scalar(select(SystemSetting).where(SystemSetting.key == key))
         if not setting:
             return default
-        
+
         # Store in cache with expiry
         _settings_cache[key] = (
             setting.value,
             setting.type,
-            datetime.now(timezone.utc) + timedelta(seconds=_cache_ttl_seconds)
+            datetime.now(timezone.utc) + timedelta(seconds=_cache_ttl_seconds),
         )
-            
+
         val = setting.value
-        if setting.type == 'int':
+        if setting.type == "int":
             return int(val)
-        elif setting.type == 'bool':
-            return val.lower() == 'true'
-        elif setting.type == 'json':
+        elif setting.type == "bool":
+            return val.lower() == "true"
+        elif setting.type == "json":
             import json
+
             return json.loads(val)
         return val
-    
+
     @staticmethod
     def invalidate_cache(key: str = None):
         """
@@ -74,39 +76,45 @@ class SystemSettingService:
             _settings_cache = {}
 
     @staticmethod
-    async def set_value(db: AsyncSession, key: str, value: any, user_id: int) -> SystemSetting:
+    async def set_value(
+        db: AsyncSession, key: str, value: any, user_id: int
+    ) -> SystemSetting:
         """Update or create a setting"""
         setting = await db.scalar(select(SystemSetting).where(SystemSetting.key == key))
-        
+
         # Convert type to string
         str_val = str(value)
-        setting_type = 'str'
+        setting_type = "str"
         if isinstance(value, bool):
-            setting_type = 'bool'
-            str_val = 'true' if value else 'false'
+            setting_type = "bool"
+            str_val = "true" if value else "false"
         elif isinstance(value, int):
-            setting_type = 'int'
-        
+            setting_type = "int"
+
         if not setting:
             setting = SystemSetting(key=key, value=str_val, type=setting_type)
             db.add(setting)
         else:
             old_val = setting.value
             setting.value = str_val
-            
+
             # Audit log
             if old_val != str_val:
                 await AdminService.create_audit_log(
-                    db, user_id, "update_setting", "system_setting", key, 
-                    f"Changed {key} from '{old_val}' to '{str_val}'"
+                    db,
+                    user_id,
+                    "update_setting",
+                    "system_setting",
+                    key,
+                    f"Changed {key} from '{old_val}' to '{str_val}'",
                 )
-        
+
         await db.commit()
         await db.refresh(setting)
-        
+
         # Invalidate cache for this key
         SystemSettingService.invalidate_cache(key)
-        
+
         return setting
 
     @staticmethod
@@ -122,26 +130,29 @@ class SystemSettingService:
     @staticmethod
     async def get_public_settings(db: AsyncSession) -> dict:
         """Get only public settings"""
-        result = await db.execute(select(SystemSetting).where(SystemSetting.is_public == True))
+        result = await db.execute(
+            select(SystemSetting).where(SystemSetting.is_public == True)
+        )
         settings_list = result.scalars().all()
-        
+
         config = {
             "app_name": await ConfigService.get_value(db, "app_name", "КООРДИНАТОР"),
             "app_version": await ConfigService.get_value(db, "app_version", "1.0.0"),
-            "allow_registration": True
+            "allow_registration": True,
         }
-        
+
         for s in settings_list:
             if s.key == "app_version":
                 continue
             val = s.value
-            if s.type == 'bool':
-                val = val.lower() == 'true'
-            elif s.type == 'int':
+            if s.type == "bool":
+                val = val.lower() == "true"
+            elif s.type == "int":
                 val = int(val)
             config[s.key] = val
-            
+
         return config
+
 
 class AdminService:
     @staticmethod
@@ -159,33 +170,43 @@ class AdminService:
         from app.modules.board.models import Document
         from app.modules.archive.models import ArchiveFile
         from app.modules.tasks.models import Task, TaskStatus
-        
+
         # Count Users
         user_count = await db.scalar(select(func.count(User.id)))
-        
+
         # Count Online Users from real-time WebSocket manager
         online_user_ids = await manager.get_online_user_ids()
         online_count = len(online_user_ids)
-        
+
         # Count Messages Today
         today = datetime.now(timezone.utc).date()
-        msg_count = await db.scalar(select(func.count(Message.id)).where(Message.created_at >= today))
-        
+        msg_count = await db.scalar(
+            select(func.count(Message.id)).where(Message.created_at >= today)
+        )
+
         # Count Total Files (Archive + Documents)
         archive_count = await db.scalar(select(func.count(ArchiveFile.id)))
         doc_count = await db.scalar(select(func.count(Document.id)))
-        
+
         # Sum Total Size
         archive_size = await db.scalar(select(func.sum(ArchiveFile.file_size))) or 0
         doc_size = await db.scalar(select(func.sum(Document.file_size))) or 0
-        
+
         # Count Tasks
         tasks_total = await db.scalar(select(func.count(Task.id)))
-        tasks_completed = await db.scalar(select(func.count(Task.id)).where(Task.status == TaskStatus.COMPLETED))
-        tasks_in_progress = await db.scalar(select(func.count(Task.id)).where(Task.status == TaskStatus.IN_PROGRESS))
-        tasks_on_review = await db.scalar(select(func.count(Task.id)).where(Task.status == TaskStatus.ON_REVIEW))
-        tasks_overdue = await db.scalar(select(func.count(Task.id)).where(Task.status == TaskStatus.OVERDUE))
-        
+        tasks_completed = await db.scalar(
+            select(func.count(Task.id)).where(Task.status == TaskStatus.COMPLETED)
+        )
+        tasks_in_progress = await db.scalar(
+            select(func.count(Task.id)).where(Task.status == TaskStatus.IN_PROGRESS)
+        )
+        tasks_on_review = await db.scalar(
+            select(func.count(Task.id)).where(Task.status == TaskStatus.ON_REVIEW)
+        )
+        tasks_overdue = await db.scalar(
+            select(func.count(Task.id)).where(Task.status == TaskStatus.OVERDUE)
+        )
+
         return {
             "total_users": user_count,
             "online_users": online_count,
@@ -196,7 +217,7 @@ class AdminService:
             "tasks_completed": tasks_completed,
             "tasks_in_progress": tasks_in_progress,
             "tasks_on_review": tasks_on_review,
-            "tasks_overdue": tasks_overdue
+            "tasks_overdue": tasks_overdue,
         }
 
     @staticmethod
@@ -209,16 +230,20 @@ class AdminService:
         from app.modules.auth.models import User
         from app.modules.chat.models import Message
         from app.modules.tasks.models import Task
-        
+
         settings = get_settings()
         start_date = datetime.now(timezone.utc) - timedelta(days=days)
-        
+
         # Initialize stats dict with all dates
         stats = {}
         for i in range(days):
-            date = (datetime.now(timezone.utc) - timedelta(days=days-1-i)).date().isoformat()
+            date = (
+                (datetime.now(timezone.utc) - timedelta(days=days - 1 - i))
+                .date()
+                .isoformat()
+            )
             stats[date] = {"date": date, "messages": 0, "new_users": 0, "new_tasks": 0}
-        
+
         # SQL aggregation differs between SQLite and MySQL
         if settings.is_sqlite:
             # SQLite date() function
@@ -230,10 +255,10 @@ class AdminService:
             date_func = func.date(Message.created_at)
             user_date_func = func.date(User.created_at)
             task_date_func = func.date(Task.created_at)
-        
+
         # Messages - SQL GROUP BY
         msg_stmt = (
-            select(date_func.label('date'), func.count(Message.id).label('count'))
+            select(date_func.label("date"), func.count(Message.id).label("count"))
             .where(Message.created_at >= start_date)
             .group_by(date_func)
         )
@@ -242,10 +267,10 @@ class AdminService:
             date_str = str(row.date)
             if date_str in stats:
                 stats[date_str]["messages"] = row.count
-        
+
         # Users - SQL GROUP BY
         user_stmt = (
-            select(user_date_func.label('date'), func.count(User.id).label('count'))
+            select(user_date_func.label("date"), func.count(User.id).label("count"))
             .where(User.created_at >= start_date)
             .group_by(user_date_func)
         )
@@ -254,10 +279,10 @@ class AdminService:
             date_str = str(row.date)
             if date_str in stats:
                 stats[date_str]["new_users"] = row.count
-        
+
         # Tasks - SQL GROUP BY
         task_stmt = (
-            select(task_date_func.label('date'), func.count(Task.id).label('count'))
+            select(task_date_func.label("date"), func.count(Task.id).label("count"))
             .where(Task.created_at >= start_date)
             .group_by(task_date_func)
         )
@@ -266,7 +291,7 @@ class AdminService:
             date_str = str(row.date)
             if date_str in stats:
                 stats[date_str]["new_tasks"] = row.count
-                
+
         return list(stats.values())
 
     @staticmethod
@@ -274,11 +299,19 @@ class AdminService:
         """Get actual storage usage by file type"""
         from app.modules.board.models import Document
         from app.modules.archive.models import ArchiveFile
-        
+
         # Fetch all files to categorize in Python (safer for cross-DB compatibility)
-        archive_files = (await db.execute(select(ArchiveFile.file_size, ArchiveFile.mime_type, ArchiveFile.file_path))).all()
-        board_docs = (await db.execute(select(Document.file_size, Document.file_path))).all()
-        
+        archive_files = (
+            await db.execute(
+                select(
+                    ArchiveFile.file_size, ArchiveFile.mime_type, ArchiveFile.file_path
+                )
+            )
+        ).all()
+        board_docs = (
+            await db.execute(select(Document.file_size, Document.file_path))
+        ).all()
+
         categories = {
             "Images": {"value": 0, "count": 0, "color": "#8884d8"},
             "Videos": {"value": 0, "count": 0, "color": "#82ca9d"},
@@ -290,21 +323,50 @@ class AdminService:
 
         def categorize(mime: str, path: str):
             if mime:
-                if mime.startswith('image/'): return "Images"
-                if mime.startswith('video/'): return "Videos"
-                if mime.startswith('audio/'): return "Audio"
-                if mime in ('application/pdf', 'application/msword', 'text/plain') or \
-                   mime.startswith('application/vnd.openxmlformats-officedocument'): return "Documents"
-                if mime in ('application/zip', 'application/x-rar-compressed', 'application/x-7z-compressed', 'application/x-tar'): return "Archives"
-            
+                if mime.startswith("image/"):
+                    return "Images"
+                if mime.startswith("video/"):
+                    return "Videos"
+                if mime.startswith("audio/"):
+                    return "Audio"
+                if mime in (
+                    "application/pdf",
+                    "application/msword",
+                    "text/plain",
+                ) or mime.startswith("application/vnd.openxmlformats-officedocument"):
+                    return "Documents"
+                if mime in (
+                    "application/zip",
+                    "application/x-rar-compressed",
+                    "application/x-7z-compressed",
+                    "application/x-tar",
+                ):
+                    return "Archives"
+
             # Fallback to extension
-            ext = path.lower().split('.')[-1] if '.' in path else ''
-            if ext in ('jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'): return "Images"
-            if ext in ('mp4', 'mkv', 'avi', 'mov', 'webm'): return "Videos"
-            if ext in ('mp3', 'wav', 'ogg', 'flac'): return "Audio"
-            if ext in ('pdf', 'doc', 'docx', 'txt', 'rtf', 'odt', 'xls', 'xlsx', 'ppt', 'pptx'): return "Documents"
-            if ext in ('zip', 'rar', '7z', 'tar', 'gz'): return "Archives"
-            
+            ext = path.lower().split(".")[-1] if "." in path else ""
+            if ext in ("jpg", "jpeg", "png", "gif", "webp", "svg"):
+                return "Images"
+            if ext in ("mp4", "mkv", "avi", "mov", "webm"):
+                return "Videos"
+            if ext in ("mp3", "wav", "ogg", "flac"):
+                return "Audio"
+            if ext in (
+                "pdf",
+                "doc",
+                "docx",
+                "txt",
+                "rtf",
+                "odt",
+                "xls",
+                "xlsx",
+                "ppt",
+                "pptx",
+            ):
+                return "Documents"
+            if ext in ("zip", "rar", "7z", "tar", "gz"):
+                return "Archives"
+
             return "Other"
 
         # Process ArchiveFiles
@@ -321,7 +383,12 @@ class AdminService:
 
         # Format for response
         return [
-            {"name": name, "value": data["value"], "count": data["count"], "color": data["color"]}
+            {
+                "name": name,
+                "value": data["value"],
+                "count": data["count"],
+                "color": data["color"],
+            }
             for name, data in categories.items()
             if data["count"] > 0 or name == "Other"
         ]
@@ -330,11 +397,11 @@ class AdminService:
     async def get_active_sessions(db: AsyncSession):
         """Get list of users currently 'online' using real-time connections"""
         from app.modules.auth.models import User
-        
+
         online_user_ids = await manager.get_online_user_ids()
         if not online_user_ids:
             return []
-            
+
         stmt = (
             select(User)
             .where(User.id.in_(online_user_ids))
@@ -344,7 +411,7 @@ class AdminService:
         )
         result = await db.execute(stmt)
         users = result.scalars().all()
-        
+
         # Attach session start times
         for user in users:
             start_time = manager.session_starts.get(user.id)
@@ -353,14 +420,14 @@ class AdminService:
                 start_time = user.last_seen or datetime.now(timezone.utc)
                 manager.session_starts[user.id] = start_time
             user.session_start = start_time
-            
+
         return users
 
     @staticmethod
     async def get_unit_distribution(db: AsyncSession):
         """Get number of users in each unit"""
         from app.modules.auth.models import User, Unit
-        
+
         stmt = (
             select(Unit.name, func.count(User.id))
             .join(User, User.unit_id == Unit.id, isouter=True)
@@ -374,7 +441,7 @@ class AdminService:
         """Get users with the most messages"""
         from app.modules.auth.models import User
         from app.modules.chat.models import Message
-        
+
         stmt = (
             select(User, func.count(Message.id).label("message_count"))
             .join(Message, Message.user_id == User.id)
@@ -393,8 +460,12 @@ class AdminService:
         from app.modules.auth.models import User
         from app.modules.board.models import Document
         from app.modules.tasks.models import Task
-        
-        recent_users_stmt = select(User, text("'new_user' as type")).order_by(User.created_at.desc()).limit(limit)
+
+        recent_users_stmt = (
+            select(User, text("'new_user' as type"))
+            .order_by(User.created_at.desc())
+            .limit(limit)
+        )
         recent_docs_stmt = (
             select(Document, text("'new_document' as type"))
             .options(selectinload(Document.owner))
@@ -407,50 +478,64 @@ class AdminService:
             .order_by(Task.created_at.desc())
             .limit(limit)
         )
-        
+
         users_res = await db.execute(recent_users_stmt)
         docs_res = await db.execute(recent_docs_stmt)
         tasks_res = await db.execute(recent_tasks_stmt)
-        
+
         events = []
         for user, type_name in users_res.all():
-            events.append({
-                "id": f"u_{user.id}",
-                "type": type_name,
-                "user": user.full_name or user.username,
-                "description": f"Joined the platform",
-                "timestamp": user.created_at
-            })
-            
+            events.append(
+                {
+                    "id": f"u_{user.id}",
+                    "type": type_name,
+                    "user": user.full_name or user.username,
+                    "description": f"Joined the platform",
+                    "timestamp": user.created_at,
+                }
+            )
+
         for doc, type_name in docs_res.all():
-            events.append({
-                "id": f"d_{doc.id}",
-                "type": type_name,
-                "user": doc.owner.full_name or doc.owner.username if doc.owner else "System",
-                "description": f"Uploaded document: {doc.title}",
-                "timestamp": doc.created_at
-            })
-            
+            events.append(
+                {
+                    "id": f"d_{doc.id}",
+                    "type": type_name,
+                    "user": (
+                        doc.owner.full_name or doc.owner.username
+                        if doc.owner
+                        else "System"
+                    ),
+                    "description": f"Uploaded document: {doc.title}",
+                    "timestamp": doc.created_at,
+                }
+            )
+
         for task, type_name in tasks_res.all():
-             events.append({
-                "id": f"t_{task.id}",
-                "type": type_name,
-                "user": task.issuer.full_name or task.issuer.username if task.issuer else "System",
-                "description": f"Created new task: {task.title}",
-                "timestamp": task.created_at
-            })
-            
+            events.append(
+                {
+                    "id": f"t_{task.id}",
+                    "type": type_name,
+                    "user": (
+                        task.issuer.full_name or task.issuer.username
+                        if task.issuer
+                        else "System"
+                    ),
+                    "description": f"Created new task: {task.title}",
+                    "timestamp": task.created_at,
+                }
+            )
+
         events.sort(key=lambda x: x["timestamp"], reverse=True)
         return events[:limit]
 
     @staticmethod
     async def create_audit_log(
-        db: AsyncSession, 
-        user_id: int, 
-        action: str, 
-        target_type: str, 
-        target_id: str = None, 
-        details: str = None
+        db: AsyncSession,
+        user_id: int,
+        action: str,
+        target_type: str,
+        target_id: str = None,
+        details: str = None,
     ):
         """Create a new audit log entry"""
         log = AuditLog(
@@ -458,7 +543,7 @@ class AdminService:
             action=action,
             target_type=target_type,
             target_id=str(target_id) if target_id else None,
-            details=details
+            details=details,
         )
         db.add(log)
         await db.commit()
@@ -469,9 +554,7 @@ class AdminService:
         """Get list of audit logs"""
         stmt = (
             select(AuditLog)
-            .options(
-                selectinload(AuditLog.user).selectinload(User.unit)
-            )
+            .options(selectinload(AuditLog.user).selectinload(User.unit))
             .order_by(AuditLog.timestamp.desc())
             .limit(limit)
         )
@@ -487,42 +570,42 @@ class AdminService:
         import asyncio
         import psutil
         from datetime import datetime
-        
+
         # Calculate Uptime (non-blocking)
         start_time = getattr(app_state, "start_time", datetime.now(timezone.utc))
         uptime_delta = datetime.now(timezone.utc) - start_time
-        
+
         days = uptime_delta.days
         hours, remainder = divmod(uptime_delta.seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
-        
+
         if days > 0:
             uptime_str = f"{days}d {hours}h {minutes}m"
         elif hours > 0:
             uptime_str = f"{hours}h {minutes}m {seconds}s"
         else:
             uptime_str = f"{minutes}m {seconds}s"
-        
+
         # Run blocking psutil calls in thread pool to avoid blocking event loop
         def get_cpu_ram():
             cpu_load = psutil.cpu_percent(interval=0.1)
             ram = psutil.virtual_memory()
             return cpu_load, ram.percent
-        
+
         cpu_load, ram_usage = await asyncio.to_thread(get_cpu_ram)
-        
+
         # Status
         status_str = "Normal"
         if cpu_load > 90 or ram_usage > 90:
             status_str = "Critical"
         elif cpu_load > 70 or ram_usage > 70:
             status_str = "Warning"
-            
+
         return {
             "uptime": uptime_str,
             "cpu_load": cpu_load,
             "ram_usage": ram_usage,
-            "status": status_str
+            "status": status_str,
         }
 
     @staticmethod
@@ -530,14 +613,16 @@ class AdminService:
         """Get task statistics by unit"""
         from app.modules.auth.models import User, Unit
         from app.modules.tasks.models import Task, TaskStatus
-        
+
         # We need to join Task with Assignee's Unit
         # Assignee is a User
         stmt = (
             select(
                 Unit.name,
                 func.count(Task.id).label("total"),
-                func.count(Task.id).filter(Task.status == TaskStatus.COMPLETED).label("completed")
+                func.count(Task.id)
+                .filter(Task.status == TaskStatus.COMPLETED)
+                .label("completed"),
             )
             .select_from(Unit)
             .join(User, User.unit_id == Unit.id)
@@ -545,19 +630,22 @@ class AdminService:
             .group_by(Unit.name)
         )
         result = await db.execute(stmt)
-        return [{"name": name, "total": total, "completed": completed} for name, total, completed in result.all()]
+        return [
+            {"name": name, "total": total, "completed": completed}
+            for name, total, completed in result.all()
+        ]
 
     @staticmethod
     async def get_all_tasks(db: AsyncSession):
         """Get all tasks for administrative view"""
         from app.modules.auth.models import User
         from app.modules.tasks.models import Task
-        
+
         stmt = (
             select(Task)
             .options(
                 selectinload(Task.issuer).selectinload(User.unit),
-                selectinload(Task.assignee).selectinload(User.unit)
+                selectinload(Task.assignee).selectinload(User.unit),
             )
             .order_by(Task.created_at.desc())
         )
@@ -573,8 +661,12 @@ class AdminService:
         settings = get_settings()
 
         # Get current settings using SystemSettingService
-        internal_domain = await SystemSettingService.get_value(db, "internal_email_domain", settings.internal_email_domain)
-        smtp_host = await SystemSettingService.get_value(db, "email_smtp_host", "127.0.0.1")
+        internal_domain = await SystemSettingService.get_value(
+            db, "internal_email_domain", settings.internal_email_domain
+        )
+        smtp_host = await SystemSettingService.get_value(
+            db, "email_smtp_host", "127.0.0.1"
+        )
         smtp_port = await SystemSettingService.get_value(db, "email_smtp_port", 2525)
 
         # Get statistics
@@ -586,7 +678,7 @@ class AdminService:
             "smtp_host": smtp_host,
             "smtp_port": int(smtp_port) if isinstance(smtp_port, str) else smtp_port,
             "total_accounts": total_accounts or 0,
-            "total_messages": total_messages or 0
+            "total_messages": total_messages or 0,
         }
 
     @staticmethod
@@ -596,24 +688,32 @@ class AdminService:
         await SystemSettingService.set_value(
             db, "internal_email_domain", settings_data.internal_email_domain, admin_id
         )
-        
+
         # Invalidate cache to ensure fresh data
         SystemSettingService.invalidate_cache("internal_email_domain")
-        
+
         # Create audit log
         await AdminService.create_audit_log(
-            db, admin_id, "update_email_domain", "system_setting", 
-            "internal_email_domain", 
-            f"Changed email domain to '{settings_data.internal_email_domain}'"
+            db,
+            admin_id,
+            "update_email_domain",
+            "system_setting",
+            "internal_email_domain",
+            f"Changed email domain to '{settings_data.internal_email_domain}'",
         )
-        
+
         # Return updated settings
         return await AdminService.get_email_settings(db)
 
     @staticmethod
     async def recreate_email_accounts(db: AsyncSession, admin_id: int):
         """Completely recreate all email accounts with new domain, deleting all messages"""
-        from app.modules.email.models import EmailAccount, EmailMessage, EmailFolder, EmailAttachment
+        from app.modules.email.models import (
+            EmailAccount,
+            EmailMessage,
+            EmailFolder,
+            EmailAttachment,
+        )
         from app.modules.auth.models import User
         from sqlalchemy import delete
         from app.core.config import get_settings
@@ -622,68 +722,73 @@ class AdminService:
 
         try:
             # Get current domain setting using SystemSettingService
-            new_domain = await SystemSettingService.get_value(db, "internal_email_domain", settings.internal_email_domain)
+            new_domain = await SystemSettingService.get_value(
+                db, "internal_email_domain", settings.internal_email_domain
+            )
 
             # Get all users
             result = await db.execute(select(User))
             all_users = result.scalars().all()
-            
+
             recreated_count = 0
-            
+
             for user in all_users:
                 # Delete existing email account and all related data if exists
                 existing_account = await db.scalar(
                     select(EmailAccount).where(EmailAccount.user_id == user.id)
                 )
-                
+
                 if existing_account:
                     # Delete all attachments first (due to foreign key constraints)
                     await db.execute(
-                        delete(EmailAttachment)
-                        .where(EmailAttachment.message_id.in_(
-                            select(EmailMessage.id).where(EmailMessage.account_id == existing_account.id)
-                        ))
+                        delete(EmailAttachment).where(
+                            EmailAttachment.message_id.in_(
+                                select(EmailMessage.id).where(
+                                    EmailMessage.account_id == existing_account.id
+                                )
+                            )
+                        )
                     )
-                    
+
                     # Delete all messages
                     await db.execute(
-                        delete(EmailMessage).where(EmailMessage.account_id == existing_account.id)
+                        delete(EmailMessage).where(
+                            EmailMessage.account_id == existing_account.id
+                        )
                     )
-                    
+
                     # Delete all folders
                     await db.execute(
-                        delete(EmailFolder).where(EmailFolder.account_id == existing_account.id)
+                        delete(EmailFolder).where(
+                            EmailFolder.account_id == existing_account.id
+                        )
                     )
-                    
+
                     # Delete the account itself
                     await db.delete(existing_account)
-                    
+
                     # Flush to ensure deletion is committed before creating new account
                     await db.flush()
-                
+
                 # Create new email account with current domain
                 new_email = f"{user.username}@{new_domain}"
-                new_account = EmailAccount(
-                    user_id=user.id,
-                    email_address=new_email
-                )
+                new_account = EmailAccount(user_id=user.id, email_address=new_email)
                 db.add(new_account)
-                
+
                 # Update user's email in profile
                 user.email = new_email
-                
+
                 recreated_count += 1
-            
+
             await db.commit()
-            
+
             return {
                 "updated_accounts": recreated_count,
-                "message": f"Successfully recreated {recreated_count} email accounts with domain '{new_domain}'. All previous messages were deleted."
+                "message": f"Successfully recreated {recreated_count} email accounts with domain '{new_domain}'. All previous messages were deleted.",
             }
-            
+
         except Exception as e:
             await db.rollback()
             raise HTTPException(
-                status_code=500, 
-                detail=f"Failed to recreate email accounts: {str(e)}"
+                status_code=500, detail=f"Failed to recreate email accounts: {str(e)}"
             )

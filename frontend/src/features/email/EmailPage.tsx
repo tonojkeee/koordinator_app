@@ -9,7 +9,7 @@ import CreateFolderModal from './components/CreateFolderModal';
 import {
     Inbox, Send, Archive, Trash2, Plus, Mail, RefreshCw,
     Book, Folder, Star, AlertCircle, Search, Filter,
-    CheckSquare, ChevronDown, ShieldAlert, MailOpen, Pencil
+    CheckSquare, ChevronDown, ShieldAlert, MailOpen, Pencil, Zap
 } from 'lucide-react';
 import { Avatar, ContextMenu, type ContextMenuOption, Header, Button } from '../../design-system';
 import { useToast } from '../../design-system';
@@ -212,67 +212,70 @@ const EmailPage: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col h-full w-full bg-[#F5F5F5] overflow-hidden min-h-0 animate-in fade-in duration-300">
+        <div className="flex flex-col h-full w-full bg-background overflow-hidden min-h-0">
             {/* Header */}
-            <div className="px-6 pt-4 pb-2 shrink-0 z-20 sticky top-0 pointer-events-none">
-                <Header
-                    title={t('email.title')}
-                    icon={<Mail size={20} />}
-                    iconColor="indigo"
-                    sticky={false}
-                    className="pointer-events-auto shadow-sm border border-[#E0E0E0] rounded-lg bg-white"
-                    actions={
-                        <div className="flex items-center gap-2">
-                            <Button
-                                onClick={() => { setComposerData({}); setIsComposerOpen(true); }}
-                                variant="primary"
-                                size="sm"
-                                icon={<Plus size={16} />}
-                            >
-                                <span className="hidden sm:inline">{t('email.new_message')}</span>
-                            </Button>
+            <Header
+                title={t('email.title')}
+                icon={<Mail size={20} />}
+                iconColor="indigo"
+                sticky={true}
+                tabs={[
+                    { id: 'focused', label: t('email.tabs.focused'), icon: <Zap size={16} strokeWidth={1.5} /> },
+                    { id: 'other', label: t('email.tabs.other'), icon: <Inbox size={16} strokeWidth={1.5} /> }
+                ]}
+                activeTab={activeTab}
+                onTabChange={(id) => setActiveTab(id as 'focused' | 'other')}
+                actions={
+                    <div className="flex items-center gap-2">
+                        <Button
+                            onClick={() => { setComposerData({}); setIsComposerOpen(true); }}
+                            variant="primary"
+                            size="sm"
+                            icon={<Plus size={16} />}
+                        >
+                            <span className="hidden sm:inline">{t('email.new_message')}</span>
+                        </Button>
 
-                            <div className="h-6 w-px bg-[#E0E0E0] mx-1" />
+                        <div className="h-6 w-px bg-border mx-1" />
 
-                            <Button
-                                onClick={async () => {
-                                    try {
-                                        await emailService.markAllAsRead();
-                                        await fetchStats();
-                                        await fetchEmails();
-                                        addToast({ type: 'success', title: t('common.success'), message: t('email.toast_marked_all_read') });
-                                    } catch {
-                                        addToast({ type: 'error', title: t('common.error'), message: t('email.toast_mark_read_error') });
-                                    }
-                                }}
-                                variant="ghost"
-                                size="sm"
-                                icon={<MailOpen size={16} />}
-                                title={t('email.mark_all_read')}
-                            >
-                                <span className="hidden xl:inline">{t('email.mark_all_read')}</span>
-                            </Button>
+                        <Button
+                            onClick={async () => {
+                                try {
+                                    await emailService.markAllAsRead();
+                                    await fetchStats();
+                                    await fetchEmails();
+                                    addToast({ type: 'success', title: t('common.success'), message: t('email.toast_marked_all_read') });
+                                } catch {
+                                    addToast({ type: 'error', title: t('common.error'), message: t('email.toast_mark_read_error') });
+                                }
+                            }}
+                            variant="ghost"
+                            size="sm"
+                            icon={<MailOpen size={16} />}
+                            title={t('email.mark_all_read')}
+                        >
+                            <span className="hidden xl:inline">{t('email.mark_all_read')}</span>
+                        </Button>
 
-                            <Button
-                                onClick={handleUndo}
-                                disabled={!lastAction}
-                                variant="ghost"
-                                size="sm"
-                                icon={<RefreshCw size={16} />}
-                                title={t('email.undo')}
-                            >
-                                <span className="hidden xl:inline">{t('email.undo')}</span>
-                            </Button>
-                        </div>
-                    }
-                />
-            </div>
+                        <Button
+                            onClick={handleUndo}
+                            disabled={!lastAction}
+                            variant="ghost"
+                            size="sm"
+                            icon={<RefreshCw size={16} />}
+                            title={t('email.undo')}
+                        >
+                            <span className="hidden xl:inline">{t('email.undo')}</span>
+                        </Button>
+                    </div>
+                }
+            />
 
-            <div className="flex-1 flex overflow-hidden min-h-0 px-6 pb-6">
-                <aside className="w-64 flex-shrink-0 bg-white border border-[#E0E0E0] rounded-l-lg flex flex-col overflow-hidden">
+            <div className="flex-1 flex overflow-hidden min-h-0 px-6 pb-6 pt-2">
+                <aside className="w-64 flex-shrink-0 bg-surface border border-border rounded-l-xl flex flex-col overflow-hidden shadow-sm">
                     <div className="flex-1 overflow-y-auto px-3 space-y-6 pt-4 custom-scrollbar">
                         <section>
-                            <div className="px-2 mb-2 text-[10px] font-bold text-[#888888] uppercase tracking-wider">{t('email.favorites')}</div>
+                            <div className="px-2 mb-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-70">{t('email.favorites')}</div>
                             <div className="space-y-0.5">
                                 {systemFolders.filter(f => favorites.includes(f.id)).map((folder) => {
                                     const isActive = selectedFolder === folder.id;
@@ -325,16 +328,16 @@ const EmailPage: React.FC = () => {
                                         <ContextMenu key={`fav-${folder.id}`} options={contextOptions}>
                                             <button
                                                 onClick={() => setSelectedFolder(folder.id)}
-                                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all group ${isActive
-                                                    ? 'bg-white shadow-sm text-[#5B5FC7] font-bold border border-[#E0E0E0]'
-                                                    : 'text-[#616161] hover:bg-[#E0E0E0]/50 hover:text-[#242424]'
+                                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all group relative ${isActive
+                                                    ? 'bg-primary/5 text-primary font-black shadow-sm'
+                                                    : 'text-muted-foreground hover:bg-surface-2 hover:text-foreground font-bold'
                                                     }`}
                                             >
-                                                <folder.icon size={18} className={isActive ? 'text-[#5B5FC7]' : 'text-[#888888] group-hover:text-[#616161]'} strokeWidth={1.5} />
+                                                <folder.icon size={18} className={isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'} strokeWidth={isActive ? 2.5 : 2} />
                                                 <span className="flex-1 text-left truncate">{folder.name}</span>
                                                 <div className="flex items-center gap-2">
                                                     {folder.unread_count > 0 && (
-                                                        <span className="text-[10px] font-bold text-[#5B5FC7] bg-[#EEF2FF] px-1.5 py-0.5 rounded-full shrink-0">{folder.unread_count}</span>
+                                                        <span className="text-[10px] font-black text-primary bg-primary/10 px-2 py-0.5 rounded-full shrink-0">{folder.unread_count}</span>
                                                     )}
                                                     <div
                                                         onClick={(e) => toggleFavorite(e, folder.id)}
@@ -344,6 +347,7 @@ const EmailPage: React.FC = () => {
                                                         <Star size={12} fill="currentColor" strokeWidth={1.5} />
                                                     </div>
                                                 </div>
+                                                {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary rounded-r-full" />}
                                             </button>
                                         </ContextMenu>
                                     );
@@ -376,16 +380,16 @@ const EmailPage: React.FC = () => {
                                         <ContextMenu key={`fav-custom-${folder.id}`} options={contextOptions}>
                                             <button
                                                 onClick={() => setSelectedFolder(folder.id.toString())}
-                                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all group ${isActive
-                                                    ? 'bg-white shadow-sm text-[#5B5FC7] font-bold border border-[#E0E0E0]'
-                                                    : 'text-[#616161] hover:bg-[#E0E0E0]/50 hover:text-[#242424]'
+                                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all group relative ${isActive
+                                                    ? 'bg-primary/5 text-primary font-black shadow-sm'
+                                                    : 'text-muted-foreground hover:bg-surface-2 hover:text-foreground font-bold'
                                                     }`}
                                             >
-                                                <Folder size={18} className={isActive ? 'text-[#5B5FC7]' : 'text-[#888888] group-hover:text-[#616161]'} strokeWidth={1.5} />
+                                                <Folder size={18} className={isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'} strokeWidth={isActive ? 2.5 : 2} />
                                                 <span className="flex-1 text-left truncate">{folder.name}</span>
                                                 <div className="flex items-center gap-2">
                                                     {folder.unread_count && folder.unread_count > 0 && (
-                                                        <span className="text-[10px] font-bold text-[#5B5FC7] bg-[#EEF2FF] px-1.5 py-0.5 rounded-full shrink-0">
+                                                        <span className="text-[10px] font-black text-primary bg-primary/10 px-2 py-0.5 rounded-full shrink-0">
                                                             {folder.unread_count}
                                                         </span>
                                                     )}
@@ -397,6 +401,7 @@ const EmailPage: React.FC = () => {
                                                         <Star size={12} fill="currentColor" strokeWidth={1.5} />
                                                     </div>
                                                 </div>
+                                                {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary rounded-r-full" />}
                                             </button>
                                         </ContextMenu>
                                     );
@@ -405,14 +410,14 @@ const EmailPage: React.FC = () => {
                         </section>
 
                         <section>
-                            <div className="px-2 mb-2 flex items-center justify-between text-[10px] font-bold text-[#888888] uppercase tracking-wider">
+                            <div className="px-2 mb-2 flex items-center justify-between text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-70">
                                 <span>{t('email.folders')}</span>
                                 <button
                                     onClick={() => setIsCreateFolderOpen(true)}
-                                    className="text-[#888888] hover:text-[#5B5FC7] hover:bg-[#E0E0E0] rounded p-0.5 transition-all"
+                                    className="text-muted-foreground hover:text-primary hover:bg-surface-3 rounded p-0.5 transition-all"
                                     title={t('email.create_folder')}
                                 >
-                                    <Plus size={14} strokeWidth={2} />
+                                    <Plus size={14} strokeWidth={3} />
                                 </button>
                             </div>
                             <div className="space-y-0.5">
@@ -468,25 +473,26 @@ const EmailPage: React.FC = () => {
 
                                             <button
                                                 onClick={() => setSelectedFolder(folder.id)}
-                                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all group ${isActive
-                                                    ? 'bg-white shadow-sm text-[#5B5FC7] font-bold border border-[#E0E0E0]'
-                                                    : 'text-[#616161] hover:bg-[#E0E0E0]/50 hover:text-[#242424]'
+                                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all group relative ${isActive
+                                                    ? 'bg-primary/5 text-primary font-black shadow-sm'
+                                                    : 'text-muted-foreground hover:bg-surface-2 hover:text-foreground font-bold'
                                                     }`}
                                             >
-                                                <folder.icon size={18} className={isActive ? 'text-[#5B5FC7]' : 'text-[#888888] group-hover:text-[#616161]'} strokeWidth={1.5} />
+                                                <folder.icon size={18} className={isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'} strokeWidth={isActive ? 2.5 : 2} />
                                                 <span className="flex-1 text-left truncate">{folder.name}</span>
                                                 <div className="flex items-center gap-2">
                                                     {folder.unread_count > 0 && (
-                                                        <span className="text-[10px] font-bold text-[#5B5FC7] bg-[#EEF2FF] px-1.5 py-0.5 rounded-full shrink-0">{folder.unread_count}</span>
+                                                        <span className="text-[10px] font-black text-primary bg-primary/10 px-2 py-0.5 rounded-full shrink-0">{folder.unread_count}</span>
                                                     )}
                                                     <div
                                                         onClick={(e) => toggleFavorite(e, folder.id)}
-                                                        className={`transition-all p-1 shrink-0 ${isFav ? 'text-amber-400 opacity-100' : 'text-[#BDBDBD] opacity-0 group-hover:opacity-100 hover:text-amber-400'}`}
+                                                        className={`transition-all p-1 shrink-0 ${isFav ? 'text-amber-400 opacity-100' : 'text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-amber-400'}`}
                                                         title={isFav ? t('email.remove_from_favorites') : t('email.add_to_favorites')}
                                                     >
                                                         <Star size={12} fill={isFav ? "currentColor" : "none"} strokeWidth={1.5} />
                                                     </div>
                                                 </div>
+                                                {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary rounded-r-full" />}
                                             </button>
                                         </ContextMenu>
                                     );
@@ -535,34 +541,35 @@ const EmailPage: React.FC = () => {
                                             <div className="relative group">
                                                 <button
                                                     onClick={() => setSelectedFolder(folder.id.toString())}
-                                                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all group ${isActive
-                                                        ? 'bg-white shadow-sm text-[#5B5FC7] font-bold border border-[#E0E0E0]'
-                                                        : 'text-[#616161] hover:bg-[#E0E0E0]/50 hover:text-[#242424]'
+                                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all group relative ${isActive
+                                                        ? 'bg-primary/5 text-primary font-black shadow-sm'
+                                                        : 'text-muted-foreground hover:bg-surface-2 hover:text-foreground font-bold'
                                                         }`}
                                                 >
-                                                    <Folder size={18} className={isActive ? 'text-[#5B5FC7]' : 'text-[#888888] group-hover:text-[#616161]'} strokeWidth={1.5} />
+                                                    <Folder size={18} className={isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'} strokeWidth={isActive ? 2.5 : 2} />
                                                     <span className="flex-1 text-left truncate">{folder.name}</span>
                                                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                         <div
                                                             onClick={(e) => toggleFavorite(e, folder.id.toString())}
-                                                            className={`transition-all p-1 ${isFav ? 'text-amber-400 opacity-100' : 'text-[#BDBDBD] hover:text-amber-400'}`}
+                                                            className={`transition-all p-1 ${isFav ? 'text-amber-400 opacity-100' : 'text-muted-foreground hover:text-amber-400'}`}
                                                             title={isFav ? t('email.remove_from_favorites') : t('email.add_to_favorites')}
                                                         >
                                                             <Star size={12} fill={isFav ? "currentColor" : "none"} strokeWidth={1.5} />
                                                         </div>
                                                         <div
                                                             onClick={(e) => handleDeleteFolder(e, folder.id)}
-                                                            className="text-[#BDBDBD] hover:text-[#C4314B] transition-all p-1"
+                                                            className="text-muted-foreground hover:text-destructive transition-all p-1"
                                                             title={t('common.delete')}
                                                         >
                                                             <Trash2 size={14} strokeWidth={1.5} />
                                                         </div>
                                                     </div>
                                                     {folder.unread_count && folder.unread_count > 0 && (
-                                                        <span className="text-[10px] font-bold text-[#5B5FC7] bg-[#EEF2FF] px-1.5 py-0.5 rounded-full shrink-0 group-hover:hidden">
+                                                        <span className="text-[10px] font-black text-primary bg-primary/10 px-2 py-0.5 rounded-full shrink-0 group-hover:hidden">
                                                             {folder.unread_count}
                                                         </span>
                                                     )}
+                                                    {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-primary rounded-r-full" />}
                                                 </button>
                                             </div>
                                         </ContextMenu>
@@ -572,71 +579,52 @@ const EmailPage: React.FC = () => {
                         </section>
                     </div>
 
-                    <div className="p-4 border-t border-[#E0E0E0] bg-white">
-                        <div className="flex items-center gap-3">
-                            <Avatar name={account?.email_address || t('common.unknown')} size="sm" className="ring-2 ring-[#F5F5F5]" />
+                    <div className="p-4 border-t border-border bg-surface-1">
+                        <div className="flex items-center gap-3 p-2 rounded-xl bg-surface border border-border shadow-sm">
+                            <Avatar name={account?.email_address || t('common.unknown')} size="sm" className="ring-2 ring-primary/10 shadow-sm" />
                             <div className="min-w-0 flex-1">
-                                <p className="text-xs font-bold text-[#242424] truncate">{account?.email_address}</p>
-                                <p className="text-[10px] text-[#888888] uppercase tracking-wider font-semibold">{t('email.account')}</p>
+                                <p className="text-xs font-black text-foreground truncate leading-none mb-1">{account?.email_address?.split('@')[0]}</p>
+                                <p className="text-[9px] text-muted-foreground uppercase tracking-widest font-black opacity-60">{t('email.account')}</p>
                             </div>
-                            <button onClick={() => setIsAddressBookOpen(true)} className="text-[#888888] hover:text-[#5B5FC7] hover:bg-[#F5F5F5] p-2 rounded-md transition-all">
-                                <Book size={18} strokeWidth={1.5} />
+                            <button onClick={() => setIsAddressBookOpen(true)} className="text-muted-foreground hover:text-primary hover:bg-primary/10 p-2 rounded-lg transition-all">
+                                <Book size={18} strokeWidth={2} />
                             </button>
                         </div>
                     </div>
                 </aside>
 
                 {/* Column 2: Message List */}
-                <section className="w-[400px] flex-shrink-0 border-r border-[#E0E0E0] flex flex-col bg-white overflow-hidden shadow-[1px_0_0_0_rgba(0,0,0,0.05)] z-10">
-                    <header className="h-14 border-b border-[#E0E0E0] flex items-center justify-between px-4 shrink-0 bg-white sticky top-0 z-10">
+                <section className="w-[420px] flex-shrink-0 border-y border-r border-border flex flex-col bg-surface overflow-hidden shadow-sm z-10">
+                    <header className="h-12 border-b border-border flex items-center justify-between px-4 shrink-0 bg-surface/80 backdrop-blur-md sticky top-0 z-10">
                         <div className="flex items-center gap-2">
-                            <CheckSquare size={18} className="text-[#888888]" strokeWidth={1.5} />
-                            <ChevronDown size={14} className="text-[#888888]" strokeWidth={1.5} />
+                            <CheckSquare size={16} className="text-muted-foreground" strokeWidth={2} />
+                            <ChevronDown size={12} className="text-muted-foreground" strokeWidth={2} />
                         </div>
-                        <div className="flex items-center gap-6 text-sm font-bold">
-                            <button
-                                onClick={() => setActiveTab('focused')}
-                                className={`pb-4 pt-4 border-b-2 transition-all relative ${activeTab === 'focused' ? 'border-[#5B5FC7] text-[#5B5FC7]' : 'border-transparent text-[#616161] hover:text-[#242424]'}`}
-                            >
-                                {t('email.tabs.focused')}
-                                {emails.some(e => e.is_important && !e.is_read) && (
-                                    <span className="absolute top-3 -right-1.5 w-2 h-2 bg-[#5B5FC7] rounded-full border-2 border-white ring-1 ring-[#EEF2FF]" />
-                                )}
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('other')}
-                                className={`pb-4 pt-4 border-b-2 transition-all relative ${activeTab === 'other' ? 'border-[#5B5FC7] text-[#5B5FC7]' : 'border-transparent text-[#616161] hover:text-[#242424]'}`}
-                            >
-                                {t('email.tabs.other')}
-                                {emails.some(e => !e.is_important && !e.is_read) && (
-                                    <span className="absolute top-3 -right-1.5 w-2 h-2 bg-[#5B5FC7] rounded-full border-2 border-white ring-1 ring-[#EEF2FF]" />
-                                )}
-                            </button>
-                        </div>
+
                         <div className="flex items-center gap-2">
-                            <button className="p-1.5 text-[#616161] hover:bg-[#F5F5F5] hover:text-[#242424] rounded-md transition-colors">
-                                <Filter size={18} strokeWidth={1.5} />
+                            <button className="p-1.5 text-muted-foreground hover:bg-surface-2 hover:text-foreground rounded-lg transition-colors">
+                                <Filter size={16} strokeWidth={2} />
                             </button>
                         </div>
                     </header>
 
-                    <div className="px-3 py-3 border-b border-[#E0E0E0] shrink-0 bg-[#F5F5F5]">
+                    <div className="px-3 py-3 border-b border-border shrink-0 bg-surface-1/50">
                         <div className="relative group">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#888888] group-focus-within:text-[#5B5FC7] transition-colors" size={16} />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" size={14} />
                             <input
                                 type="text"
                                 placeholder={t('email.search_placeholder')}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-white border border-[#E0E0E0] rounded-md pl-9 pr-4 py-1.5 text-sm focus:outline-none focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7] text-[#242424] placeholder-[#888888] transition-all shadow-sm"
+                                className="w-full bg-surface border border-border rounded-xl pl-9 pr-4 py-1.5 text-xs focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 text-foreground placeholder-muted-foreground/60 transition-all shadow-sm"
                             />
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto custom-scrollbar relative bg-white">
+                    <div className="flex-1 overflow-y-auto custom-scrollbar relative bg-surface">
                         {loading && (
-                            <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-20 flex items-center justify-center">
-                                <RefreshCw size={24} className="text-[#5B5FC7] animate-spin" />
+                            <div className="absolute inset-0 bg-surface/40 backdrop-blur-[2px] z-20 flex items-center justify-center animate-fade-in">
+                                <RefreshCw size={24} className="text-primary animate-spin" />
                             </div>
                         )}
                         <EmailList
@@ -747,7 +735,7 @@ const EmailPage: React.FC = () => {
                 </section>
 
                 {/* Column 3: Message Detail */}
-                <main className="flex-1 flex flex-col min-w-0 bg-white relative overflow-hidden">
+                <main className="flex-1 flex flex-col min-w-0 bg-surface border-y border-border rounded-r-xl overflow-hidden relative shadow-sm">
                     {selectedEmailId ? (
                         <EmailDetails
                             emailId={selectedEmailId}
@@ -759,12 +747,12 @@ const EmailPage: React.FC = () => {
                             onDelete={handleDeleteMessage}
                         />
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-[#F5F5F5]">
-                            <div className="w-24 h-24 bg-white rounded-full shadow-sm border border-[#E0E0E0] flex items-center justify-center mb-6">
-                                <Mail size={40} className="text-[#BDBDBD]" strokeWidth={1} />
+                        <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-surface-1/30 animate-fade-in">
+                            <div className="w-24 h-24 bg-surface rounded-full shadow-m3-1 border border-border flex items-center justify-center mb-6 scale-110">
+                                <Mail size={40} className="text-muted-foreground/30" strokeWidth={1} />
                             </div>
-                            <h3 className="text-xl font-bold text-[#242424] mb-2">{t('email.select_message')}</h3>
-                            <p className="text-[#616161] max-w-xs">{t('email.select_message_description')}</p>
+                            <h3 className="text-xl font-black text-foreground mb-2 tracking-tight">{t('email.select_message')}</h3>
+                            <p className="text-muted-foreground text-sm max-w-xs font-medium">{t('email.select_message_description')}</p>
                         </div>
                     )}
                 </main>

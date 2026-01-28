@@ -147,11 +147,11 @@ const AdminPage: React.FC = () => {
 
     // Tab definitions
     const mainTabs = [
-        { id: 'overview', icon: <Activity size={18} strokeWidth={1.5} />, label: t('admin.overview') },
-        { id: 'units', icon: <Building2 size={18} strokeWidth={1.5} />, label: t('admin.units') },
-        { id: 'users', icon: <Users size={18} strokeWidth={1.5} />, label: t('admin.users') },
-        { id: 'tasks', icon: <ClipboardList size={18} strokeWidth={1.5} />, label: t('admin.tasks') },
-        { id: 'sessions', icon: <BarChart2 size={18} strokeWidth={1.5} />, label: t('admin.sessions') },
+        { id: 'overview', icon: <Activity size={16} strokeWidth={1.5} />, label: t('admin.overview') },
+        { id: 'units', icon: <Building2 size={16} strokeWidth={1.5} />, label: t('admin.units') },
+        { id: 'users', icon: <Users size={16} strokeWidth={1.5} />, label: t('admin.users') },
+        { id: 'tasks', icon: <ClipboardList size={16} strokeWidth={1.5} />, label: t('admin.tasks') },
+        { id: 'sessions', icon: <BarChart2 size={16} strokeWidth={1.5} />, label: t('admin.sessions') },
     ];
 
     const settingsTabs = [
@@ -163,40 +163,47 @@ const AdminPage: React.FC = () => {
     ];
 
     return (
-        <div className="flex-1 flex flex-col bg-[#F5F5F5] overflow-hidden h-screen animate-in fade-in duration-300">
+        <div className="flex-1 flex flex-col bg-background overflow-hidden animate-fade-in">
             {/* Header */}
             <Header
                 title={t('admin.dashboard')}
                 subtitle={t('admin.systemControl')}
-                icon={<Shield size={20} strokeWidth={1.5} />}
+                icon={<Shield size={20} strokeWidth={2} />}
                 iconColor="indigo"
                 sticky={true}
-                tabs={mainTabs}
+                tabs={mainTabs.map(tab => ({
+                    ...tab,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    icon: React.cloneElement(tab.icon as React.ReactElement<any>, { strokeWidth: 2 })
+                }))}
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
                 actions={
                     <div className="relative group">
                         <button
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${activeTab.startsWith('settings')
-                                ? 'bg-white text-[#5B5FC7] shadow-sm'
-                                : 'text-[#616161] hover:text-[#242424] hover:bg-[#E0E0E0]/50'
+                            className={`flex items-center gap-2.5 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab.startsWith('settings')
+                                ? 'bg-primary text-white shadow-m3-1 scale-105'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-surface-3 opacity-80 hover:opacity-100'
                                 }`}
                         >
-                            <Sliders size={18} strokeWidth={1.5} />
+                            <Sliders size={16} strokeWidth={2.5} />
                             <span>{t('admin.settings')}</span>
                         </button>
 
-                        <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-[#E0E0E0] rounded-lg shadow-lg p-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                        <div className="absolute top-full right-0 mt-3 w-56 bg-surface border border-border rounded-2xl shadow-m3-3 p-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-y-2 group-hover:translate-y-0 transition-all z-50">
                             {settingsTabs.map(sub => (
                                 <button
                                     key={sub.id}
                                     onClick={() => setActiveTab(sub.id)}
-                                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs font-semibold transition-all ${activeTab === sub.id
-                                        ? 'bg-[#EEF2FF] text-[#5B5FC7]'
-                                        : 'text-[#616161] hover:bg-[#F5F5F5] hover:text-[#242424]'
+                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === sub.id
+                                        ? 'bg-primary/10 text-primary'
+                                        : 'text-muted-foreground hover:bg-surface-2 hover:text-foreground'
                                         }`}
                                 >
-                                    {sub.icon}
+                                    <span className={activeTab === sub.id ? 'text-primary' : 'text-muted-foreground'}>
+                                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                        {React.cloneElement(sub.icon as React.ReactElement<any>, { size: 16, strokeWidth: 2.5 })}
+                                    </span>
                                     {sub.label}
                                 </button>
                             ))}
@@ -206,8 +213,8 @@ const AdminPage: React.FC = () => {
             />
 
             {/* Content */}
-            <main className="flex-1 overflow-y-auto p-6">
-                <div className="max-w-7xl mx-auto pb-20">
+            <div className="flex-1 overflow-y-auto px-6 pb-6 pt-2 custom-scrollbar">
+                <div className="max-w-7xl mx-auto pb-20 animate-slide-up">
                     {activeTab === 'overview' && (
                         <OverviewTab
                             t={t}
@@ -275,7 +282,7 @@ const AdminPage: React.FC = () => {
                         </React.Suspense>
                     )}
                 </div>
-            </main>
+            </div>
 
             {/* Modals */}
             {editingUser && (

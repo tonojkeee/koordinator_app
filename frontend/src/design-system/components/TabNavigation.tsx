@@ -41,9 +41,9 @@ export const TabNavigation = React.memo<TabNavigationProps>(({
   return (
     <div
       className={cn(
-        'flex gap-1',
+        'inline-flex items-center gap-1 bg-surface-2 p-1 rounded-lg border border-border shadow-sm',
         // Horizontal scroll on mobile
-        'overflow-x-auto scrollbar-hide',
+        'overflow-x-auto no-scrollbar',
         // Snap scrolling for better mobile UX
         'snap-x snap-mandatory',
         className
@@ -58,11 +58,11 @@ export const TabNavigation = React.memo<TabNavigationProps>(({
             key={tab.id}
             onClick={() => onTabChange?.(tab.id)}
             className={cn(
-              'flex items-center gap-2 px-3 py-2 rounded-t-md text-sm font-semibold transition-all',
-              'whitespace-nowrap snap-start min-w-fit border-b-2',
+              'px-4 py-1.5 rounded-md text-xs font-bold transition-all duration-300',
+              'whitespace-nowrap snap-start min-w-fit flex items-center gap-2 relative',
               isActive
-                ? 'text-[#5B5FC7] border-[#5B5FC7] bg-[#F0F0F0]'
-                : 'text-[#616161] border-transparent hover:text-[#242424] hover:bg-[#F5F5F5]'
+                ? 'bg-surface text-primary shadow-m3-1 scale-[1.02]'
+                : 'text-muted-foreground hover:text-foreground hover:bg-surface-3/50'
             )}
             role="tab"
             aria-selected={isActive}
@@ -70,18 +70,21 @@ export const TabNavigation = React.memo<TabNavigationProps>(({
             id={`tab-${tab.id}`}
             tabIndex={isActive ? 0 : -1}
           >
-            {tab.icon}
+            {tab.icon && <span className={cn("transition-transform duration-300", isActive && "scale-110")}>{tab.icon}</span>}
             {tab.label}
             {tab.badge !== undefined && tab.badge > 0 && (
               <span
                 className={cn(
-                  'px-1.5 py-0.5 rounded-full text-[10px] font-bold',
-                  isActive ? 'bg-[#5B5FC7] text-white' : 'bg-[#E0E0E0] text-[#616161]'
+                  'px-1.5 py-0.5 rounded-full text-[9px] font-black min-w-[18px] h-[18px] flex items-center justify-center transition-colors duration-300',
+                  isActive ? 'bg-primary text-white shadow-sm' : 'bg-border text-muted-foreground'
                 )}
                 aria-label={`${tab.badge} items`}
               >
-                {tab.badge}
+                {tab.badge > 99 ? '99+' : tab.badge}
               </span>
+            )}
+            {isActive && (
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-primary rounded-full animate-fade-in" />
             )}
           </button>
         );

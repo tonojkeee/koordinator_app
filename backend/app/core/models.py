@@ -18,6 +18,7 @@ class SystemSetting(Base):
     Allows for dynamic configuration changes without code deployment.
     Settings can be organized by group (general, security, email, storage, etc.)
     """
+
     __tablename__ = "system_settings"
 
     key: Mapped[str] = mapped_column(String(100), primary_key=True)
@@ -25,4 +26,6 @@ class SystemSetting(Base):
     type: Mapped[str] = mapped_column(String(20), default="str")  # str, int, bool, json
     description: Mapped[str] = mapped_column(String(255), nullable=True)
     is_public: Mapped[bool] = mapped_column(Boolean, default=False)
-    group: Mapped[str] = mapped_column(String(50), default="general")  # general, security, email, storage
+    group: Mapped[str] = mapped_column(
+        String(50), default="general"
+    )  # general, security, email, storage

@@ -4,13 +4,14 @@ Celery Application Configuration.
 This module configures Celery for background task processing.
 Used for:
 - Email processing (SMTP)
-- File cleanup operations  
+- File cleanup operations
 - Heavy data processing
 - Scheduled tasks
 
 Start worker: celery -A app.core.celery_app worker --loglevel=info
 Start beat:   celery -A app.core.celery_app beat --loglevel=info
 """
+
 import os
 from celery import Celery
 from app.core.config import get_settings
@@ -44,7 +45,7 @@ celery_app = Celery(
     backend=get_celery_result_backend(),
     include=[
         "app.core.tasks",
-    ]
+    ],
 )
 
 # Celery configuration
@@ -55,18 +56,14 @@ celery_app.conf.update(
     result_serializer="json",
     timezone="UTC",
     enable_utc=True,
-    
     # Task execution settings
     task_acks_late=True,
     task_reject_on_worker_lost=True,
-    
     # Worker settings
     worker_prefetch_multiplier=1,
     worker_concurrency=4,
-    
     # Result settings
     result_expires=3600,  # 1 hour
-    
     # Beat scheduler (for periodic tasks)
     beat_schedule={
         "cleanup-expired-sessions": {

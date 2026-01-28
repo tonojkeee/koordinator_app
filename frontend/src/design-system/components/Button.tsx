@@ -21,21 +21,23 @@ import { cn } from '../utils/cn';
 import { Loader2 } from 'lucide-react';
 
 const buttonVariants = cva(
-  // Base styles - современный минималистичный подход
-  'inline-flex items-center justify-center gap-2 font-medium rounded-md transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2',
+  // Base styles - Teams/Material 3 Hybrid
+  'inline-flex items-center justify-center gap-2 font-semibold rounded-md transition-all duration-200 ease-in-out disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 overflow-hidden relative active:scale-[0.97]',
   {
     variants: {
       variant: {
-        primary: 'bg-[#5B5FC7] hover:bg-[#4f52b2] text-white shadow-none focus:ring-[#5B5FC7]/20 active:scale-[0.98]',
-        secondary: 'bg-white hover:bg-[#F5F5F5] text-[#242424] border border-[#E0E0E0] hover:border-[#BDBDBD] shadow-none focus:ring-[#5B5FC7]/20 active:scale-[0.98]',
-        danger: 'bg-[#C4314B] hover:bg-[#a3283e] text-white shadow-none focus:ring-[#C4314B]/20 active:scale-[0.98]',
-        ghost: 'hover:bg-[#F5F5F5] text-[#616161] hover:text-[#242424] focus:ring-[#5B5FC7]/20 active:scale-[0.98]',
-        outline: 'border border-[#E0E0E0] hover:border-[#BDBDBD] text-[#242424] hover:bg-[#F5F5F5] focus:ring-[#5B5FC7]/20 active:scale-[0.98]',
+        primary: 'bg-primary text-primary-foreground shadow-m3-1 hover:bg-teams-brandHover hover:shadow-m3-2',
+        secondary: 'bg-secondary text-secondary-foreground border border-border hover:bg-surface-3 hover:border-border/80',
+        danger: 'bg-destructive text-destructive-foreground shadow-m3-1 hover:bg-destructive/90 hover:shadow-m3-2',
+        ghost: 'bg-transparent text-foreground hover:bg-surface-2',
+        outline: 'border border-border bg-transparent text-foreground hover:bg-surface-1 hover:border-teams-brand/30 hover:text-teams-brand',
+        link: 'text-teams-brand underline-offset-4 hover:underline px-0 h-auto'
       },
       size: {
-        sm: 'px-3 h-8 text-xs font-semibold',
-        md: 'px-4 h-9 text-sm font-semibold',
-        lg: 'px-6 h-11 text-base font-semibold',
+        sm: 'px-3 h-8 text-xs',
+        md: 'px-4 h-10 text-sm',
+        lg: 'px-6 h-12 text-base',
+        icon: 'h-10 w-10 p-0 rounded-full'
       },
     },
     defaultVariants: {

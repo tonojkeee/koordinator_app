@@ -5,15 +5,19 @@ from sqlalchemy import select
 from app.modules.auth.models import User
 from app.core.security import get_password_hash
 
+
 @pytest.mark.asyncio
 async def test_register_user(client: AsyncClient, db_session: AsyncSession):
     """Test user registration endpoint"""
     # 1. Successful registration
-    response = await client.post("/api/auth/register", json={
-        "username": "newuser",
-        "password": "password123",
-        "full_name": "New User"
-    })
+    response = await client.post(
+        "/api/auth/register",
+        json={
+            "username": "newuser",
+            "password": "password123",
+            "full_name": "New User",
+        },
+    )
     assert response.status_code == 201
     data = response.json()
     assert data["username"] == "newuser"
@@ -27,14 +31,18 @@ async def test_register_user(client: AsyncClient, db_session: AsyncSession):
     assert user.full_name == "New User"
 
     # 2. Duplicate username registration (should fail)
-    response = await client.post("/api/auth/register", json={
-        "username": "newuser",
-        "password": "password456",
-        "full_name": "Another User"
-    })
+    response = await client.post(
+        "/api/auth/register",
+        json={
+            "username": "newuser",
+            "password": "password456",
+            "full_name": "Another User",
+        },
+    )
     assert response.status_code == 400
     # We check status code mainly, as error message might be localized
     assert response.json()["detail"]
+
 
 @pytest.mark.asyncio
 async def test_login_user(client: AsyncClient, db_session: AsyncSession):
@@ -45,16 +53,15 @@ async def test_login_user(client: AsyncClient, db_session: AsyncSession):
         email="login@example.com",
         hashed_password=get_password_hash("secret123"),
         full_name="Login User",
-        is_active=True
+        is_active=True,
     )
     db_session.add(user)
     await db_session.commit()
 
     # 1. Successful login
-    response = await client.post("/api/auth/login", data={
-        "username": "loginuser",
-        "password": "secret123"
-    })
+    response = await client.post(
+        "/api/auth/login", data={"username": "loginuser", "password": "secret123"}
+    )
     assert response.status_code == 200
     data = response.json()
     assert "access_token" in data
@@ -65,11 +72,11 @@ async def test_login_user(client: AsyncClient, db_session: AsyncSession):
     assert "csrf_token" in response.cookies
 
     # 2. Invalid credentials
-    response = await client.post("/api/auth/login", data={
-        "username": "loginuser",
-        "password": "wrongpassword"
-    })
+    response = await client.post(
+        "/api/auth/login", data={"username": "loginuser", "password": "wrongpassword"}
+    )
     assert response.status_code == 401
+
 
 @pytest.mark.asyncio
 async def test_get_me_protected(client: AsyncClient, db_session: AsyncSession):
@@ -77,18 +84,17 @@ async def test_get_me_protected(client: AsyncClient, db_session: AsyncSession):
     # Create user
     user = User(
         username="meuser",
-        email="me@example.com", # Added missing required email field
+        email="me@example.com",  # Added missing required email field
         hashed_password=get_password_hash("pass"),
-        is_active=True
+        is_active=True,
     )
     db_session.add(user)
     await db_session.commit()
 
     # Login to get token
-    login_res = await client.post("/api/auth/login", data={
-        "username": "meuser",
-        "password": "pass"
-    })
+    login_res = await client.post(
+        "/api/auth/login", data={"username": "meuser", "password": "pass"}
+    )
     token = login_res.json()["access_token"]
 
     # 1. Access without token (should fail)
@@ -96,9 +102,9 @@ async def test_get_me_protected(client: AsyncClient, db_session: AsyncSession):
     assert response.status_code == 401
 
     # 2. Access with token
-    response = await client.get("/api/auth/me", headers={
-        "Authorization": f"Bearer {token}"
-    })
+    response = await client.get(
+        "/api/auth/me", headers={"Authorization": f"Bearer {token}"}
+    )
     assert response.status_code == 200
     data = response.json()
     assert data["username"] == "meuser"

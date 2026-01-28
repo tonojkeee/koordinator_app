@@ -105,12 +105,12 @@ const CompanyPage: React.FC = () => {
     ];
 
     return (
-        <div className="flex-1 flex flex-col bg-[#F5F5F5] overflow-hidden animate-in fade-in duration-300">
+        <div className="flex-1 flex flex-col bg-background overflow-hidden animate-fade-in">
             {/* Header with Design System */}
             <Header
                 title={t('company.subtitle')}
                 subtitle={t('company.title')}
-                icon={<Users size={20} />}
+                icon={<Users size={20} strokeWidth={2} />}
                 iconColor="indigo"
                 searchPlaceholder={t('users.searchPlaceholder')}
                 searchValue={searchQuery}
@@ -118,18 +118,25 @@ const CompanyPage: React.FC = () => {
                 onSearchClear={() => setSearchQuery('')}
                 actions={
                     <div className="flex items-center gap-3">
-                        {/* Unit Filter - Compact */}
-                        <select
-                            value={selectedUnitId}
-                            onChange={(e) => setSelectedUnitId(e.target.value)}
-                            className="h-9 px-3 pr-8 bg-white border border-[#E0E0E0] rounded-md text-sm font-medium text-[#242424] focus:outline-none focus:ring-1 focus:ring-[#5B5FC7] focus:border-[#5B5FC7] transition-all shadow-sm cursor-pointer"
-                        >
-                            {unitOptions.map(option => (
-                                <option key={option.value} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
-                        </select>
+                        {/* Unit Filter - Enhanced */}
+                        <div className="relative group">
+                            <select
+                                value={selectedUnitId}
+                                onChange={(e) => setSelectedUnitId(e.target.value)}
+                                className="h-10 px-4 pr-10 bg-surface border border-border rounded-xl text-sm font-black text-foreground focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all shadow-sm cursor-pointer appearance-none uppercase tracking-widest min-w-[200px]"
+                            >
+                                {unitOptions.map(option => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </select>
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground group-hover:text-primary transition-colors">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </div>
+                        </div>
 
                         {/* Send Document Button */}
                         {selectedUserIds.length > 0 && (
@@ -138,6 +145,7 @@ const CompanyPage: React.FC = () => {
                                 size="md"
                                 icon={<FileUp size={18} />}
                                 onClick={() => setIsSendModalOpen(true)}
+                                className="shadow-m3-2 font-black uppercase tracking-widest text-xs px-6 scale-105"
                             >
                                 {t('board.send_document')} ({selectedUserIds.length})
                             </Button>
@@ -148,10 +156,10 @@ const CompanyPage: React.FC = () => {
             />
 
             {/* Content - Employee List with smooth transition */}
-            <div className="flex-1 overflow-hidden relative p-4">
+            <div className="flex-1 overflow-y-auto px-6 pb-6 pt-2 custom-scrollbar">
                 <div
                     key={selectedUnitId}
-                    className="h-full w-full animate-in fade-in duration-300"
+                    className="h-full w-full animate-slide-up"
                 >
                     <CompanyEmployees
                         users={filteredUsers}

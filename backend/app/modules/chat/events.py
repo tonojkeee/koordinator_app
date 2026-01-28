@@ -10,7 +10,9 @@ class MessageCreated(Event):
     user_id: int
     content: str
     document_id: int | None = None
-    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    created_at: str = field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )
 
 
 @dataclass(frozen=True)
@@ -22,4 +24,6 @@ class InvitationCreated(Event):
     inviter_name: str
     invitee_email: str
     message: str | None = None
-    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    created_at: str = field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )

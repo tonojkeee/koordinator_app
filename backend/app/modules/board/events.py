@@ -17,6 +17,7 @@ class DocumentSharedEvent(Event):
 
     Used by chat module to create channel/message notifications.
     """
+
     document_id: int
     document_title: str
     document_path: str
@@ -27,4 +28,6 @@ class DocumentSharedEvent(Event):
     sender_avatar_url: str | None
     channel_id: int | None
     message_id: int | None
-    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    created_at: str = field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )

@@ -2,6 +2,7 @@
 Redis Manager with fallback to in-memory storage.
 Used for WebSocket pub/sub, rate limiting, and session management.
 """
+
 import asyncio
 import json
 import logging
@@ -14,33 +15,36 @@ logger = logging.getLogger(__name__)
 class RedisManager:
     """
     Redis connection manager with automatic fallback to in-memory storage.
-    
+
     When Redis is unavailable:
     - Pub/Sub falls back to local asyncio events (single-process only)
     - Rate limiting works per-process only
     - Session data stays in memory
     """
-    
+
     def __init__(self) -> None:
         self._redis = None
         self._pubsub = None
         self._is_connected = False
         self._fallback_mode = False
-        
+
         # In-memory fallback storage
         self._memory_cache: Dict[str, Any] = {}
         self._memory_expiry: Dict[str, datetime] = {}
         self._local_subscribers: Dict[str, List[Callable]] = {}
-        
+
     async def connect(self, redis_url: Optional[str] = None) -> None:
         """Initialize Redis connection or fallback to in-memory mode"""
         if not redis_url:
-            logger.warning("REDIS_URL not configured, using in-memory fallback (single-process mode)")
+            logger.warning(
+                "REDIS_URL not configured, using in-memory fallback (single-process mode)"
+            )
             self._fallback_mode = True
             return
-            
+
         try:
             import redis.asyncio as aioredis
+
             self._redis = await aioredis.from_url(
                 redis_url,
                 encoding="utf-8",
@@ -52,25 +56,27 @@ class RedisManager:
             await self._redis.ping()
             self._is_connected = True
             self._fallback_mode = False
-            logger.info(f"Connected to Redis: {redis_url.split('@')[-1] if '@' in redis_url else redis_url}")
+            logger.info(
+                f"Connected to Redis: {redis_url.split('@')[-1] if '@' in redis_url else redis_url}"
+            )
         except Exception as e:
             logger.warning(f"Redis connection failed: {e}. Using in-memory fallback.")
             self._fallback_mode = True
             self._redis = None
-            
+
     async def disconnect(self) -> None:
         """Close Redis connection"""
         if self._redis:
             await self._redis.close()
             self._is_connected = False
-            
+
     @property
     def is_available(self) -> bool:
         """Check if Redis is connected and available"""
         return self._is_connected and not self._fallback_mode
-    
+
     # ==================== Key-Value Operations ====================
-    
+
     async def get(self, key: str) -> Optional[str]:
         """Get value by key"""
         if self._fallback_mode:
@@ -81,13 +87,15 @@ class RedisManager:
         except Exception as e:
             logger.error(f"Redis GET error: {e}")
             return self._memory_cache.get(key)
-            
+
     async def set(self, key: str, value: str, ex: Optional[int] = None) -> None:
         """Set value with optional expiration (seconds)"""
         if self._fallback_mode:
             self._memory_cache[key] = value
             if ex:
-                self._memory_expiry[key] = datetime.now(timezone.utc) + timedelta(seconds=ex)
+                self._memory_expiry[key] = datetime.now(timezone.utc) + timedelta(
+                    seconds=ex
+                )
             return
         try:
             await self._redis.set(key, value, ex=ex)
@@ -95,8 +103,10 @@ class RedisManager:
             logger.error(f"Redis SET error: {e}")
             self._memory_cache[key] = value
             if ex:
-                self._memory_expiry[key] = datetime.now(timezone.utc) + timedelta(seconds=ex)
-                
+                self._memory_expiry[key] = datetime.now(timezone.utc) + timedelta(
+                    seconds=ex
+                )
+
     async def delete(self, key: str) -> None:
         """Delete a key"""
         if self._fallback_mode:
@@ -108,7 +118,7 @@ class RedisManager:
         except Exception as e:
             logger.error(f"Redis DELETE error: {e}")
             self._memory_cache.pop(key, None)
-            
+
     async def incr(self, key: str) -> int:
         """Increment value and return new value"""
         if self._fallback_mode:
@@ -123,23 +133,29 @@ class RedisManager:
             val = int(self._memory_cache.get(key, 0)) + 1
             self._memory_cache[key] = str(val)
             return val
-            
+
     async def expire(self, key: str, seconds: int) -> None:
         """Set key expiration"""
         if self._fallback_mode:
-            self._memory_expiry[key] = datetime.now(timezone.utc) + timedelta(seconds=seconds)
+            self._memory_expiry[key] = datetime.now(timezone.utc) + timedelta(
+                seconds=seconds
+            )
             return
         try:
             await self._redis.expire(key, seconds)
         except Exception as e:
             logger.error(f"Redis EXPIRE error: {e}")
-            self._memory_expiry[key] = datetime.now(timezone.utc) + timedelta(seconds=seconds)
-            
+            self._memory_expiry[key] = datetime.now(timezone.utc) + timedelta(
+                seconds=seconds
+            )
+
     async def ttl(self, key: str) -> int:
         """Get remaining TTL for a key"""
         if self._fallback_mode:
             if key in self._memory_expiry:
-                remaining = (self._memory_expiry[key] - datetime.now(timezone.utc)).total_seconds()
+                remaining = (
+                    self._memory_expiry[key] - datetime.now(timezone.utc)
+                ).total_seconds()
                 return max(0, int(remaining))
             return -1
         try:
@@ -147,9 +163,9 @@ class RedisManager:
         except Exception as e:
             logger.error(f"Redis TTL error: {e}")
             return -1
-            
+
     # ==================== Hash Operations ====================
-    
+
     async def hset(self, name: str, key: str, value: str):
         """Set hash field"""
         if self._fallback_mode:
@@ -164,7 +180,7 @@ class RedisManager:
             if name not in self._memory_cache:
                 self._memory_cache[name] = {}
             self._memory_cache[name][key] = value
-            
+
     async def hget(self, name: str, key: str) -> Optional[str]:
         """Get hash field"""
         if self._fallback_mode:
@@ -174,7 +190,7 @@ class RedisManager:
         except Exception as e:
             logger.error(f"Redis HGET error: {e}")
             return self._memory_cache.get(name, {}).get(key)
-            
+
     async def hdel(self, name: str, key: str):
         """Delete hash field"""
         if self._fallback_mode:
@@ -187,7 +203,7 @@ class RedisManager:
             logger.error(f"Redis HDEL error: {e}")
             if name in self._memory_cache:
                 self._memory_cache[name].pop(key, None)
-                
+
     async def hgetall(self, name: str) -> Dict[str, str]:
         """Get all hash fields"""
         if self._fallback_mode:
@@ -197,9 +213,9 @@ class RedisManager:
         except Exception as e:
             logger.error(f"Redis HGETALL error: {e}")
             return self._memory_cache.get(name, {})
-    
+
     # ==================== Set Operations ====================
-    
+
     async def sadd(self, name: str, value: str) -> int:
         """Add member to set"""
         if self._fallback_mode:
@@ -208,7 +224,7 @@ class RedisManager:
             elif not isinstance(self._memory_cache[name], set):
                 # Handle case where key was used for something else
                 self._memory_cache[name] = set()
-            
+
             if value in self._memory_cache[name]:
                 return 0
             self._memory_cache[name].add(value)
@@ -217,7 +233,9 @@ class RedisManager:
             return await self._redis.sadd(name, value)
         except Exception as e:
             logger.error(f"Redis SADD error: {e}")
-            return await self.sadd.__wrapped__(self, name, value) # Recursive call to fallback logic
+            return await self.sadd.__wrapped__(
+                self, name, value
+            )  # Recursive call to fallback logic
 
     async def srem(self, name: str, value: str) -> int:
         """Remove member from set"""
@@ -232,7 +250,7 @@ class RedisManager:
         except Exception as e:
             logger.error(f"Redis SREM error: {e}")
             return 0
-            
+
     async def scard(self, name: str) -> int:
         """Get set cardinality (size)"""
         if self._fallback_mode:
@@ -257,13 +275,13 @@ class RedisManager:
         except Exception as e:
             logger.error(f"Redis SMEMBERS error: {e}")
             return []
-    
+
     # ==================== Pub/Sub Operations ====================
-    
+
     async def publish(self, channel: str, message: dict):
         """Publish message to channel"""
         msg_str = json.dumps(message)
-        
+
         if self._fallback_mode:
             # Local event dispatch
             if channel in self._local_subscribers:
@@ -273,7 +291,7 @@ class RedisManager:
                     except Exception as e:
                         logger.error(f"Local pub/sub callback error: {e}")
             return
-            
+
         try:
             await self._redis.publish(channel, msg_str)
         except Exception as e:
@@ -282,7 +300,7 @@ class RedisManager:
             if channel in self._local_subscribers:
                 for callback in self._local_subscribers[channel]:
                     asyncio.create_task(callback(message))
-                    
+
     async def subscribe(self, channel: str, callback: Callable):
         """Subscribe to channel with callback"""
         if self._fallback_mode:
@@ -290,11 +308,11 @@ class RedisManager:
                 self._local_subscribers[channel] = []
             self._local_subscribers[channel].append(callback)
             return
-            
+
         # For Redis, we need to start a listener task
         if not self._pubsub:
             self._pubsub = self._redis.pubsub()
-            
+
         try:
             await self._pubsub.subscribe(channel)
             # Store callback for this channel
@@ -303,12 +321,12 @@ class RedisManager:
             self._local_subscribers[channel].append(callback)
         except Exception as e:
             logger.error(f"Redis SUBSCRIBE error: {e}")
-            
+
     async def start_listener(self):
         """Start Redis pub/sub listener loop"""
         if self._fallback_mode or not self._pubsub:
             return
-            
+
         async def listen():
             try:
                 async for message in self._pubsub.listen():
@@ -320,24 +338,26 @@ class RedisManager:
                                 asyncio.create_task(callback(data))
             except Exception as e:
                 logger.error(f"Redis listener error: {e}")
-                
+
         asyncio.create_task(listen())
-        
+
     # ==================== Rate Limiting ====================
-    
-    async def check_rate_limit(self, key: str, max_requests: int, window_seconds: int = 60) -> bool:
+
+    async def check_rate_limit(
+        self, key: str, max_requests: int, window_seconds: int = 60
+    ) -> bool:
         """
         Check if rate limit is exceeded.
         Returns True if allowed, False if rate limited.
         """
         rate_key = f"rate:{key}"
-        
+
         count = await self.incr(rate_key)
         if count == 1:
             await self.expire(rate_key, window_seconds)
-            
+
         return count <= max_requests
-        
+
     async def get_rate_limit_remaining(self, key: str, max_requests: int) -> int:
         """Get remaining requests in current window"""
         rate_key = f"rate:{key}"
@@ -345,31 +365,31 @@ class RedisManager:
         if current is None:
             return max_requests
         return max(0, max_requests - int(current))
-    
+
     # ==================== Session Management ====================
-    
+
     async def set_session_start(self, user_id: int, timestamp: datetime):
         """Store session start time"""
         await self.hset("session_starts", str(user_id), timestamp.isoformat())
-        
+
     async def get_session_start(self, user_id: int) -> Optional[datetime]:
         """Get session start time"""
         ts = await self.hget("session_starts", str(user_id))
         if ts:
             return datetime.fromisoformat(ts)
         return None
-        
+
     async def clear_session_start(self, user_id: int):
         """Clear session start time"""
         await self.hdel("session_starts", str(user_id))
-        
+
     async def get_all_session_starts(self) -> Dict[int, datetime]:
         """Get all session start times"""
         data = await self.hgetall("session_starts")
         return {int(k): datetime.fromisoformat(v) for k, v in data.items()}
-    
+
     # ==================== Helpers ====================
-    
+
     def _cleanup_expired(self):
         """Remove expired keys from in-memory storage"""
         now = datetime.now(timezone.utc)

@@ -4,42 +4,134 @@
 @import "tailwindcss";
 
 @theme {
-  --font-inter: "Segoe UI", "Inter", sans-serif;
-  --color-teams-bg: #F0F0F0;
-  --color-teams-sidebar: #2D2D2D;
+  --font-sans: "Segoe UI", "Inter", system-ui, sans-serif;
+
+  /* Semantic Colors - Exposed as tailwind utilities */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-surface: var(--surface);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Teams Colors */
+  --color-teams-bg: #F5F7FA;
+  --color-teams-sidebar: #f0f2f5;
+  --color-teams-sidebarDark: #201F1F;
 }
 
 :root {
-  --primary: 238 48% 57%; /* #5B5FC7 */
-  --primary-foreground: 0 0% 100%;
-  --background: 220 14% 96%;
-  --foreground: 0 0% 14%;
-  --card: 0 0% 100%;
-  --card-foreground: 0 0% 14%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 14%;
-  --border: 220 13% 91%;
-  --input: 220 13% 91%;
-  --ring: 238 48% 57%;
-  --radius: 0.5rem;
+  /* Core Base Colors - Microsoft Teams Light (Cool Neutral) */
+  --background: hsl(210 20% 98%);
+  /* #f8f9fa */
+  --foreground: hsl(220 15% 15%);
+  /* #242424 - Teams Standard Text */
+
+  /* Surface Hierarchy (Material 3 Concept) */
+  --surface: hsl(0 0% 100%);
+  --surface-1: hsl(210 20% 99%);
+  --surface-2: hsl(210 20% 96%);
+  --surface-3: hsl(210 20% 94%);
+
+  /* Teams Signature Colors */
+  --teams-brand: hsl(231 48% 48%); /* #4f52b2 - Classic Teams Purple */
+  --teams-brand-hover: hsl(231 48% 40%);
+  --teams-sidebar-bg: hsl(0 0% 100%); /* New Teams uses light sidebar in light mode */
+  --teams-sidebar-rail: hsl(210 20% 96%);
+
+  /* Semantic Colors */
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(220 15% 15%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(220 15% 15%);
+
+  --primary: var(--teams-brand);
+  --primary-foreground: hsl(0 0% 100%);
+
+  --secondary: hsl(210 20% 96%);
+  --secondary-foreground: hsl(220 15% 15%);
+
+  --muted: hsl(210 20% 96%);
+  --muted-foreground: hsl(220 10% 45%);
+
+  --accent: hsl(231 48% 96%);
+  --accent-foreground: var(--teams-brand);
+
+  --destructive: hsl(0 75% 42%); /* #b00020 - Material Danger */
+  --destructive-foreground: hsl(0 0% 100%);
+
+  --border: hsl(210 20% 90%);
+  --input: hsl(210 20% 90%);
+  --ring: var(--teams-brand);
+
+  --radius: 6px; /* Teams uses slightly sharper corners than generic Material */
 }
 
 .dark {
-  --background: 224 71% 4%;
-  --foreground: 210 20% 98%;
-  --card: 224 71% 4%;
-  --card-foreground: 210 20% 98%;
-  --popover: 224 71% 4%;
-  --popover-foreground: 210 20% 98%;
-  --primary: 263 70% 50%;
-  --primary-foreground: 210 20% 98%;
-  --border: 215 28% 17%;
-  --input: 215 28% 17%;
-  --ring: 263 70% 50%;
+  /* Core Base Colors - Microsoft Teams Dark */
+  --background: hsl(0 0% 12%);
+  /* #1f1f1f */
+  --foreground: hsl(0 0% 100%);
+
+  /* Surface Hierarchy */
+  --surface: hsl(0 0% 12%);
+  --surface-1: hsl(0 0% 16%);
+  --surface-2: hsl(0 0% 20%);
+  --surface-3: hsl(0 0% 24%);
+
+  --card: hsl(0 0% 14%);
+  --card-foreground: hsl(0 0% 100%);
+
+  --popover: hsl(0 0% 14%);
+  --popover-foreground: hsl(0 0% 100%);
+
+  --primary: hsl(231 48% 65%);
+  --primary-foreground: hsl(0 0% 100%);
+
+  --secondary: hsl(0 0% 20%);
+  --secondary-foreground: hsl(0 0% 100%);
+
+  --muted: hsl(0 0% 20%);
+  --muted-foreground: hsl(0 0% 70%);
+
+  --accent: hsl(231 48% 25%);
+  --accent-foreground: hsl(231 48% 75%);
+
+  --destructive: hsl(0 85% 60%);
+  --destructive-foreground: hsl(0 0% 100%);
+
+  --border: hsl(0 0% 25%);
+  --input: hsl(0 0% 25%);
+  --ring: var(--primary);
 }
 
 * {
-  border-color: hsl(var(--border));
+  border-color: var(--border);
 }
 
 html,
@@ -52,9 +144,7 @@ body,
 }
 
 body {
-  @apply bg-teams-bg text-slate-900 font-inter;
-  background-color: var(--color-teams-bg);
-  font-family: var(--font-inter), 'Noto Color Emoji', sans-serif;
+  @apply bg-background text-foreground font-sans;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -348,83 +438,76 @@ aside nav::-webkit-scrollbar {
 /* Messaging Styles - Design System Unified */
 .message-bubble {
   position: relative;
-  max-width: 80%;
-  padding: 12px 18px;
-  border-radius: 1.5rem;
+  max-width: 85%;
+  padding: 10px 16px;
+  border-radius: 12px;
   font-size: inherit;
-  line-height: 1.55;
-  font-weight: 500;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  line-height: 1.5;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-block;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.08));
 }
 
 .message-received {
-  background: #ffffff;
-  color: #1e293b;
-  border-bottom-left-radius: 0.5rem;
-  margin-left: -12px;
-  border: 1px solid #e2e8f0;
+  background: var(--surface-2);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
 }
 
 .message-sent {
-  /* Design System: indigo-600 primary color */
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  background: var(--teams-brand);
   color: white;
-  border-bottom-left-radius: 0.5rem;
-  margin-left: -12px;
-  filter: drop-shadow(0 8px 20px rgba(79, 70, 229, 0.3));
+  box-shadow: 0 4px 12px -2px hsla(231, 48%, 48%, 0.3);
 }
 
 .message-received:hover {
-  background: #ffffff;
+  background: var(--surface-3);
+  border-color: var(--teams-brand);
   transform: translateY(-1px);
-  filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.1));
-  border-color: #c7d2fe;
 }
 
 .message-sent:hover {
+  filter: brightness(1.1);
   transform: translateY(-1px);
-  filter: drop-shadow(0 15px 35px rgba(79, 70, 229, 0.45));
+  box-shadow: 0 6px 16px -2px hsla(231, 48%, 48%, 0.4);
 }
 
 /* Reply (Quote) Block - Design System */
 .reply-block {
   display: block;
   padding: 8px 12px;
-  margin-bottom: 10px;
-  border-left: 4px solid;
-  border-radius: 12px;
+  margin-bottom: 8px;
+  border-left: 3px solid;
+  border-radius: 8px;
   font-size: 0.85em;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .message-sent .reply-block {
-  background: rgba(255, 255, 255, 0.1);
-  border-left-color: rgba(255, 255, 255, 0.5);
-  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.15);
+  border-left-color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .message-received .reply-block {
-  /* Design System: indigo-50 background, indigo-500 border */
-  background: #eef2ff;
-  border-left-color: #6366f1;
-  color: #475569;
+  background: var(--surface-3);
+  border-left-color: var(--teams-brand);
+  color: var(--muted-foreground);
 }
 
 .reply-user {
   display: block;
-  font-weight: 800;
+  font-weight: 900;
   font-size: 10px;
   margin-bottom: 2px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
 }
 
 .message-received .reply-user {
-  /* Design System: indigo-600 */
-  color: #4f46e5;
+  color: var(--teams-brand);
 }
 
 .message-sent .reply-user {

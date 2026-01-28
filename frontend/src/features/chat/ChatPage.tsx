@@ -9,15 +9,10 @@ import { useWebSocket } from '../../hooks/useWebSocket';
 import { Send, MessageSquare, Smile, Trash2, X, Hash, Bell, Plus, Crown, Check, CheckCheck, FileText, Pencil } from 'lucide-react';
 import EmojiPicker, { EmojiStyle, Theme, type EmojiClickData } from 'emoji-picker-react';
 
-import SendDocumentModal from '../board/components/SendDocumentModal';
 import { useTranslation } from 'react-i18next';
 
 import ParticipantsList from './ParticipantsList';
-import { Avatar, ContextMenu, type ContextMenuOption, useToast } from '../../design-system';
-import MuteModal from './MuteModal';
-import SearchModal from './components/SearchModal';
-import TransferOwnershipModal from './components/TransferOwnershipModal';
-import InviteModal from './components/InviteModal';
+import { Avatar, ContextMenu, type ContextMenuOption, useToast, cn } from '../../design-system';
 import ChannelHeader from './ChannelHeader';
 import { formatDate, renderMessageContent } from './utils';
 import { formatName } from '../../utils/formatters';
@@ -60,7 +55,6 @@ interface MessageInputProps {
     setActiveThread: (msg: Message | null) => void;
     editingMessage?: Message | null;
     onCancelEdit?: () => void;
-    setIsSendModalOpen: (open: boolean) => void;
     handleReactionClick: (messageId: number, emoji: string) => void;
     channelId?: string;
     typingUsers?: Record<number, { name: string, timestamp: number }>;
@@ -81,7 +75,6 @@ const MessageInput = React.forwardRef<MessageInputHandle, MessageInputProps>((
         setActiveThread,
         editingMessage,
         onCancelEdit,
-        setIsSendModalOpen,
         handleReactionClick,
         typingUsers = {}
     }, ref) => {
@@ -203,32 +196,32 @@ const MessageInput = React.forwardRef<MessageInputHandle, MessageInputProps>((
 
     return (
         <div className="px-4 md:px-8 pb-4 md:pb-6 pt-2 z-30 shrink-0">
-            <div className={`relative max-w-4xl mx-auto transition-all`}>
+            <div className={`relative max-w-5xl mx-auto transition-all`}>
                 {Object.keys(typingUsers).length > 0 && (
                     <div className={`absolute bottom-full left-4 mb-3 z-50 pointer-events-none ${animations.slideIn}`}>
-                        <div className="px-4 py-2 bg-white/90 backdrop-blur-md rounded-xl shadow-lg shadow-indigo-500/10 border border-slate-200/50 flex items-center space-x-2.5">
+                        <div className="px-4 py-2 bg-surface/90 backdrop-blur-md rounded-xl shadow-m3-2 border border-border flex items-center space-x-2.5">
                             <div className="flex space-x-1">
-                                <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                                <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                                <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" />
+                                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]" />
+                                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]" />
+                                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" />
                             </div>
-                            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                                 {(Object.values(typingUsers) as { name: string }[]).map(u => u.name).join(', ')} {t('chat.typing')}
                             </span>
                         </div>
                     </div>
                 )}
 
-                <div className={`relative flex flex-col bg-white/70 backdrop-blur-3xl rounded-3xl border border-white/40 shadow-xl shadow-indigo-500/10 transition-all duration-700 overflow-hidden ring-1 ring-white/50 group focus-within:shadow-2xl focus-within:shadow-indigo-500/20 focus-within:-translate-y-0.5`}>
+                <div className={`relative flex flex-col bg-surface border border-border shadow-m3-2 transition-all duration-500 overflow-hidden group focus-within:ring-2 focus-within:ring-primary/20 rounded-2xl`}>
                     {editingMessage && (
-                        <div className={`bg-indigo-50/50 backdrop-blur-md px-4 py-3 border-b border-indigo-100/30 flex items-center justify-between ${animations.slideIn}`}>
+                        <div className={`bg-primary/5 backdrop-blur-md px-4 py-3 border-b border-primary/10 flex items-center justify-between ${animations.slideIn}`}>
                             <div className="flex items-center space-x-3 overflow-hidden flex-1 min-w-0">
-                                <Pencil size={16} className="text-indigo-600 shrink-0" />
+                                <Pencil size={16} className="text-primary shrink-0" />
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-[9px] font-bold text-indigo-600 uppercase tracking-wider leading-none mb-1">
+                                    <p className="text-[9px] font-black text-primary uppercase tracking-widest leading-none mb-1">
                                         {t('chat.editing_message')}
                                     </p>
-                                    <p className="text-xs text-slate-600 truncate font-medium">
+                                    <p className="text-xs text-foreground/80 truncate font-bold">
                                         {editingMessage.content}
                                     </p>
                                 </div>
@@ -238,52 +231,42 @@ const MessageInput = React.forwardRef<MessageInputHandle, MessageInputProps>((
                                     if (onCancelEdit) onCancelEdit();
                                     setInputMessage('');
                                 }}
-                                className="shrink-0 w-7 h-7 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-white/50 rounded-lg transition-all"
+                                className="shrink-0 w-7 h-7 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
                             >
                                 <X size={16} />
                             </button>
                         </div>
                     )}
                     {activeThread && !editingMessage && (
-                        <div className={`bg-indigo-50/50 backdrop-blur-md px-4 py-3 border-b border-indigo-100/30 flex items-center justify-between ${animations.slideIn}`}>
+                        <div className={`bg-primary/5 backdrop-blur-md px-4 py-3 border-b border-primary/10 flex items-center justify-between ${animations.slideIn}`}>
                             <div className="flex items-center space-x-3 overflow-hidden flex-1 min-w-0">
-                                <div className="w-1 h-8 bg-gradient-to-b from-indigo-500 to-indigo-600 rounded-full shrink-0" />
+                                <div className="w-1 h-8 bg-primary rounded-full shrink-0 shadow-[0_0_8px_var(--teams-brand)]" />
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-[9px] font-bold text-indigo-600 uppercase tracking-wider leading-none mb-1">
+                                    <p className="text-[9px] font-black text-primary uppercase tracking-widest leading-none mb-1">
                                         {t('chat.replying_to')} {activeThread.username}
                                     </p>
-                                    <p className="text-xs text-slate-600 truncate font-medium">
+                                    <p className="text-xs text-foreground/80 truncate font-bold">
                                         {activeThread.content}
                                     </p>
                                 </div>
                             </div>
                             <button
                                 onClick={() => setActiveThread(null)}
-                                className="shrink-0 w-7 h-7 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-white/50 rounded-lg transition-all"
+                                className="shrink-0 w-7 h-7 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
                             >
                                 <X size={16} />
                             </button>
                         </div>
                     )}
 
-                    <form onSubmit={handleSendMessage} className="flex items-center p-2 md:p-2.5 space-x-2">
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setIsSendModalOpen(true)}
-                            icon={<Plus size={18} />}
-                            title={t('chat.send_file')}
-                            className="shrink-0"
-                        />
-
+                    <form onSubmit={handleSendMessage} className="flex items-center p-2 md:p-3 space-x-3">
                         <input
                             ref={inputRef}
                             type="text"
                             value={inputMessage}
                             onChange={handleInputChange}
                             placeholder={t('chat.inputPlaceholder')}
-                            className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none font-medium text-slate-700 placeholder:text-slate-400 px-2 h-10"
+                            className="flex-1 bg-transparent border-none focus:ring-0 focus:outline-none font-bold text-foreground placeholder:text-muted-foreground/50 px-2 h-10"
                             style={{
                                 fontSize: typeof user?.preferences?.font_size === 'number'
                                     ? `${user.preferences.font_size}px`
@@ -311,7 +294,7 @@ const MessageInput = React.forwardRef<MessageInputHandle, MessageInputProps>((
                             }}
                         />
 
-                        <div className="flex items-center space-x-1 shrink-0">
+                        <div className="flex items-center space-x-2 shrink-0">
                             <div className="relative">
                                 <Button
                                     type="button"
@@ -322,8 +305,8 @@ const MessageInput = React.forwardRef<MessageInputHandle, MessageInputProps>((
                                         setReactionTargetId(null);
                                         setShowEmojiPicker(!showEmojiPicker);
                                     }}
-                                    icon={<Smile size={18} />}
-                                    className={showEmojiPicker ? 'text-indigo-600 bg-indigo-50' : ''}
+                                    icon={<Smile size={20} />}
+                                    className={cn("rounded-xl transition-transform active:scale-90", showEmojiPicker ? 'text-primary bg-primary/10' : 'text-muted-foreground')}
                                 />
                             </div>
 
@@ -332,11 +315,13 @@ const MessageInput = React.forwardRef<MessageInputHandle, MessageInputProps>((
                                 variant="primary"
                                 size="sm"
                                 disabled={!inputMessage.trim() || !isConnected}
-                                icon={<Send size={18} />}
-                                className={`shadow-lg ${inputMessage.trim() && isConnected
-                                    ? 'bg-gradient-to-br from-indigo-600 to-indigo-700'
-                                    : 'grayscale opacity-50'
-                                    }`}
+                                icon={<Send size={20} className={inputMessage.trim() && isConnected ? "translate-x-0.5" : ""} />}
+                                className={cn(
+                                    "rounded-xl px-5 transition-all duration-300",
+                                    inputMessage.trim() && isConnected
+                                        ? 'bg-primary shadow-m3-2 hover:shadow-m3-3 scale-105 active:scale-95'
+                                        : 'bg-muted text-muted-foreground/40 opacity-50 grayscale'
+                                )}
                             />
                         </div>
                     </form>
@@ -344,10 +329,10 @@ const MessageInput = React.forwardRef<MessageInputHandle, MessageInputProps>((
 
                 {showEmojiPicker && (
                     <div ref={emojiPickerRef} className={`absolute bottom-full right-0 mb-4 z-[100] origin-bottom-right pr-2 ${animations.zoomIn}`}>
-                        <div className="shadow-2xl shadow-indigo-500/20 rounded-[2rem] overflow-hidden border border-white/80 ring-4 ring-white/40 backdrop-blur-xl bg-white/60">
+                        <div className="shadow-m3-4 rounded-3xl overflow-hidden border border-border ring-4 ring-primary/5 backdrop-blur-xl bg-surface/90">
                             <EmojiPicker
                                 onEmojiClick={onEmojiClick}
-                                theme={Theme.LIGHT}
+                                theme={Theme.AUTO}
                                 emojiStyle={EmojiStyle.GOOGLE}
                                 getEmojiUrl={(unified) => `/emoji/${unified}.png`}
                                 lazyLoadEmojis={true}
@@ -377,25 +362,19 @@ const ChatPage: React.FC = () => {
 
     const [messages, setMessages] = useState<Message[]>([]);
     const messageInputRef = useRef<{ handleMention: (username: string) => void, openForReaction: (msgId: number) => void } | null>(null);
-    const [isSendModalOpen, setIsSendModalOpen] = useState(false);
     const [typingUsers, setTypingUsers] = useState<Record<number, { name: string, timestamp: number }>>({});
     const typingTimeoutRef = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
     const [isDragging, setIsDragging] = useState(false);
-    const [droppedFile, setDroppedFile] = useState<File | null>(null);
     const dragCounter = useRef(0);
     const messageContainerRef = useRef<HTMLDivElement>(null);
     const prevScrollHeightRef = useRef<number>(0);
     const isFetchingMoreRef = useRef<boolean>(false);
     const isInitialLoadRef = useRef<boolean>(true);
     const [highlightDocId, setHighlightDocId] = useState<number | null>(null);
-    const [highlightMessageId, setHighlightMessageId] = useState<number | null>(null);
+    const [highlightMessageId] = useState<number | null>(null);
     const [showParticipants, setShowParticipants] = useState(true);
-    const [isMuteModalOpen, setIsMuteModalOpen] = useState(false);
     const [activeThread, setActiveThread] = useState<Message | null>(null);
     const [editingMessage, setEditingMessage] = useState<Message | null>(null);
-    const [searchModalOpen, setSearchModalOpen] = useState(false);
-    const [showTransferOwnershipModal, setShowTransferOwnershipModal] = useState(false);
-    const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
     const [quickReactionMessageId, setQuickReactionMessageId] = useState<number | null>(null);
 
     const updateMessageMutation = useMutation({
@@ -475,10 +454,7 @@ const ChatPage: React.FC = () => {
 
     const handleLeaveChannel = () => {
         if (channel?.is_owner) {
-            const result = confirm(t('chat.leaveChannel.ownerWarning'));
-            if (result) {
-                setShowTransferOwnershipModal(true);
-            }
+            alert(t('chat.leaveChannel.ownerWarning'));
         } else {
             if (window.confirm(t('chat.leave_confirm') || t('chat.leaveChannel.confirm'))) {
                 leaveChannelMutation.mutate();
@@ -528,88 +504,8 @@ const ChatPage: React.FC = () => {
     const isMember = channel?.is_member ?? false;
     const canChat = (channel?.is_direct || isMember) && !channel?.is_system;
 
-    const muteMutation = useMutation({
-        mutationFn: async ({ channelId, muteUntil }: { channelId: number; muteUntil: string | null }) => {
-            const { data } = await api.post(`/chat/channels/${channelId}/mute`, null, {
-                params: { mute_until: muteUntil }
-            });
-            return data;
-        },
-        onSuccess: (_data, variables) => {
-            queryClient.setQueryData(['channel', variables.channelId.toString()], (old: Channel | undefined) => {
-                if (!old) return old;
-                return { ...old, mute_until: variables.muteUntil };
-            });
-            setIsMuteModalOpen(false);
-        }
-    });
-
     const muteUntil = channel?.mute_until;
     const isMuted = muteUntil ? new Date(muteUntil) > new Date() : false;
-
-    const handleMute = (duration: '1h' | '8h' | '24h' | 'forever' | null) => {
-        if (!channelId) return;
-
-        let muteUntil: string | null = null;
-        if (duration) {
-            const date = new Date();
-            switch (duration) {
-                case '1h': date.setHours(date.getHours() + 1); break;
-                case '8h': date.setHours(date.getHours() + 8); break;
-                case '24h': date.setHours(date.getHours() + 24); break;
-                case 'forever': date.setFullYear(date.getFullYear() + 100); break;
-            }
-            muteUntil = date.toISOString();
-        }
-
-        muteMutation.mutate({ channelId: parseInt(channelId), muteUntil });
-    };
-
-    const transferOwnershipMutation = useMutation({
-        mutationFn: async (newOwnerId: number) => {
-            if (!channelId) throw new Error('Channel ID is required');
-            const res = await api.post(`/chat/channels/${channelId}/transfer-owner`, null, {
-                params: { new_owner_id: newOwnerId }
-            });
-            return res.data;
-        },
-        onSuccess: (data) => {
-            queryClient.setQueryData<Channel>(['channel', channelId], (old) => {
-                if (!old) return old;
-                return {
-                    ...old,
-                    created_by: data.new_owner_id,
-                    is_owner: data.new_owner_id === user?.id
-                };
-            });
-
-            queryClient.setQueryData<Channel[]>(['channels'], (old) => {
-                if (!old) return old;
-                return old.map(ch => {
-                    if (ch.id === Number(channelId)) {
-                        return {
-                            ...ch,
-                            created_by: data.new_owner_id,
-                            is_owner: data.new_owner_id === user?.id
-                        };
-                    }
-                    return ch;
-                });
-            });
-
-            setShowTransferOwnershipModal(false);
-            alert(t('chat.transferOwnership.success'));
-        },
-        onError: (error: unknown) => {
-            const err = error as { response?: { data?: { detail?: string } } };
-            const message = err?.response?.data?.detail || t('chat.transferOwnership.error');
-            alert(message);
-        }
-    });
-
-    const handleTransferOwnership = (newOwnerId: number) => {
-        transferOwnershipMutation.mutate(newOwnerId);
-    };
 
     const [initialLastReadId, setInitialLastReadId] = useState<number | null>(null);
     const [isUnreadBannerVisible, setIsUnreadBannerVisible] = useState<boolean>(true);
@@ -680,16 +576,6 @@ const ChatPage: React.FC = () => {
             setTimeout(() => setShowParticipants(false), 0);
         }
     }, [channel?.is_system, showParticipants]);
-
-    const { data: members } = useQuery<User[]>({
-        queryKey: ['channel_members', channelId],
-        queryFn: async () => {
-            if (!channelId) return [];
-            const res = await api.get(`/chat/channels/${channelId}/members`);
-            return res.data;
-        },
-        enabled: !!channelId,
-    });
 
     const formatLastSeen = (lastSeen: string | null | undefined) => {
         if (!lastSeen) return t('chat.offline');
@@ -1248,11 +1134,7 @@ const ChatPage: React.FC = () => {
         dragCounter.current = 0;
         setIsDragging(false);
 
-        const files = e.dataTransfer.files;
-        if (files && files.length > 0) {
-            setDroppedFile(files[0]);
-            setIsSendModalOpen(true);
-        }
+        // Files are currently handled by standard browser behavior or could be integrated with MessageInput
     };
 
     const handleReactionClick = async (messageId: number, emoji: string) => {
@@ -1293,171 +1175,53 @@ const ChatPage: React.FC = () => {
 
     return (
         <div
-            className="flex-1 flex overflow-hidden bg-white relative animate-in fade-in duration-300"
+            className="flex-1 flex flex-col bg-[#F5F5F5] overflow-hidden animate-in fade-in duration-300 relative"
             onDragEnter={handleDragEnter}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
         >
-            <div className="flex-1 flex flex-col relative overflow-hidden">
-                {isDragging && (
-                    <div className="absolute inset-0 z-[100] bg-indigo-600/10 backdrop-blur-[2px] border-4 border-dashed border-indigo-500/50 m-4 rounded-[2.5rem] flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
-                        <div className="bg-white p-8 rounded-[2rem] shadow-2xl flex flex-col items-center space-y-4">
-                            <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center animate-bounce">
-                                <Plus size={32} />
-                            </div>
-                            <div className="text-center">
-                                <h3 className="text-xl font-bold text-slate-800 tracking-tight">{t('chat.send_file_title')}</h3>
-                                <p className="text-slate-500 font-medium">{t('chat.send_file_subtitle')}</p>
-                            </div>
+            {isDragging && (
+                <div className="absolute inset-0 z-[100] bg-indigo-600/10 backdrop-blur-[2px] border-4 border-dashed border-indigo-500/50 m-4 rounded-lg flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
+                    <div className="bg-white p-8 rounded-lg shadow-2xl flex flex-col items-center space-y-4 border border-[#E0E0E0]">
+                        <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center animate-bounce">
+                            <Plus size={32} />
+                        </div>
+                        <div className="text-center">
+                            <h3 className="text-xl font-bold text-slate-800 tracking-tight">{t('chat.send_file_title')}</h3>
+                            <p className="text-slate-500 font-medium">{t('chat.send_file_subtitle')}</p>
                         </div>
                     </div>
-                )}
-                {channelId ? (
-                    <div className="flex-1 flex flex-col h-full transition-opacity duration-300" style={{ opacity: isHistoryLoading && messages.length === 0 ? 0.5 : 1 }}>
-                        <ChannelHeader
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            channel={channel as any}
-                            isConnected={isConnected}
-                            isMuted={isMuted}
-                            isDmPartnerOnline={isDmPartnerOnline}
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            dmPartner={dmPartner as any}
-                            showParticipants={showParticipants}
-                            setShowParticipants={setShowParticipants}
-                            setIsMuteModalOpen={setIsMuteModalOpen}
-                            handleExportChat={handleExportChat}
-                            onLeaveChannel={handleLeaveChannel}
-                            onOpenInviteModal={() => setIsInviteModalOpen(true)}
-                            formatLastSeen={formatLastSeen}
-                        />
+                </div>
+            )}
 
-                        <SendDocumentModal
-                            isOpen={isSendModalOpen}
-                            onClose={() => {
-                                setIsSendModalOpen(false);
-                                setDroppedFile(null);
-                            }}
-                            recipientIds={
-                                channel?.is_direct
-                                    ? (channel.other_user ? [channel.other_user.id] : [])
-                                    : (members || []).filter(m => m.id !== user?.id).map(m => m.id)
-                            }
-                            recipientNames={
-                                channel?.is_direct
-                                    ? (channel.other_user ? [formatName(channel.other_user.full_name, channel.other_user.username)] : [])
-                                    : (members || []).filter(m => m.id !== user?.id).map(m => formatName(m.full_name, m.username))
-                            }
-                            channelName={!channel?.is_direct ? (channel?.display_name || channel?.name) : undefined}
-                            channelId={channelId ? parseInt(channelId) : undefined}
-                            preSelectedFile={droppedFile}
-                        />
+            {channelId ? (
+                <div className="flex-1 flex flex-col h-full overflow-hidden transition-opacity duration-300" style={{ opacity: isHistoryLoading && messages.length === 0 ? 0.5 : 1 }}>
+                    <ChannelHeader
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        channel={channel as any}
+                        isConnected={isConnected}
+                        isMuted={isMuted}
+                        isDmPartnerOnline={isDmPartnerOnline}
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        dmPartner={dmPartner as any}
+                        showParticipants={showParticipants}
+                        setShowParticipants={setShowParticipants}
+                        setIsMuteModalOpen={() => { }}
+                        handleExportChat={handleExportChat}
+                        onLeaveChannel={handleLeaveChannel}
+                        formatLastSeen={formatLastSeen}
+                    />
 
-                        <MuteModal
-                            isOpen={isMuteModalOpen}
-                            onClose={() => setIsMuteModalOpen(false)}
-                            onMute={handleMute}
-                        />
-
-                        <SearchModal
-                            isOpen={searchModalOpen}
-                            onClose={() => setSearchModalOpen(false)}
-                            onGoToMessage={(messageId) => {
-                                setHighlightMessageId(messageId);
-                                setTimeout(() => {
-                                    const el = document.getElementById(`message-${messageId}`);
-                                    if (el) {
-                                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                    }
-                                }, 300);
-                                setTimeout(() => setHighlightMessageId(null), 3000);
-                            }}
-                        />
-
-                        <TransferOwnershipModal
-                            isOpen={showTransferOwnershipModal}
-                            onClose={() => setShowTransferOwnershipModal(false)}
-                            channelId={parseInt(channelId!)}
-                            onTransfer={handleTransferOwnership}
-                            currentOwnerId={channel?.created_by || 0}
-                            currentUser={user}
-                        />
-
-                        <InviteModal
-                            isOpen={isInviteModalOpen}
-                            onClose={() => setIsInviteModalOpen(false)}
-                            channelId={channelId!}
-                            channelName={channel?.display_name || channel?.name || ''}
-                            onInvite={async (userIds: number[], message?: string) => {
-                                try {
-                                    // Получаем email пользователей по их ID
-                                    const usersResponse = await api.get('/auth/users');
-                                    const allUsers = usersResponse.data;
-
-                                    let successCount = 0;
-                                    const errors: string[] = [];
-
-                                    // Создаем приглашения для каждого пользователя
-                                    for (const userId of userIds) {
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        const user = allUsers.find((u: any) => u.id === userId);
-                                        if (user && user.email) {
-                                            try {
-                                                await api.post('/chat/invitations', {
-                                                    channel_id: parseInt(channelId!),
-                                                    invitee_email: user.email,
-                                                    role: 'member',
-                                                    message: message || undefined,
-                                                    expires_hours: 24
-                                                });
-                                                successCount++;
-                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                            } catch (error: any) {
-                                                const errorMsg = error?.response?.data?.detail || `Failed to invite ${user.full_name || user.username}`;
-                                                errors.push(errorMsg);
-                                            }
-                                        } else {
-                                            errors.push(`User with ID ${userId} not found or has no email`);
-                                        }
-                                    }
-
-                                    // Показываем результат
-                                    if (successCount > 0) {
-                                        addToast({
-                                            type: 'success',
-                                            title: t('common.success'),
-                                            message: t('chat.invitations_sent', { count: successCount })
-                                        });
-                                    }
-
-                                    if (errors.length > 0) {
-                                        addToast({
-                                            type: 'error',
-                                            title: t('common.error'),
-                                            message: errors.join('; ')
-                                        });
-                                    }
-
-                                } catch (error) {
-                                    addToast({
-                                        type: 'error',
-                                        title: t('common.error'),
-                                        message: t('chat.invite_error')
-                                    });
-                                    throw error;
-                                }
-                            }}
-                        />
-
-                        <div className="flex-1 flex overflow-hidden">
+                    <div className="flex-1 flex overflow-hidden min-h-0 px-6 pb-6 pt-2">
+                        <div className="flex-1 flex bg-white border border-[#E0E0E0] rounded-lg shadow-sm overflow-hidden relative">
                             <div className="flex-1 flex flex-col min-w-0 relative">
                                 <div
                                     id="message-container"
                                     ref={messageContainerRef}
                                     onScroll={handleScroll}
-                                    className="flex-1 flex flex-col overflow-y-auto px-8 py-6 space-y-1 relative"
+                                    className="flex-1 flex flex-col overflow-y-auto px-8 py-6 space-y-1 relative custom-scrollbar"
                                 >
-
                                     {isFetchingNextPage && (
                                         <div className="flex justify-center py-2 absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-slate-50/80 to-transparent p-2">
                                             <div className="w-5 h-5 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
@@ -1468,7 +1232,7 @@ const ChatPage: React.FC = () => {
                                         {isHistoryLoading && messages.length === 0 ? (
                                             <MessageSkeleton />
                                         ) : messages.length === 0 ? (
-                                            <div className="flex flex-col items-center justify-center h-[60vh] opacity-40 animate-in fade-in duration-500">
+                                            <div className="flex flex-col items-center justify-center h-full opacity-40 animate-in fade-in duration-500 py-20">
                                                 <div className="p-12 bg-white rounded-[3rem] shadow-xl border border-slate-100 mb-6">
                                                     <MessageSquare size={64} className="text-slate-200" />
                                                 </div>
@@ -1753,7 +1517,6 @@ const ChatPage: React.FC = () => {
                                         setActiveThread={setActiveThread}
                                         editingMessage={editingMessage}
                                         onCancelEdit={() => setEditingMessage(null)}
-                                        setIsSendModalOpen={setIsSendModalOpen}
                                         handleReactionClick={handleReactionClick}
                                         typingUsers={typingUsers}
                                     />
@@ -1789,47 +1552,47 @@ const ChatPage: React.FC = () => {
                             )}
                         </div>
                     </div>
-                ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center animate-in bg-[#F5F5F5] p-8 overflow-y-auto">
-                        <div className="relative mb-12 group">
-                            <div className="relative">
-                                <div className="w-40 h-40 bg-white rounded-full shadow-lg flex items-center justify-center group-hover:scale-105 transition-all duration-500">
-                                    <MessageSquare className="w-20 h-20 text-[#5B5FC7]" strokeWidth={1.5} />
-                                </div>
-                                <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-[#5B5FC7] rounded-full shadow-md flex items-center justify-center border-4 border-[#F5F5F5]">
-                                    <Send className="w-8 h-8 text-white" />
-                                </div>
+                </div>
+            ) : (
+                <div className="flex-1 flex flex-col items-center justify-center animate-in bg-muted/10 p-8 overflow-y-auto w-full h-full">
+                    <div className="relative mb-12 group">
+                        <div className="relative">
+                            <div className="w-40 h-40 bg-surface rounded-full shadow-elevation-2 flex items-center justify-center group-hover:scale-105 transition-all duration-500 ring-4 ring-surface">
+                                <MessageSquare className="w-20 h-20 text-primary" strokeWidth={1.5} />
                             </div>
-                        </div>
-
-                        <div className="text-center space-y-4 max-w-2xl mb-16 px-4">
-                            <h2 className="text-4xl font-bold tracking-tight text-[#242424]">
-                                {t('chat.welcomeTitle')}
-                            </h2>
-                            <p className="text-lg text-[#616161] leading-relaxed">
-                                {t('chat.welcomeDescription')}
-                            </p>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-3xl px-4 animate-in delay-200">
-                            <div className="p-6 rounded-xl bg-white shadow-sm border border-[#E0E0E0] hover:shadow-md transition-all duration-300 group/tip flex flex-col items-center sm:items-start text-center sm:text-left">
-                                <div className="w-12 h-12 rounded-lg bg-[#EEF2FF] text-[#5B5FC7] flex items-center justify-center mb-4 group-hover/tip:scale-110 transition-transform duration-300">
-                                    <Hash size={24} />
-                                </div>
-                                <h3 className="font-bold text-[#242424] text-lg mb-2">{t('chat.welcome_tip_1_title')}</h3>
-                                <p className="text-sm text-[#616161] leading-relaxed">{t('chat.welcome_tip_1_desc')}</p>
-                            </div>
-                            <div className="p-6 rounded-xl bg-white shadow-sm border border-[#E0E0E0] hover:shadow-md transition-all duration-300 group/tip flex flex-col items-center sm:items-start text-center sm:text-left">
-                                <div className="w-12 h-12 rounded-lg bg-[#EEF2FF] text-[#5B5FC7] flex items-center justify-center mb-4 group-hover/tip:scale-110 transition-transform duration-300">
-                                    <FileText size={24} />
-                                </div>
-                                <h3 className="font-bold text-[#242424] text-lg mb-2">{t('chat.welcome_tip_2_title')}</h3>
-                                <p className="text-sm text-[#616161] leading-relaxed">{t('chat.welcome_tip_2_desc')}</p>
+                            <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-primary rounded-full shadow-lg flex items-center justify-center border-4 border-surface">
+                                <Send className="w-8 h-8 text-primary-foreground" />
                             </div>
                         </div>
                     </div>
-                )}
-            </div>
+
+                    <div className="text-center space-y-4 max-w-2xl mb-16 px-4">
+                        <h2 className="text-4xl font-bold tracking-tight text-foreground">
+                            {t('chat.welcomeTitle')}
+                        </h2>
+                        <p className="text-lg text-muted-foreground leading-relaxed">
+                            {t('chat.welcomeDescription')}
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-3xl px-4 animate-in delay-200">
+                        <div className="p-6 rounded-xl bg-surface shadow-sm border border-border hover:shadow-elevation-2 transition-all duration-300 group/tip flex flex-col items-center sm:items-start text-center sm:text-left">
+                            <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover/tip:scale-110 transition-transform duration-300">
+                                <Hash size={24} />
+                            </div>
+                            <h3 className="font-bold text-foreground text-lg mb-2">{t('chat.welcome_tip_1_title')}</h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed">{t('chat.welcome_tip_1_desc')}</p>
+                        </div>
+                        <div className="p-6 rounded-xl bg-surface shadow-sm border border-border hover:shadow-elevation-2 transition-all duration-300 group/tip flex flex-col items-center sm:items-start text-center sm:text-left">
+                            <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover/tip:scale-110 transition-transform duration-300">
+                                <FileText size={24} />
+                            </div>
+                            <h3 className="font-bold text-foreground text-lg mb-2">{t('chat.welcome_tip_2_title')}</h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed">{t('chat.welcome_tip_2_desc')}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

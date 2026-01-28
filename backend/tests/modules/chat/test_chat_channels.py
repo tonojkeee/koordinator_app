@@ -6,8 +6,11 @@ from app.modules.auth.models import User
 from app.modules.chat.models import Channel
 from app.core.security import get_password_hash
 
+
 # Helper to get auth headers
-async def get_auth_headers(client: AsyncClient, db_session: AsyncSession, username="testuser", role="user"):
+async def get_auth_headers(
+    client: AsyncClient, db_session: AsyncSession, username="testuser", role="user"
+):
     # Check if user exists
     stmt = select(User).where(User.username == username)
     result = await db_session.execute(stmt)
@@ -19,7 +22,7 @@ async def get_auth_headers(client: AsyncClient, db_session: AsyncSession, userna
             email=f"{username}@example.com",
             hashed_password=get_password_hash("pass"),
             role=role,
-            is_active=True
+            is_active=True,
         )
         db_session.add(user)
         await db_session.commit()
@@ -31,10 +34,9 @@ async def get_auth_headers(client: AsyncClient, db_session: AsyncSession, userna
         await db_session.refresh(user)
 
     # Login
-    response = await client.post("/api/auth/login", data={
-        "username": username,
-        "password": "pass"
-    })
+    response = await client.post(
+        "/api/auth/login", data={"username": username, "password": "pass"}
+    )
 
     if response.status_code != 200:
         print(f"Login failed: {response.status_code} - {response.text}")
@@ -48,17 +50,22 @@ async def get_auth_headers(client: AsyncClient, db_session: AsyncSession, userna
     token = response.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}, user
 
+
 @pytest.mark.asyncio
 async def test_create_public_channel(client: AsyncClient, db_session: AsyncSession):
     """Test creating a public channel"""
     # Use admin user to ensure permission to create channels
     headers, _ = await get_auth_headers(client, db_session, role="admin")
 
-    response = await client.post("/api/chat/channels", headers=headers, json={
-        "name": "general-test",
-        "description": "General discussion",
-        "visibility": "public"
-    })
+    response = await client.post(
+        "/api/chat/channels",
+        headers=headers,
+        json={
+            "name": "general-test",
+            "description": "General discussion",
+            "visibility": "public",
+        },
+    )
 
     # Assert
     assert response.status_code == 201
@@ -67,21 +74,23 @@ async def test_create_public_channel(client: AsyncClient, db_session: AsyncSessi
     assert data["is_direct"] is False
 
     # Verify in DB
-    result = await db_session.execute(select(Channel).where(Channel.name == "general-test"))
+    result = await db_session.execute(
+        select(Channel).where(Channel.name == "general-test")
+    )
     channel = result.scalar_one_or_none()
     assert channel is not None
+
 
 @pytest.mark.asyncio
 async def test_send_message(client: AsyncClient, db_session: AsyncSession):
     """Test sending a message to a channel"""
-    headers, user = await get_auth_headers(client, db_session, role="admin") # Admin can create channels easily
+    headers, user = await get_auth_headers(
+        client, db_session, role="admin"
+    )  # Admin can create channels easily
 
     # Create channel first
     channel = Channel(
-        name="messages-test",
-        created_by=user.id,
-        visibility="public",
-        is_direct=False
+        name="messages-test", created_by=user.id, visibility="public", is_direct=False
     )
     db_session.add(channel)
     await db_session.commit()
@@ -89,6 +98,7 @@ async def test_send_message(client: AsyncClient, db_session: AsyncSession):
 
     # Add user as member (required for posting)
     from app.modules.chat.models import ChannelMember
+
     member = ChannelMember(channel_id=channel.id, user_id=user.id)
     db_session.add(member)
     await db_session.commit()
@@ -103,21 +113,19 @@ async def test_send_message(client: AsyncClient, db_session: AsyncSession):
     # Let's skip message sending test via REST and test channel management REST API instead.
     pass
 
+
 @pytest.mark.asyncio
 async def test_list_channels(client: AsyncClient, db_session: AsyncSession):
     """Test listing user channels"""
     headers, user = await get_auth_headers(client, db_session)
 
     # Create a channel and membership manually
-    channel = Channel(
-        name="list-test",
-        created_by=user.id,
-        is_direct=False
-    )
+    channel = Channel(name="list-test", created_by=user.id, is_direct=False)
     db_session.add(channel)
     await db_session.commit()
 
     from app.modules.chat.models import ChannelMember
+
     member = ChannelMember(channel_id=channel.id, user_id=user.id)
     db_session.add(member)
     await db_session.commit()
@@ -131,6 +139,7 @@ async def test_list_channels(client: AsyncClient, db_session: AsyncSession):
     found = any(c["name"] == "list-test" for c in data)
     assert found
 
+
 @pytest.mark.asyncio
 async def test_direct_message_channel(client: AsyncClient, db_session: AsyncSession):
     """Test creating/getting a DM channel"""
@@ -141,7 +150,7 @@ async def test_direct_message_channel(client: AsyncClient, db_session: AsyncSess
         username="user2",
         email="user2@example.com",
         hashed_password=get_password_hash("pass"),
-        is_active=True
+        is_active=True,
     )
     db_session.add(user2)
     await db_session.commit()

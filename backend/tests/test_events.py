@@ -5,6 +5,7 @@ import asyncio
 
 try:
     from app.core.events import Event, EventBus, event_bus
+
     EVENTS_MODULE_EXISTS = True
 except ImportError:
     EVENTS_MODULE_EXISTS = False
@@ -16,12 +17,16 @@ class MockEvent(Event):
 
 
 class TestEventBus:
-    @pytest.mark.skipif(not EVENTS_MODULE_EXISTS, reason="events module not implemented yet")
+    @pytest.mark.skipif(
+        not EVENTS_MODULE_EXISTS, reason="events module not implemented yet"
+    )
     def test_event_bus_initializes_empty(self):
         bus = EventBus()
         assert bus._handlers == {}
 
-    @pytest.mark.skipif(not EVENTS_MODULE_EXISTS, reason="events module not implemented yet")
+    @pytest.mark.skipif(
+        not EVENTS_MODULE_EXISTS, reason="events module not implemented yet"
+    )
     @pytest.mark.asyncio
     async def test_subscribe_handler(self):
         bus = EventBus()
@@ -35,7 +40,9 @@ class TestEventBus:
         assert MockEvent in bus._handlers
         assert len(bus._handlers[MockEvent]) == 1
 
-    @pytest.mark.skipif(not EVENTS_MODULE_EXISTS, reason="events module not implemented yet")
+    @pytest.mark.skipif(
+        not EVENTS_MODULE_EXISTS, reason="events module not implemented yet"
+    )
     @pytest.mark.asyncio
     async def test_subscribe_multiple_handlers(self):
         bus = EventBus()
@@ -51,7 +58,9 @@ class TestEventBus:
 
         assert len(bus._handlers[MockEvent]) == 2
 
-    @pytest.mark.skipif(not EVENTS_MODULE_EXISTS, reason="events module not implemented yet")
+    @pytest.mark.skipif(
+        not EVENTS_MODULE_EXISTS, reason="events module not implemented yet"
+    )
     @pytest.mark.asyncio
     async def test_publish_calls_handler(self):
         bus = EventBus()
@@ -66,13 +75,17 @@ class TestEventBus:
         assert len(results) == 1
         assert results[0] == "test"
 
-    @pytest.mark.skipif(not EVENTS_MODULE_EXISTS, reason="events module not implemented yet")
+    @pytest.mark.skipif(
+        not EVENTS_MODULE_EXISTS, reason="events module not implemented yet"
+    )
     @pytest.mark.asyncio
     async def test_publish_no_handlers(self):
         bus = EventBus()
         await bus.publish(MockEvent(data="test"))
 
-    @pytest.mark.skipif(not EVENTS_MODULE_EXISTS, reason="events module not implemented yet")
+    @pytest.mark.skipif(
+        not EVENTS_MODULE_EXISTS, reason="events module not implemented yet"
+    )
     @pytest.mark.asyncio
     async def test_publish_calls_all_handlers(self):
         bus = EventBus()
