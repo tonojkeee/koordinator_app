@@ -3,14 +3,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../api/client';
 import type { Channel } from '../../types';
 import { AxiosError } from 'axios';
-import { Loader2, Trash2, Layers, MessageSquare, Pin, BellOff, Crown, Filter, Edit, Search, Lock, Globe, Settings } from 'lucide-react';
+import { Loader2, MessageSquare, Pin, Filter, Plus, Search, Lock, Globe, Settings, ChevronDown, ChevronRight } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useUnreadStore } from '../../store/useUnreadStore';
-import { abbreviateRank } from '../../utils/formatters';
-import { Modal, Input, Button, Avatar, ContextMenu, type ContextMenuOption, SecondarySidebar } from '../../design-system';
+import { Modal, Input, Button, SecondarySidebar, cn } from '../../design-system';
 import MuteModal from './MuteModal';
+import { ChannelItem } from './components/ChannelItem';
 
 interface ChannelSidebarProps {
   onCloseMobile?: () => void;
@@ -159,6 +159,19 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
   const { unreadCounts } = useUnreadStore();
   const queryClient = useQueryClient();
   const [extraChannel, setExtraChannel] = useState<Channel | null>(null);
+
+  // States for collapsible sections
+  const [expandedSections, setExpandedSections] = useState({
+    system: true,
+    pinned: true,
+    public: true,
+    private: true,
+    direct: true
+  });
+
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
 
   // Принудительно инвалидируем кэш каналов при монтировании компонента
   useEffect(() => {
@@ -332,67 +345,85 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
   const getUnreadDisplay = (channel: Channel) => unreadCounts[channel.id] || 0;
 
   const actions = (
-    <div className="flex items-center space-x-0.5">
-      <button className="p-1.5 text-muted-foreground hover:bg-surface-2 hover:text-foreground rounded-lg transition-all active:scale-90" title={t('common.filter')}>
-        <Filter size={16} strokeWidth={2.5} />
-      </button>
-      <button
-        onClick={() => {
-          queryClient.invalidateQueries({ queryKey: ['channels'] });
-          queryClient.invalidateQueries({ queryKey: ['channel'] });
-        }}
-        className="p-1.5 text-muted-foreground hover:bg-surface-2 hover:text-foreground rounded-lg transition-all active:scale-90"
-        title={t('common.refresh')}
-      >
-        <Search size={16} strokeWidth={2.5} />
-      </button>
+    <div className="flex items-center gap-0.5">
       <button
         onClick={() => setIsCreating(true)}
-        className="p-1.5 text-muted-foreground hover:bg-surface-2 hover:text-primary rounded-lg transition-all active:scale-90"
+        className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all active:scale-95"
         title={t('chat.create_channel')}
       >
-        <Edit size={16} strokeWidth={2.5} />
+        <Plus size={18} strokeWidth={2.5} />
+      </button>
+      <button className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-all active:scale-95">
+        <Filter size={18} strokeWidth={2.5} />
       </button>
     </div>
   );
 
+  const SectionHeader = ({
+    title,
+    count,
+    expanded,
+    onToggle,
+    icon: Icon
+  }: {
+    title: string;
+    count: number;
+    expanded: boolean;
+    onToggle: () => void;
+    icon?: any;
+  }) => (
+    <button
+      onClick={onToggle}
+      className="w-full flex items-center justify-between px-3 py-2 text-[11px] font-black uppercase tracking-[0.05em] text-slate-500/70 hover:text-slate-900 transition-colors group"
+    >
+      <div className="flex items-center gap-2">
+        <div className="text-slate-400 group-hover:text-blue-500 transition-colors">
+          {expanded ? <ChevronDown size={12} strokeWidth={3} /> : <ChevronRight size={12} strokeWidth={3} />}
+        </div>
+        {Icon && <Icon size={12} strokeWidth={2.5} className="opacity-70" />}
+        <span>{title}</span>
+        {count > 0 && <span className="ml-1 text-[10px] opacity-40">({count})</span>}
+      </div>
+    </button>
+  );
+
   return (
     <SecondarySidebar title={t('chat.title')} actions={actions}>
-      <div className="px-4 py-2 shrink-0">
+      <div className="px-3 py-2 mb-2 shrink-0">
         <div className="relative group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors" size={14} strokeWidth={2.5} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={14} />
           <input
             type="text"
-            placeholder={t('common.search') || 'Search'}
+            placeholder={t('common.search') || 'Search...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-surface-2/50 border border-transparent rounded-lg pl-9 pr-4 py-1.5 text-xs text-foreground focus:outline-none focus:bg-surface focus:border-primary/20 focus:ring-4 focus:ring-primary/5 transition-all placeholder:text-muted-foreground/40 font-medium"
+            className="w-full bg-slate-100/80 border-none rounded-lg pl-9 pr-4 py-2 text-xs text-slate-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/10 transition-all placeholder:text-slate-400 font-medium"
           />
         </div>
       </div>
 
-      <div className="space-y-6 px-2 pb-4">
+      <div className="space-y-1 pb-4">
         {isLoading && channels.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-10 space-y-3 opacity-50">
-            <Loader2 className="animate-spin text-primary" size={20} strokeWidth={3} />
-            <span className="text-[10px] font-black uppercase tracking-widest">{t('common.loading')}</span>
+          <div className="flex flex-col items-center justify-center py-12 space-y-3">
+            <Loader2 className="animate-spin text-blue-500" size={24} />
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('common.loading')}</span>
           </div>
         ) : (
           <>
             {systemChannels.length > 0 && (
-              <div className="space-y-0.5">
-                {systemChannels.map((channel) => {
-                  const contextOptions: ContextMenuOption[] = [
-                    {
-                      label: channel.mute_until && new Date(channel.mute_until) > new Date() ? t('chat.notifications.unmute') : t('chat.notifications.mute'),
-                      icon: BellOff,
-                      onClick: () => setMuteModalChannelId(channel.id)
-                    }
-                  ];
-
-                  return (
-                    <ContextMenu key={channel.id} options={contextOptions}>
+              <div>
+                <SectionHeader
+                  title={t('common.system') || 'System'}
+                  count={systemChannels.length}
+                  expanded={expandedSections.system}
+                  onToggle={() => toggleSection('system')}
+                  icon={Settings}
+                />
+                {expandedSections.system && (
+                  <div className="space-y-0.5 px-2">
+                    {systemChannels.map((channel) => (
                       <ChannelItem
+                        key={channel.id}
                         channel={channel}
                         isActive={Number(channelId) === channel.id}
                         unread={getUnreadDisplay(channel)}
@@ -407,47 +438,26 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
                         t={t}
                         isSystem={true}
                       />
-                    </ContextMenu>
-                  );
-                })}
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
             {pinnedChannels.length > 0 && (
-              <div className="space-y-0.5">
-                <div className="flex items-center space-x-2 px-3 mb-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider opacity-60">
-                  <Pin size={10} className="text-muted-foreground" strokeWidth={3} />
-                  <span>{t('chat.fileNotification.pinned')}</span>
-                </div>
-                {pinnedChannels.map((channel) => {
-                  const contextOptions: ContextMenuOption[] = [
-                    {
-                      label: t('chat.unpin'),
-                      icon: Pin,
-                      onClick: () => togglePinMutation.mutate(channel.id)
-                    },
-                    {
-                      label: channel.mute_until && new Date(channel.mute_until) > new Date() ? t('chat.notifications.unmute') : t('chat.notifications.mute'),
-                      icon: BellOff,
-                      onClick: () => setMuteModalChannelId(channel.id)
-                    }
-                  ];
-                  if (channel.created_by === currentUser?.id || currentUser?.role === 'admin') {
-                    contextOptions.push({
-                      label: t('chat.deleteChat'),
-                      icon: Trash2,
-                      variant: 'danger',
-                      onClick: () => {
-                        if (window.confirm(t('chat.deleteConfirm'))) {
-                          deleteChannelMutation.mutate(channel.id);
-                        }
-                      }
-                    });
-                  }
-
-                  return (
-                    <ContextMenu key={channel.id} options={contextOptions}>
+              <div className="mt-4">
+                <SectionHeader
+                  title={t('chat.fileNotification.pinned')}
+                  count={pinnedChannels.length}
+                  expanded={expandedSections.pinned}
+                  onToggle={() => toggleSection('pinned')}
+                  icon={Pin}
+                />
+                {expandedSections.pinned && (
+                  <div className="space-y-0.5 px-2">
+                    {pinnedChannels.map((channel) => (
                       <ChannelItem
+                        key={channel.id}
                         channel={channel}
                         isActive={Number(channelId) === channel.id}
                         unread={getUnreadDisplay(channel)}
@@ -461,49 +471,26 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
                         currentUser={currentUser}
                         t={t}
                       />
-                    </ContextMenu>
-                  );
-                })}
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
             {publicChannels.length > 0 && (
-              <div className="space-y-0.5">
-                <div className="flex items-center justify-between px-3 mb-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider opacity-60">
-                  <div className="flex items-center space-x-2">
-                    <Layers size={10} className="text-muted-foreground" strokeWidth={3} />
-                    <span>{t('chat.publicSpace')}</span>
-                  </div>
-                </div>
-                {publicChannels.map((channel) => {
-                  const contextOptions: ContextMenuOption[] = [
-                    {
-                      label: t('chat.pin'),
-                      icon: Pin,
-                      onClick: () => togglePinMutation.mutate(channel.id)
-                    },
-                    {
-                      label: channel.mute_until && new Date(channel.mute_until) > new Date() ? t('chat.notifications.unmute') : t('chat.notifications.mute'),
-                      icon: BellOff,
-                      onClick: () => setMuteModalChannelId(channel.id)
-                    }
-                  ];
-                  if (channel.created_by === currentUser?.id || currentUser?.role === 'admin') {
-                    contextOptions.push({
-                      label: t('chat.deleteChat'),
-                      icon: Trash2,
-                      variant: 'danger',
-                      onClick: () => {
-                        if (window.confirm(t('chat.deleteConfirm'))) {
-                          deleteChannelMutation.mutate(channel.id);
-                        }
-                      }
-                    });
-                  }
-
-                  return (
-                    <ContextMenu key={channel.id} options={contextOptions}>
+              <div className="mt-4">
+                <SectionHeader
+                  title={t('chat.publicSpace')}
+                  count={publicChannels.length}
+                  expanded={expandedSections.public}
+                  onToggle={() => toggleSection('public')}
+                  icon={Globe}
+                />
+                {expandedSections.public && (
+                  <div className="space-y-0.5 px-2">
+                    {publicChannels.map((channel) => (
                       <ChannelItem
+                        key={channel.id}
                         channel={channel}
                         isActive={Number(channelId) === channel.id}
                         unread={getUnreadDisplay(channel)}
@@ -517,47 +504,26 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
                         currentUser={currentUser}
                         t={t}
                       />
-                    </ContextMenu>
-                  );
-                })}
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
             {privateChannels.length > 0 && (
-              <div className="space-y-0.5">
-                <div className="flex items-center space-x-2 px-3 mb-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider opacity-60">
-                  <Lock size={10} className="text-muted-foreground" strokeWidth={3} />
-                  <span>{t('chat.privateSpace')}</span>
-                </div>
-                {privateChannels.map((channel) => {
-                  const contextOptions: ContextMenuOption[] = [
-                    {
-                      label: t('chat.pin'),
-                      icon: Pin,
-                      onClick: () => togglePinMutation.mutate(channel.id)
-                    },
-                    {
-                      label: channel.mute_until && new Date(channel.mute_until) > new Date() ? t('chat.notifications.unmute') : t('chat.notifications.mute'),
-                      icon: BellOff,
-                      onClick: () => setMuteModalChannelId(channel.id)
-                    }
-                  ];
-                  if (channel.created_by === currentUser?.id || currentUser?.role === 'admin') {
-                    contextOptions.push({
-                      label: t('chat.deleteChat'),
-                      icon: Trash2,
-                      variant: 'danger',
-                      onClick: () => {
-                        if (window.confirm(t('chat.deleteConfirm'))) {
-                          deleteChannelMutation.mutate(channel.id);
-                        }
-                      }
-                    });
-                  }
-
-                  return (
-                    <ContextMenu key={channel.id} options={contextOptions}>
+              <div className="mt-4">
+                <SectionHeader
+                  title={t('chat.privateSpace')}
+                  count={privateChannels.length}
+                  expanded={expandedSections.private}
+                  onToggle={() => toggleSection('private')}
+                  icon={Lock}
+                />
+                {expandedSections.private && (
+                  <div className="space-y-0.5 px-2">
+                    {privateChannels.map((channel) => (
                       <ChannelItem
+                        key={channel.id}
                         channel={channel}
                         isActive={Number(channelId) === channel.id}
                         unread={getUnreadDisplay(channel)}
@@ -571,47 +537,26 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
                         currentUser={currentUser}
                         t={t}
                       />
-                    </ContextMenu>
-                  );
-                })}
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
             {directChannels.length > 0 && (
-              <div className="space-y-0.5">
-                <div className="flex items-center space-x-2 px-3 mb-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider opacity-60">
-                  <MessageSquare size={10} className="text-muted-foreground" strokeWidth={3} />
-                  <span>{t('chat.directMessages')}</span>
-                </div>
-                {directChannels.map((channel) => {
-                  const contextOptions: ContextMenuOption[] = [
-                    {
-                      label: t('chat.pin'),
-                      icon: Pin,
-                      onClick: () => togglePinMutation.mutate(channel.id)
-                    },
-                    {
-                      label: channel.mute_until && new Date(channel.mute_until) > new Date() ? t('chat.notifications.unmute') : t('chat.notifications.mute'),
-                      icon: BellOff,
-                      onClick: () => setMuteModalChannelId(channel.id)
-                    }
-                  ];
-                  if (channel.created_by === currentUser?.id || currentUser?.role === 'admin') {
-                    contextOptions.push({
-                      label: t('chat.deleteChat'),
-                      icon: Trash2,
-                      variant: 'danger',
-                      onClick: () => {
-                        if (window.confirm(t('chat.deleteConfirm'))) {
-                          deleteChannelMutation.mutate(channel.id);
-                        }
-                      }
-                    });
-                  }
-
-                  return (
-                    <ContextMenu key={channel.id} options={contextOptions}>
+              <div className="mt-4">
+                <SectionHeader
+                  title={t('chat.directMessages')}
+                  count={directChannels.length}
+                  expanded={expandedSections.direct}
+                  onToggle={() => toggleSection('direct')}
+                  icon={MessageSquare}
+                />
+                {expandedSections.direct && (
+                  <div className="space-y-0.5 px-2">
+                    {directChannels.map((channel) => (
                       <ChannelItem
+                        key={channel.id}
                         channel={channel}
                         isActive={Number(channelId) === channel.id}
                         unread={getUnreadDisplay(channel)}
@@ -625,9 +570,9 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
                         currentUser={currentUser}
                         t={t}
                       />
-                    </ContextMenu>
-                  );
-                })}
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </>
@@ -646,143 +591,6 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
         onMute={handleMute}
       />
     </SecondarySidebar>
-  );
-};
-
-const ChannelItem = ({
-  channel, isActive, unread, onClick, onPin, onDelete, onMute, currentUser, t, isSystem = false
-}: {
-  channel: Channel,
-  isActive: boolean,
-  unread: number,
-  onClick: () => void,
-  onPin: (e: React.MouseEvent, id: number) => void,
-  onDelete: (e: React.MouseEvent, id: number) => void,
-  onMute: () => void,
-  currentUser: { id: number; role: string } | null,
-  t: (key: string) => string,
-  isSystem?: boolean
-}) => {
-
-  const handleClick = () => {
-    try {
-      onClick();
-    } catch (error) {
-      console.error('Error in onClick handler for channel:', channel.id, error);
-    }
-  };
-
-  return (
-    <div
-      onClick={handleClick}
-      data-channel-item={channel.id}
-      data-channel-name={channel.name}
-      className={`
-        group relative flex items-center px-3 py-2 mx-2 rounded-md cursor-pointer transition-all duration-200
-        ${isActive
-          ? 'bg-surface shadow-elevation-1 ring-1 ring-border z-10'
-          : 'hover:bg-accent/50 hover:text-accent-foreground'
-        }
-      `}
-    >
-      <div className="relative shrink-0 mr-3">
-        <Avatar
-          src={channel.is_direct ? channel.other_user?.avatar_url : undefined}
-          name={channel.display_name || channel.name}
-          size="sm"
-          className="rounded-md ring-1 ring-border/50"
-        />
-        {channel.visibility === 'private' && !channel.is_direct && (
-          <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-500 rounded-full flex items-center justify-center border-2 border-surface">
-            <Lock size={8} className="text-white" />
-          </div>
-        )}
-        {channel.is_system && (
-          <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-slate-500 rounded-full flex items-center justify-center border-2 border-surface">
-            <Settings size={8} className="text-white" />
-          </div>
-        )}
-        {channel.is_direct && (
-          <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-surface rounded-full ${channel.other_user?.is_online ? 'bg-green-500' : 'bg-slate-300'}`} />
-        )}
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <div className="flex justify-between items-baseline mb-0">
-          <h3 className={`text-[13px] font-semibold truncate flex items-center ${isActive ? 'text-foreground' : 'text-foreground/80'} ${unread > 0 ? 'font-bold' : ''}`}>
-            {channel.other_user?.rank && <span className="text-muted-foreground mr-1.5 font-bold text-[10px]">{abbreviateRank(channel.other_user.rank)}</span>}
-            <span className="truncate">{channel.display_name || channel.name}</span>
-            {channel.is_owner && !channel.is_direct && !channel.is_system && (
-              <Crown size={10} className="text-amber-500 ml-1.5 shrink-0" fill="currentColor" />
-            )}
-          </h3>
-          {channel.last_message && (
-            <span className={`text-[10px] ml-2 shrink-0 ${unread > 0 ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
-              {new Date(channel.last_message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </span>
-          )}
-        </div>
-        <div className="flex justify-between items-center h-4">
-          <div className="flex items-baseline gap-1.5 min-w-0 pr-2 overflow-hidden w-full">
-            {channel.last_message ? (() => {
-              const isMe = channel.last_message?.sender_id === currentUser?.id;
-              // Only show sender name in group channels or if it's "You"
-              const showSender = !channel.is_direct || isMe;
-
-              return (
-                <div className="flex items-center w-full min-w-0">
-                  {showSender && (
-                    <span className="shrink-0 font-semibold text-[10px] uppercase tracking-wide text-muted-foreground mr-1">
-                      {isMe ? t('chat.you') || 'Вы' : (
-                        channel.last_message?.sender_full_name?.split(' ')[0] || channel.last_message?.sender_name
-                      )}:
-                    </span>
-                  )}
-                  <span className={`text-[11px] truncate w-full ${unread ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
-                    {channel.last_message.content}
-                  </span>
-                </div>
-              );
-            })() : (
-              <span className="text-[11px] text-muted-foreground italic">{t('chat.no_messages')}</span>
-            )}
-          </div>
-          {unread > 0 && (
-            <span className="shrink-0 min-w-[16px] h-[16px] bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center px-1 shadow-sm animate-scale-in">
-              {unread > 99 ? '99+' : unread}
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity bg-surface-1/95 rounded-md p-0.5 shadow-sm z-20 border border-border backdrop-blur-sm">
-        <button
-          onClick={(e) => { e.stopPropagation(); onMute(); }}
-          className="p-1 text-muted-foreground hover:text-primary transition-colors rounded-sm hover:bg-muted"
-          title={channel.mute_until && new Date(channel.mute_until) > new Date() ? t('chat.notifications.unmute') : t('chat.notifications.mute')}
-        >
-          <BellOff size={12} fill={channel.mute_until && new Date(channel.mute_until) > new Date() ? "currentColor" : "none"} />
-        </button>
-        {!isSystem && (
-          <button
-            onClick={(e) => onPin(e, channel.id)}
-            className="p-1 text-muted-foreground hover:text-primary transition-colors rounded-sm hover:bg-muted"
-            title={channel.is_pinned ? t('chat.unpin') : t('chat.pin')}
-          >
-            <Pin size={12} fill={channel.is_pinned ? "currentColor" : "none"} />
-          </button>
-        )}
-        {!isSystem && (channel.created_by === currentUser?.id || currentUser?.role === 'admin') && (
-          <button
-            onClick={(e) => onDelete(e, channel.id)}
-            className="p-1 text-muted-foreground hover:text-destructive transition-colors rounded-sm hover:bg-destructive/10"
-            title={t('chat.deleteChat')}
-          >
-            <Trash2 size={12} />
-          </button>
-        )}
-      </div>
-    </div>
   );
 };
 
