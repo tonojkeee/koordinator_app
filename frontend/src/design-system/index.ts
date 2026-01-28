@@ -63,3 +63,6 @@ export { ToastContext, useToast } from './components/ToastContext';
 
 export { UserAutocomplete } from './components/UserAutocomplete';
 export type { AutocompleteUser } from './components/UserAutocomplete';
+
+// Layout
+export { AppShell } from './layout/AppShell';
