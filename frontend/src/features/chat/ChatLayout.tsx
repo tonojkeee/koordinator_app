@@ -3,7 +3,6 @@ import { Outlet } from 'react-router-dom';
 import ChannelSidebar from './ChannelSidebar';
 import { useNotificationsChannel } from '../../hooks/useNotificationsChannel';
 import { useUIStore } from '../../stores/useUIStore';
-import { SecondarySidebar } from '../../design-system';
 import { useTranslation } from 'react-i18next';
 
 const ChatLayout: React.FC = () => {
@@ -28,13 +27,7 @@ const ChatLayout: React.FC = () => {
         };
     }, [setSecondaryNavContent, setActiveModule]);
 
-    return (
-        <div className="flex w-full h-full bg-background overflow-hidden">
-            <main className="flex-1 flex flex-col h-full min-w-0 bg-surface text-foreground relative overflow-hidden transition-all duration-300">
-                <Outlet />
-            </main>
-        </div>
-    );
+    return <Outlet />;
 };
 
 export default ChatLayout;
