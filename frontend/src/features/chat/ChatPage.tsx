@@ -12,10 +12,10 @@ import EmojiPicker, { EmojiStyle, Theme, type EmojiClickData } from 'emoji-picke
 import { useTranslation } from 'react-i18next';
 import { formatName } from '../../utils/formatters';
 
-import ParticipantsList from './ParticipantsList';
 import { useToast, cn } from '../../design-system';
 import MuteModal from './MuteModal';
 import SearchModal from './components/SearchModal';
+import ParticipantsPanel from './components/ParticipantsPanel';
 
 import { type Reaction } from '../../types';
 
@@ -1455,7 +1455,7 @@ const ChatPage: React.FC = () => {
                             {/* Collapsible Participants Sidebar */}
                             {showParticipants && channelId && channel && !channel.is_direct && !channel.is_system && (
                                 <aside className="w-80 border-l border-slate-100 bg-slate-50/30 shrink-0 overflow-hidden flex flex-col">
-                                    <ParticipantsList
+                                    <ParticipantsPanel
                                         channelId={Number(channelId)}
                                         onMention={handleMention}
                                         className="h-full"
