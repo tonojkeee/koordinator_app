@@ -4,7 +4,6 @@ import { useAuthStore } from './store/useAuthStore';
 import { useConfigStore } from './store/useConfigStore';
 import { useEffect } from 'react';
 import ProtectedRoute from './components/ProtectedRoute';
-import MainLayout from './components/layout/MainLayout';
 import { AppShell, ToastProvider } from './design-system';
 import { useTokenRefresh } from './hooks/useTokenRefresh';
 import { useElectronListeners } from './hooks/useElectron';
@@ -118,25 +117,23 @@ function AppContent() {
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<StartPageRedirect />} />
-            <Route path="/chat" element={<ChatLayout />}>
-              <Route index element={<ChatPage />} />
-              <Route path=":channelId" element={<ChatPage />} />
-            </Route>
-            <Route path="/company" element={<CompanyPage />} />
-            <Route path="/teams" element={<TeamsDashboard />} />
-            <Route path="/users" element={<Navigate to="/company" replace />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/board" element={<BoardPage />} />
-            <Route path="/tasks" element={<TasksPage />} />
-            <Route path="/archive" element={<ArchivePage />} />
-            <Route path="/email" element={<EmailPage />} />
-            <Route path="/zsspd" element={<ZsspdPage />} />
-            <Route path="/help" element={<HelpPage />} />
-            <Route element={<AdminRoute />}>
-              <Route path="/admin" element={<AdminPage />} />
-            </Route>
+          <Route path="/" element={<StartPageRedirect />} />
+          <Route path="/chat" element={<ChatLayout />}>
+            <Route index element={<ChatPage />} />
+            <Route path=":channelId" element={<ChatPage />} />
+          </Route>
+          <Route path="/company" element={<CompanyPage />} />
+          <Route path="/teams" element={<TeamsDashboard />} />
+          <Route path="/users" element={<Navigate to="/company" replace />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/board" element={<BoardPage />} />
+          <Route path="/tasks" element={<TasksPage />} />
+          <Route path="/archive" element={<ArchivePage />} />
+          <Route path="/email" element={<EmailPage />} />
+          <Route path="/zsspd" element={<ZsspdPage />} />
+          <Route path="/help" element={<HelpPage />} />
+          <Route element={<AdminRoute />}>
+            <Route path="/admin" element={<AdminPage />} />
           </Route>
         </Route>
 
