@@ -141,27 +141,57 @@ interface SectionHeaderProps {
   count: number;
   expanded: boolean;
   onToggle: () => void;
+  variant?: 'default' | 'pinned' | 'private';
 }
 
 const SectionHeader = ({
   title,
   count,
   expanded,
-  onToggle
-}: SectionHeaderProps) => (
-  <button
-    onClick={onToggle}
-    className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-900 transition-colors group"
-  >
-    <div className="flex items-center gap-1.5">
-      <div className="text-slate-400 group-hover:text-slate-600 transition-colors">
-        {expanded ? <ChevronDown size={10} strokeWidth={2.5} /> : <ChevronRight size={10} strokeWidth={2.5} />}
+  onToggle,
+  variant = 'default'
+}: SectionHeaderProps) => {
+  const getVariantClasses = () => {
+    switch (variant) {
+      case 'pinned':
+        return 'bg-amber-50/80 border-y border-amber-100/50 text-amber-700 hover:bg-amber-100/80 hover:text-amber-900';
+      case 'private':
+        return 'bg-indigo-50/80 border-y border-indigo-100/50 text-indigo-700 hover:bg-indigo-100/80 hover:text-indigo-900';
+      default:
+        return 'bg-slate-50/80 border-y border-slate-100 text-slate-600 hover:bg-slate-100 hover:text-slate-900';
+    }
+  };
+
+  const getCountClasses = () => {
+    switch (variant) {
+      case 'pinned':
+        return 'bg-amber-100/60 text-amber-600 group-hover:text-amber-800';
+      case 'private':
+        return 'bg-indigo-100/60 text-indigo-600 group-hover:text-indigo-800';
+      default:
+        return 'bg-slate-200/60 text-slate-500 group-hover:text-slate-700';
+    }
+  };
+
+  return (
+    <button
+      onClick={onToggle}
+      className={`w-full flex items-center justify-between px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-colors group mt-0 mb-0 ${getVariantClasses()}`}
+    >
+      <div className="flex items-center gap-2">
+        <div className={`transition-colors opacity-70 group-hover:opacity-100`}>
+          {expanded ? <ChevronDown size={12} strokeWidth={2.5} /> : <ChevronRight size={12} strokeWidth={2.5} />}
+        </div>
+        <span>{title}</span>
       </div>
-      <span>{title}</span>
-      {count > 0 && <span className="ml-1 opacity-60 font-medium">({count})</span>}
-    </div>
-  </button>
-);
+      {count > 0 && (
+        <span className={`px-1.5 rounded text-[10px] font-semibold tabular-nums ${getCountClasses()}`}>
+          {count}
+        </span>
+      )}
+    </button>
+  );
+};
 
 const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
   const { t } = useTranslation();
@@ -388,29 +418,29 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
 
   return (
     <SecondarySidebar title={t('chat.title')} actions={actions}>
-      <div className="px-3 py-1.5 mb-1 shrink-0">
+      <div className="px-4 py-2 border-b border-slate-100 bg-white sticky top-0 z-10">
         <div className="relative group">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={13} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={14} />
           <input
             type="text"
             placeholder={t('common.search') || 'Search...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-100/50 border border-slate-200/50 rounded-md pl-8 pr-4 py-1.5 text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-blue-500/30 focus:ring-4 focus:ring-blue-500/5 transition-all placeholder:text-slate-400 font-medium"
+            className="w-full bg-slate-100 border border-transparent rounded-lg pl-9 pr-4 py-2 text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-blue-500/30 focus:ring-4 focus:ring-blue-500/5 transition-all placeholder:text-slate-400 font-medium"
           />
         </div>
       </div>
 
-      <div className="space-y-0.5 pb-4">
+      <div className="flex-1 overflow-y-auto min-h-0 pb-4">
         {isLoading && channels.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 space-y-3">
             <Loader2 className="animate-spin text-blue-500" size={24} />
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('common.loading')}</span>
           </div>
         ) : (
-          <>
+          <div className="flex flex-col">
             {systemChannels.length > 0 && (
-              <div className="mb-2">
+              <div className="mb-0">
                 <SectionHeader
                   title={t('common.system') || 'System'}
                   count={systemChannels.length}
@@ -418,7 +448,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
                   onToggle={() => toggleSection('system')}
                 />
                 {expandedSections.system && (
-                  <div className="space-y-0.5 px-1.5">
+                  <div className="flex flex-col">
                     {systemChannels.map((channel) => (
                       <ChannelItem
                         key={channel.id}
@@ -443,15 +473,16 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
             )}
 
             {pinnedChannels.length > 0 && (
-              <div className="mb-2">
+              <div className="mb-0">
                 <SectionHeader
                   title={t('chat.fileNotification.pinned')}
                   count={pinnedChannels.length}
                   expanded={expandedSections.pinned}
                   onToggle={() => toggleSection('pinned')}
+                  variant="pinned"
                 />
                 {expandedSections.pinned && (
-                  <div className="space-y-0.5 px-1.5">
+                  <div className="flex flex-col">
                     {pinnedChannels.map((channel) => (
                       <ChannelItem
                         key={channel.id}
@@ -475,7 +506,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
             )}
 
             {publicChannels.length > 0 && (
-              <div className="mb-2">
+              <div className="mb-0">
                 <SectionHeader
                   title={t('chat.publicSpace')}
                   count={publicChannels.length}
@@ -483,7 +514,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
                   onToggle={() => toggleSection('public')}
                 />
                 {expandedSections.public && (
-                  <div className="space-y-0.5 px-1.5">
+                  <div className="flex flex-col">
                     {publicChannels.map((channel) => (
                       <ChannelItem
                         key={channel.id}
@@ -507,15 +538,16 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
             )}
 
             {privateChannels.length > 0 && (
-              <div className="mb-2">
+              <div className="mb-0">
                 <SectionHeader
                   title={t('chat.privateSpace')}
                   count={privateChannels.length}
                   expanded={expandedSections.private}
                   onToggle={() => toggleSection('private')}
+                  variant="private"
                 />
                 {expandedSections.private && (
-                  <div className="space-y-0.5 px-1.5">
+                  <div className="flex flex-col">
                     {privateChannels.map((channel) => (
                       <ChannelItem
                         key={channel.id}
@@ -539,7 +571,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
             )}
 
             {directChannels.length > 0 && (
-              <div className="mb-2">
+              <div className="mb-0">
                 <SectionHeader
                   title={t('chat.directMessages')}
                   count={directChannels.length}
@@ -547,7 +579,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
                   onToggle={() => toggleSection('direct')}
                 />
                 {expandedSections.direct && (
-                  <div className="space-y-0.5 px-1.5">
+                  <div className="flex flex-col">
                     {directChannels.map((channel) => (
                       <ChannelItem
                         key={channel.id}
@@ -569,7 +601,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
                 )}
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
 

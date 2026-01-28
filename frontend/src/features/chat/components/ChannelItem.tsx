@@ -3,6 +3,7 @@ import { Lock, Settings, Crown, Pin, BellOff, Trash2 } from 'lucide-react';
 import type { Channel } from '../../../types';
 import { Avatar, ContextMenu, type ContextMenuOption, cn } from '../../../design-system';
 import { abbreviateRank } from '../../../utils/formatters';
+import { renderMessageContent } from '../utils';
 
 interface ChannelItemProps {
   channel: Channel;
@@ -62,25 +63,47 @@ export const ChannelItem: React.FC<ChannelItemProps> = ({
     });
   }
 
+  // --- Last Message Logic ---
+  const lastMessage = channel.last_message;
+  let lastMessageText = '';
+  let lastMessageTime = '';
+
+  if (lastMessage) {
+    // If it's a file, maybe show [File] or similar? renderMessageContent usually handles text.
+    // For preview, we want plain text if possible.
+    // Simple truncation:
+    const content = lastMessage.content || '';
+    lastMessageText = content.startsWith('📎') ? t('chat.fileNotification.document') : content;
+
+    // Format time: HH:MM if today, Date if older
+    const date = new Date(lastMessage.created_at);
+    const now = new Date();
+    if (date.toDateString() === now.toDateString()) {
+        lastMessageTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else {
+        lastMessageTime = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    }
+  }
+
   return (
     <ContextMenu options={contextOptions}>
       <div
         onClick={handleClick}
         className={cn(
-          "flex items-center gap-3 px-3 py-2 mx-2 rounded-lg transition-all duration-200 group relative cursor-pointer",
+          "w-full flex items-center gap-3 px-4 py-1.5 border-l-[3px] transition-all duration-200 group relative cursor-pointer",
           isActive
-            ? "bg-blue-50 shadow-sm ring-1 ring-blue-100 text-blue-900 font-semibold"
-            : "hover:bg-slate-100 text-slate-700"
+            ? "border-blue-600 bg-blue-50/60"
+            : "border-transparent hover:bg-slate-50"
         )}
       >
         <div className="relative shrink-0">
           <Avatar
             src={channel.is_direct ? channel.other_user?.avatar_url : undefined}
             name={channel.display_name || channel.name}
-            size="xs"
+            size="sm"
             className={cn(
               "transition-transform duration-200",
-              isActive ? "text-blue-600 ring-1 ring-blue-200" : "text-slate-400 ring-1 ring-slate-200"
+              isActive ? "ring-2 ring-blue-100" : "ring-1 ring-slate-100"
             )}
           />
           {channel.visibility === 'private' && !channel.is_direct && (
@@ -101,41 +124,71 @@ export const ChannelItem: React.FC<ChannelItemProps> = ({
           )}
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex justify-between items-center gap-2">
-            <div className={cn(
-              "text-[13px] truncate flex items-center gap-1.5",
-              isActive ? "font-semibold text-blue-900" : (unread > 0 ? "font-semibold text-slate-900" : "font-medium text-slate-700")
-            )}>
-              {channel.other_user?.rank && (
-                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
-                  {abbreviateRank(channel.other_user.rank)}
+        <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
+          {/* Top Row: Name + Time */}
+          <div className="flex justify-between items-baseline w-full">
+            <div className="flex items-center gap-1.5 min-w-0">
+                {channel.other_user?.rank && (
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 shrink-0">
+                    {abbreviateRank(channel.other_user.rank)}
+                    </span>
+                )}
+                <span className={cn(
+                    "truncate text-[13px]",
+                    isActive ? "font-semibold text-blue-900" : (unread > 0 ? "font-semibold text-slate-900" : "font-medium text-slate-700")
+                )}>
+                    {channel.display_name || channel.name}
                 </span>
-              )}
-              <span className="truncate">{channel.display_name || channel.name}</span>
-              {channel.is_owner && !channel.is_direct && !channel.is_system && (
-                <Crown size={10} className="text-amber-500 shrink-0" fill="currentColor" />
-              )}
+                {channel.is_owner && !channel.is_direct && !channel.is_system && (
+                    <Crown size={10} className="text-amber-500 shrink-0" fill="currentColor" />
+                )}
             </div>
 
-            <div className="flex items-center gap-1.5">
-              {unread > 0 && (
-                <span className="shrink-0 min-w-[16px] h-[16px] bg-blue-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1">
+            {lastMessageTime && (
+                <span className="text-[10px] text-slate-400 tabular-nums shrink-0 ml-1">
+                    {lastMessageTime}
+                </span>
+            )}
+          </div>
+
+          {/* Bottom Row: Last Message + Badge */}
+          <div className="flex justify-between items-center w-full h-4">
+             <span className={cn(
+                 "text-[11px] truncate pr-2",
+                 isActive ? "text-blue-700/80" : "text-slate-500",
+                 unread > 0 && "font-medium text-slate-700"
+             )}>
+                 {lastMessageText ? (
+                     <>
+                        {lastMessage?.sender_name && !channel.is_direct && (
+                            <span className="font-medium mr-1">{lastMessage.sender_name}:</span>
+                        )}
+                        {renderMessageContent(lastMessageText, false)}
+                     </>
+                 ) : (
+                     <span className="italic opacity-50">{t('chat.no_messages')}</span>
+                 )}
+             </span>
+
+            {/* Unread Badge & Hover Actions */}
+            <div className="flex items-center shrink-0">
+              {unread > 0 ? (
+                <span className="min-w-[16px] h-[16px] bg-blue-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 shadow-sm">
                   {unread > 99 ? '99+' : unread}
                 </span>
+              ) : (
+                <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    {!isSystem && (
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onPin(e, channel.id); }}
+                        className="text-slate-400 hover:text-blue-600 transition-colors"
+                        title={channel.is_pinned ? t('chat.unpin') : t('chat.pin')}
+                    >
+                        <Pin size={12} fill={channel.is_pinned ? "currentColor" : "none"} />
+                    </button>
+                    )}
+                </div>
               )}
-
-              <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                {!isSystem && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onPin(e, channel.id); }}
-                    className="p-1 text-slate-400 hover:text-blue-600 rounded transition-colors"
-                    title={channel.is_pinned ? t('chat.unpin') : t('chat.pin')}
-                  >
-                    <Pin size={11} fill={channel.is_pinned ? "currentColor" : "none"} />
-                  </button>
-                )}
-              </div>
             </div>
           </div>
         </div>
