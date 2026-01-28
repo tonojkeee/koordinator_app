@@ -1261,7 +1261,7 @@ const ChatPage: React.FC = () => {
                 {channelId ? (
                     <>
                         {/* Unified Header */}
-                        <header className="h-20 border-b border-slate-100 flex items-center justify-between px-6 bg-white/80 backdrop-blur-md z-40 shrink-0">
+                        <header className="h-14 border-b border-slate-100 flex items-center justify-between px-6 bg-white z-40 shrink-0">
                             <div className="flex items-center gap-4 min-w-0">
                                 {getHeaderIcon()}
                                 <div className="min-w-0">
