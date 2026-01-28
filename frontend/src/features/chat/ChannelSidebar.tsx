@@ -8,7 +8,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useUnreadStore } from '../../store/useUnreadStore';
-import { Modal, Input, Button, SecondarySidebar, cn } from '../../design-system';
+import { Modal, Input, Button, SecondarySidebar } from '../../design-system';
 import MuteModal from './MuteModal';
 import { ChannelItem } from './components/ChannelItem';
 
@@ -135,6 +135,33 @@ function CreateChannelModal({ isOpen, onClose, onCreate }: CreateChannelModalPro
     </Modal>
   );
 }
+
+interface SectionHeaderProps {
+  title: string;
+  count: number;
+  expanded: boolean;
+  onToggle: () => void;
+}
+
+const SectionHeader = ({
+  title,
+  count,
+  expanded,
+  onToggle
+}: SectionHeaderProps) => (
+  <button
+    onClick={onToggle}
+    className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-900 transition-colors group"
+  >
+    <div className="flex items-center gap-1.5">
+      <div className="text-slate-400 group-hover:text-slate-600 transition-colors">
+        {expanded ? <ChevronDown size={10} strokeWidth={2.5} /> : <ChevronRight size={10} strokeWidth={2.5} />}
+      </div>
+      <span>{title}</span>
+      {count > 0 && <span className="ml-1 opacity-60 font-medium">({count})</span>}
+    </div>
+  </button>
+);
 
 const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
   const { t } = useTranslation();
@@ -357,32 +384,6 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
         <Filter size={18} strokeWidth={2.5} />
       </button>
     </div>
-  );
-
-  const SectionHeader = ({
-    title,
-    count,
-    expanded,
-    onToggle
-  }: {
-    title: string;
-    count: number;
-    expanded: boolean;
-    onToggle: () => void;
-    icon?: any;
-  }) => (
-    <button
-      onClick={onToggle}
-      className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-900 transition-colors group"
-    >
-      <div className="flex items-center gap-1.5">
-        <div className="text-slate-400 group-hover:text-slate-600 transition-colors">
-          {expanded ? <ChevronDown size={10} strokeWidth={2.5} /> : <ChevronRight size={10} strokeWidth={2.5} />}
-        </div>
-        <span>{title}</span>
-        {count > 0 && <span className="ml-1 opacity-60 font-medium">({count})</span>}
-      </div>
-    </button>
   );
 
   return (

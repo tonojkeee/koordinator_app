@@ -1237,14 +1237,14 @@ const ChatPage: React.FC = () => {
 
     return (
         <div
-            className="flex-1 flex flex-col h-full p-2 bg-slate-100/50 overflow-hidden animate-in fade-in duration-300 relative"
+            className="flex-1 flex flex-col h-full bg-white overflow-hidden animate-in fade-in duration-300 relative"
             onDragEnter={handleDragEnter}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
         >
             {isDragging && (
-                <div className="absolute inset-2 z-[100] bg-blue-600/10 backdrop-blur-[2px] border-4 border-dashed border-blue-500/50 rounded-2xl flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
+                <div className="absolute inset-0 z-[100] bg-blue-600/10 backdrop-blur-[2px] border-4 border-dashed border-blue-500/50 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
                     <div className="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center space-y-4 border border-slate-200">
                         <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center animate-bounce">
                             <Plus size={32} />
@@ -1257,7 +1257,7 @@ const ChatPage: React.FC = () => {
                 </div>
             )}
 
-            <div className="flex flex-col flex-1 bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
+            <div className="flex flex-col flex-1 bg-white overflow-hidden">
                 {channelId ? (
                     <>
                         {/* Unified Header */}
@@ -1452,7 +1452,7 @@ const ChatPage: React.FC = () => {
 
                             {/* Collapsible Participants Sidebar */}
                             {showParticipants && channelId && channel && !channel.is_direct && !channel.is_system && (
-                                <aside className="w-80 border-l border-slate-100 bg-slate-50/30 shrink-0 overflow-hidden flex flex-col">
+                                <aside className="w-80 border-l border-slate-100 bg-white shrink-0 overflow-hidden flex flex-col">
                                     <ParticipantsPanel
                                         channelId={Number(channelId)}
                                         onMention={handleMention}
@@ -1464,7 +1464,7 @@ const ChatPage: React.FC = () => {
                     </>
                 ) : (
                     /* Welcome State */
-                    <div className="flex-1 flex flex-col items-center justify-center bg-slate-50/30 p-8 overflow-y-auto">
+                    <div className="flex-1 flex flex-col items-center justify-center bg-white p-8 overflow-y-auto">
                         <div className="relative mb-12 group">
                             <div className="relative">
                                 <div className="w-40 h-40 bg-white rounded-full shadow-sm flex items-center justify-center group-hover:scale-105 transition-all duration-500 ring-8 ring-white/50 border border-slate-100">

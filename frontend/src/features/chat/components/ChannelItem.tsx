@@ -43,14 +43,14 @@ export const ChannelItem: React.FC<ChannelItemProps> = ({
     contextOptions.push({
       label: channel.is_pinned ? t('chat.unpin') : t('chat.pin'),
       icon: Pin,
-      onClick: (e: any) => onPin(e, channel.id)
+      onClick: (e: React.MouseEvent) => onPin(e, channel.id)
     });
   }
 
   contextOptions.push({
     label: channel.mute_until && new Date(channel.mute_until) > new Date() ? t('chat.notifications.unmute') : t('chat.notifications.mute'),
     icon: BellOff,
-    onClick: onMute
+    onClick: () => onMute()
   });
 
   if (!isSystem && (channel.created_by === currentUser?.id || currentUser?.role === 'admin')) {
@@ -58,7 +58,7 @@ export const ChannelItem: React.FC<ChannelItemProps> = ({
       label: t('chat.deleteChat'),
       icon: Trash2,
       variant: 'danger',
-      onClick: (e: any) => onDelete(e, channel.id)
+      onClick: (e: React.MouseEvent) => onDelete(e, channel.id)
     });
   }
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Message, User, Reaction } from '../../../types';
+import type { Message, User, Reaction } from '../../../types';
 import { Avatar, ContextMenu, type ContextMenuOption, cn } from '../../../design-system';
 import { MessageSquare, FileText, Pencil, Trash2, Smile, Check, CheckCheck, Crown } from 'lucide-react';
 import { formatName } from '../../../utils/formatters';

@@ -142,7 +142,7 @@ const ParticipantsPanel: React.FC<ParticipantsPanelProps> = ({ channelId, onMent
                                                 return lastSeenDate.toLocaleDateString() === today.toLocaleDateString()
                                                     ? lastSeenDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                                                     : lastSeenDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
-                                            } catch (error) {
+                                            } catch {
                                                 return '';
                                             }
                                         })()}

@@ -4,7 +4,7 @@ import { Tooltip } from '../../../design-system';
 import { useTranslation } from 'react-i18next';
 
 interface OwnerIndicatorProps {
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   className?: string;
   tooltip?: string;
 }
@@ -17,6 +17,7 @@ const OwnerIndicator: React.FC<OwnerIndicatorProps> = ({
   const { t } = useTranslation();
   const displayTooltip = tooltip || t('chat.owner_indicator_tooltip');
   const sizeClasses = {
+    xs: 'w-2.5 h-2.5',
     sm: 'w-3 h-3',
     md: 'w-4 h-4',
     lg: 'w-5 h-5'

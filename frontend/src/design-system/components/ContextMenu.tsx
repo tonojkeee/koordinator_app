@@ -10,7 +10,7 @@ function cn(...inputs: ClassValue[]) {
 export interface ContextMenuOption {
   label: string;
   icon?: React.ElementType;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   disabled?: boolean;
   variant?: 'default' | 'danger' | 'warning';
   divider?: boolean;
@@ -83,7 +83,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ children, options, cla
                   onClick={(e) => {
                     e.stopPropagation();
                     if (!option.disabled) {
-                        option.onClick();
+                        option.onClick(e);
                         setIsOpen(false);
                     }
                   }}
