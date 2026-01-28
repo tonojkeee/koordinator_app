@@ -1,6 +1,8 @@
 export { MessageSkeleton } from './MessageSkeleton';
 export { MessageInput } from './MessageInput';
 export { ChatAttachmentItem } from './ChatAttachmentItem';
+export { MessageList } from './MessageList';
+export { MessageBubble } from './MessageBubble';
 export type { MessageInputHandle } from './MessageInput';
 
 // Modal components

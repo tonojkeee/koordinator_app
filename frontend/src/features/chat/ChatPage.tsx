@@ -43,7 +43,7 @@ type WebSocketMessage =
 // const EmojiPickerComponent = React.lazy(() => import('emoji-picker-react'));
 
 // Skeleton loader for messages - imported from components
-import { MessageSkeleton } from './components';
+import { MessageSkeleton, MessageList } from './components';
 import { QuickReactionPicker } from './components/QuickReactionPicker';
 
 interface MessageInputProps {
@@ -1240,269 +1240,25 @@ const ChatPage: React.FC = () => {
                                                 <p className="text-base text-slate-400 mt-2">{t('chat.beFirst')}</p>
                                             </div>
                                         ) : (
-                                            messages.map((msg, index) => {
-                                                const isSent = msg.user_id === user?.id;
-                                                const prevMsg = index > 0 ? messages[index - 1] : null;
-                                                const nextMsg = index < messages.length - 1 ? messages[index + 1] : null;
-
-                                                const msgDate = new Date(msg.created_at).toDateString();
-                                                const prevMsgDate = prevMsg ? new Date(prevMsg.created_at).toDateString() : null;
-                                                const showDateSeparator = msgDate !== prevMsgDate;
-
-                                                const lastReadId = initialLastReadId || 0;
-                                                const showUnreadSeparator = lastReadId > 0 &&
-                                                    msg.id > lastReadId &&
-                                                    (prevMsg ? prevMsg.id <= lastReadId : true) &&
-                                                    !isSent;
-
-                                                const isFirstInGroup = !prevMsg || prevMsg.user_id !== msg.user_id || showDateSeparator || showUnreadSeparator;
-                                                const isLastInGroup = !nextMsg || nextMsg.user_id !== msg.user_id || (nextMsg && new Date(nextMsg.created_at).toDateString() !== msgDate);
-
-                                                const msgGroupClass = isFirstInGroup && isLastInGroup ? 'rounded-md' : isFirstInGroup ? 'rounded-t-md rounded-b-[2px]' : isLastInGroup ? 'rounded-b-md rounded-t-[2px]' : 'rounded-[2px]';
-
-                                                const contextOptions: ContextMenuOption[] = [
-                                                    {
-                                                        label: t('chat.reply'),
-                                                        icon: MessageSquare,
-                                                        onClick: () => setActiveThread(msg)
-                                                    },
-                                                    {
-                                                        label: t('chat.copy_text'),
-                                                        icon: FileText,
-                                                        onClick: () => {
-                                                            navigator.clipboard.writeText(msg.content);
-                                                            addToast({ type: 'success', title: t('common.success'), message: t('chat.text_copied') });
-                                                        }
-                                                    }
-                                                ];
-
-                                                if (msg.user_id === user?.id || user?.role === 'admin') {
-                                                    contextOptions.push({
-                                                        label: t('common.edit'),
-                                                        icon: Pencil,
-                                                        onClick: () => setEditingMessage(msg),
-                                                        divider: true
-                                                    });
-                                                    contextOptions.push({
-                                                        label: t('common.delete'),
-                                                        icon: Trash2,
-                                                        variant: 'danger',
-                                                        onClick: () => handleDeleteMessage(msg.id)
-                                                    });
-                                                }
-
-                                                return (
-                                                    <React.Fragment key={msg.id}>
-                                                        {showDateSeparator && (
-                                                            <div className={`date-separator ${animations.fadeIn}`}>
-                                                                <span className="date-label">{formatDate(msg.created_at, t, i18n.language)}</span>
-                                                            </div>
-                                                        )}
-
-                                                        {showUnreadSeparator && (
-                                                            <div className={`flex items-center my-8 ${isUnreadBannerVisible ? animations.slideIn : animations.outCollapse}`}>
-                                                                <div className="flex-1 border-t border-rose-200/60" />
-                                                                <div className="mx-4 flex items-center space-x-2 px-3 py-1 bg-rose-50/50 rounded-full border border-rose-100">
-                                                                    <Bell size={12} className="text-rose-500" />
-                                                                    <span className="text-[10px] font-bold text-rose-500 uppercase tracking-widest">{t('chat.newMessages')}</span>
-                                                                </div>
-                                                                <div className="flex-1 border-t border-rose-200/60" />
-                                                            </div>
-                                                        )}
-
-                                                        <div className={`${isFirstInGroup ? 'mt-7' : 'mt-[2px]'} ${animations.slideIn}`}>
-                                                            <ContextMenu options={contextOptions}>
-                                                                <div className="flex items-end group flex-row gap-2 w-full">
-                                                                    <div className="flex flex-col items-center shrink-0 w-10">
-                                                                        {isLastInGroup ? (
-                                                                            <Avatar
-                                                                                src={isSent ? user?.avatar_url : msg.avatar_url}
-                                                                                name={isSent ? formatName(user?.full_name || '', user?.username || '') : (msg.username ? formatName(msg.full_name, msg.username || '') : t('common.system'))}
-                                                                                size="md"
-                                                                                className="shadow-sm border border-slate-200/50 relative z-10"
-                                                                            />
-                                                                        ) : (
-                                                                            <div className="w-10" />
-                                                                        )}
-                                                                    </div>
-
-                                                                    <div className="flex flex-col items-start min-w-0 flex-1 relative">
-                                                                        {isFirstInGroup && (
-                                                                            <div className="message-metadata flex-row px-1 mb-1.5">
-                                                                                {!isSent && msg.rank && (
-                                                                                    <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 mr-0.5">
-                                                                                        {msg.rank}
-                                                                                    </span>
-                                                                                )}
-                                                                                <span className={`font-bold text-[13px] tracking-tight ${isSent ? 'text-indigo-400' : 'text-indigo-600'}`}>
-                                                                                    {isSent ? t('chat.you') : (msg.username ? formatName(msg.full_name, msg.username) : t('common.system'))}
-                                                                                </span>
-                                                                                {((isSent && user?.role === 'admin') || (!isSent && msg.role === 'admin')) && (
-                                                                                    <div className="text-indigo-400" title={t('admin.roleAdmin')}>
-                                                                                        <Crown size={10} fill="currentColor" />
-                                                                                    </div>
-                                                                                )}
-                                                                            </div>
-                                                                        )}
-
-                                                                        <div
-                                                                            id={`message-${msg.id}`}
-                                                                            className={`message-bubble group/message relative ${isSent ? 'message-sent' : 'message-received'} ${msgGroupClass} flex flex-col ${(msg.document_id && highlightDocId === msg.document_id) || highlightMessageId === msg.id ? 'message-highlight ring-2 ring-indigo-400 shadow-lg z-10' : ''}`}
-                                                                            {...(msg.document_id ? { 'data-doc-id': msg.document_id } : {})}
-                                                                            style={{
-                                                                                fontSize: typeof user?.preferences?.font_size === 'number'
-                                                                                    ? `${user.preferences.font_size}px`
-                                                                                    : user?.preferences?.font_size === 'small' ? '12px'
-                                                                                        : user?.preferences?.font_size === 'large' ? '18px'
-                                                                                            : '14px'
-                                                                            }}
-                                                                        >
-                                                                            {msg.parent && (
-                                                                                <div
-                                                                                    className="reply-block"
-                                                                                    onClick={(e) => {
-                                                                                        e.stopPropagation();
-                                                                                        const el = document.getElementById(`message-${msg.parent!.id}`);
-                                                                                        if (el) {
-                                                                                            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                                                                            el.classList.add('bg-indigo-50/80');
-                                                                                            el.classList.add('ring-2');
-                                                                                            el.classList.add('ring-indigo-400/50');
-                                                                                            setTimeout(() => {
-                                                                                                el.classList.remove('bg-indigo-50/80');
-                                                                                                el.classList.remove('ring-2');
-                                                                                                el.classList.remove('ring-indigo-400/50');
-                                                                                            }, 1500);
-                                                                                        }
-                                                                                    }}
-                                                                                >
-                                                                                    <span className="reply-user">{msg.parent.username}</span>
-                                                                                    <span className="reply-content">{renderMessageContent(msg.parent.content, msg.parent.username === user?.username)}</span>
-                                                                                </div>
-                                                                            )}
-
-                                                                            <div className="flex flex-col relative">
-                                                                                {msg.content && (!msg.document_id || !msg.content.startsWith('📎')) && (
-                                                                                    <div className={`leading-relaxed whitespace-pre-wrap break-words pr-14 ${isSent ? 'text-white' : 'text-slate-900'} ${msg.document_id ? 'mt-2 opacity-90' : ''}`}>
-                                                                                        {renderMessageContent(msg.content, isSent, msg.invitation_id)}
-                                                                                        {msg.updated_at && (
-                                                                                            <span className={`text-[10px] ml-1 opacity-60 italic select-none ${isSent ? 'text-white' : 'text-slate-500'}`}>
-                                                                                                ({t('chat.edited')})
-                                                                                            </span>
-                                                                                        )}
-                                                                                    </div>
-
-                                                                                )}
-
-                                                                                <div className={`flex items-center justify-end space-x-1 self-end mt-1 -mb-1 ${isSent ? 'text-white/60' : 'text-slate-400'}`}>
-                                                                                    <span className="text-[10px] tabular-nums font-medium">
-                                                                                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                                                    </span>
-                                                                                    {isSent && (
-                                                                                        msg.id <= (channel?.others_read_id || 0) ? (
-                                                                                            <CheckCheck size={13} className={`ml-0.5 ${isSent ? 'text-indigo-200' : 'text-indigo-500'}`} />
-                                                                                        ) : (
-                                                                                            <Check size={13} className="ml-0.5" />
-                                                                                        )
-                                                                                    )}
-                                                                                </div>
-                                                                            </div>
-
-                                                                            <div className="absolute top-0 left-full ml-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center gap-1">
-                                                                                <button
-                                                                                    onClick={(e) => {
-                                                                                        e.stopPropagation();
-                                                                                        setActiveThread(msg);
-                                                                                    }}
-                                                                                    className="p-1.5 bg-white border border-slate-200 rounded-lg shadow-sm text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all active:scale-90"
-                                                                                    title={t('chat.reply')}
-                                                                                >
-                                                                                    <MessageSquare size={14} />
-                                                                                </button>
-                                                                                <div className="relative">
-                                                                                    <button
-                                                                                        onMouseDown={(e) => {
-                                                                                            e.preventDefault();
-                                                                                            e.stopPropagation();
-                                                                                            setQuickReactionMessageId(prev => prev === msg.id ? null : msg.id);
-                                                                                        }}
-                                                                                        className={`p-1.5 bg-white border rounded-lg shadow-sm transition-all active:scale-90 ${quickReactionMessageId === msg.id
-                                                                                            ? 'text-indigo-600 border-indigo-300 bg-indigo-50'
-                                                                                            : 'border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200'
-                                                                                            }`}
-                                                                                        title={t('chat.reactions.add')}
-                                                                                    >
-                                                                                        <Smile size={14} />
-                                                                                    </button>
-
-                                                                                    {quickReactionMessageId === msg.id && (
-                                                                                        <QuickReactionPicker
-                                                                                            messageId={msg.id}
-                                                                                            onReaction={handleReactionClick}
-                                                                                            onOpenFullPicker={() => {
-                                                                                                setQuickReactionMessageId(null);
-                                                                                                messageInputRef.current?.openForReaction(msg.id);
-                                                                                            }}
-                                                                                            onClose={() => setQuickReactionMessageId(null)}
-                                                                                            position="top"
-                                                                                        />
-                                                                                    )}
-                                                                                </div>
-                                                                                {(msg.user_id === user?.id || user?.role === 'admin') && (
-                                                                                    <>
-                                                                                        <button
-                                                                                            onClick={(e) => {
-                                                                                                e.stopPropagation();
-                                                                                                setEditingMessage(msg);
-                                                                                            }}
-                                                                                            className="p-1.5 bg-white border border-slate-200 rounded-lg shadow-sm text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all active:scale-90"
-                                                                                            title={t('common.edit')}
-                                                                                        >
-                                                                                            <Pencil size={14} />
-                                                                                        </button>
-                                                                                        <button
-                                                                                            onClick={(e) => {
-                                                                                                e.stopPropagation();
-                                                                                                handleDeleteMessage(msg.id);
-                                                                                            }}
-                                                                                            className="p-1.5 bg-white border border-slate-200 rounded-lg shadow-sm text-slate-400 hover:text-red-600 hover:border-red-200 transition-all active:scale-90"
-                                                                                            title={t('common.delete')}
-                                                                                        >
-                                                                                            <Trash2 size={14} />
-                                                                                        </button>
-                                                                                    </>
-                                                                                )}
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </ContextMenu>
-
-                                                            {msg.reactions && msg.reactions.length > 0 && (
-                                                                <div className="flex flex-wrap gap-1 mt-1 ml-12">
-                                                                    {groupReactions(msg.reactions).map(group => (
-                                                                        <button
-                                                                            key={group.emoji}
-                                                                            onClick={() => handleReactionClick(msg.id, group.emoji)}
-                                                                            className={`flex items-center gap-1.5 px-2 py-1 rounded-xl text-xs font-bold transition-all backdrop-blur-sm ${group.hasMine
-                                                                                ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30 hover:bg-indigo-600'
-                                                                                : 'bg-white/80 text-slate-700 border border-slate-200/50 hover:bg-white hover:border-indigo-200 shadow-sm'
-                                                                                }`}
-                                                                            title={group.users.join(', ')}
-                                                                        >
-                                                                            <span className="text-base leading-none">{group.emoji}</span>
-                                                                            <span className={`tabular-nums ${group.hasMine ? 'text-white' : 'text-slate-600'}`}>
-                                                                                {group.count}
-                                                                            </span>
-                                                                        </button>
-                                                                    ))}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </React.Fragment>
-                                                );
-                                            })
+                                            <MessageList
+                                                messages={messages}
+                                                currentUser={user}
+                                                initialLastReadId={initialLastReadId}
+                                                isUnreadBannerVisible={isUnreadBannerVisible}
+                                                othersReadId={channel?.others_read_id}
+                                                highlightDocId={highlightDocId}
+                                                highlightMessageId={highlightMessageId}
+                                                onReply={setActiveThread}
+                                                onReact={handleReactionClick}
+                                                onEdit={setEditingMessage}
+                                                onDelete={handleDeleteMessage}
+                                                quickReactionMessageId={quickReactionMessageId}
+                                                setQuickReactionMessageId={setQuickReactionMessageId}
+                                                openFullEmojiPicker={(msgId) => messageInputRef.current?.openForReaction(msgId)}
+                                                addToast={addToast}
+                                            />
                                         )}
+
                                     </div>
                                 </div>
 
