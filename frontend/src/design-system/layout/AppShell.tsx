@@ -1,5 +1,6 @@
 import React from 'react';
 import { PrimarySidebar } from './PrimarySidebar';
+import { useUIStore } from '../../stores/useUIStore';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -10,15 +11,19 @@ interface AppShellProps {
  * AppShell is the main layout component that orchestrates the primary navigation,
  * optional secondary navigation, and the main content area.
  */
-export const AppShell: React.FC<AppShellProps> = ({ children, secondaryNav }) => {
+export const AppShell: React.FC<AppShellProps> = ({ children, secondaryNav: propSecondaryNav }) => {
+  const { secondaryNavContent, isSecondarySidebarOpen } = useUIStore();
+
+  const secondaryNav = propSecondaryNav || secondaryNavContent;
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
       {/* Primary Navigation Sidebar - Fixed width (64px/w-16) */}
       <PrimarySidebar />
 
       {/* Secondary Navigation Sidebar - Optional slot for module-specific navigation */}
-      {secondaryNav && (
-        <aside className="w-64 flex-shrink-0 border-r border-slate-200 bg-slate-50/50 overflow-y-auto">
+      {secondaryNav && isSecondarySidebarOpen && (
+        <aside className="w-64 flex-shrink-0 border-r border-border bg-surface-1 overflow-y-auto">
           {secondaryNav}
         </aside>
       )}

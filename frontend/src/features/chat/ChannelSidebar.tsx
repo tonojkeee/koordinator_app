@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useUnreadStore } from '../../store/useUnreadStore';
 import { abbreviateRank } from '../../utils/formatters';
-import { Modal, Input, Button, Avatar, ContextMenu, type ContextMenuOption } from '../../design-system';
+import { Modal, Input, Button, Avatar, ContextMenu, type ContextMenuOption, SecondarySidebar } from '../../design-system';
 import MuteModal from './MuteModal';
 
 interface ChannelSidebarProps {
@@ -331,59 +331,56 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
 
   const getUnreadDisplay = (channel: Channel) => unreadCounts[channel.id] || 0;
 
-  return (
-    <div className="w-full h-full flex flex-col bg-surface-1 border-r border-border shadow-sm">
-      <div className="h-[64px] px-5 flex items-center justify-between bg-surface shrink-0 z-10 border-b border-border/60">
-        <h2 className="text-sm font-black text-foreground uppercase tracking-[0.2em] flex items-center gap-2.5 opacity-90">
-          {t('chat.title')}
-        </h2>
-        <div className="flex items-center space-x-0.5">
-          <button className="p-2 text-muted-foreground hover:bg-surface-2 hover:text-foreground rounded-xl transition-all active:scale-90" title={t('common.filter')}>
-            <Filter size={18} strokeWidth={2.5} />
-          </button>
-          <button
-            onClick={() => {
-              queryClient.invalidateQueries({ queryKey: ['channels'] });
-              queryClient.invalidateQueries({ queryKey: ['channel'] });
-            }}
-            className="p-2 text-muted-foreground hover:bg-surface-2 hover:text-foreground rounded-xl transition-all active:scale-90"
-            title={t('common.refresh')}
-          >
-            <Search size={18} strokeWidth={2.5} />
-          </button>
-          <button
-            onClick={() => setIsCreating(true)}
-            className="p-2 text-muted-foreground hover:bg-surface-2 hover:text-primary rounded-xl transition-all active:scale-90"
-            title={t('chat.create_channel')}
-          >
-            <Edit size={18} strokeWidth={2.5} />
-          </button>
-        </div>
-      </div>
+  const actions = (
+    <div className="flex items-center space-x-0.5">
+      <button className="p-1.5 text-muted-foreground hover:bg-surface-2 hover:text-foreground rounded-lg transition-all active:scale-90" title={t('common.filter')}>
+        <Filter size={16} strokeWidth={2.5} />
+      </button>
+      <button
+        onClick={() => {
+          queryClient.invalidateQueries({ queryKey: ['channels'] });
+          queryClient.invalidateQueries({ queryKey: ['channel'] });
+        }}
+        className="p-1.5 text-muted-foreground hover:bg-surface-2 hover:text-foreground rounded-lg transition-all active:scale-90"
+        title={t('common.refresh')}
+      >
+        <Search size={16} strokeWidth={2.5} />
+      </button>
+      <button
+        onClick={() => setIsCreating(true)}
+        className="p-1.5 text-muted-foreground hover:bg-surface-2 hover:text-primary rounded-lg transition-all active:scale-90"
+        title={t('chat.create_channel')}
+      >
+        <Edit size={16} strokeWidth={2.5} />
+      </button>
+    </div>
+  );
 
-      <div className="px-4 py-4 bg-transparent shrink-0">
+  return (
+    <SecondarySidebar title={t('chat.title')} actions={actions}>
+      <div className="px-4 py-2 shrink-0">
         <div className="relative group">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 group-focus-within:text-primary transition-colors" size={16} strokeWidth={2.5} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary transition-colors" size={14} strokeWidth={2.5} />
           <input
             type="text"
             placeholder={t('common.search') || 'Search'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-surface border border-border rounded-xl pl-10 pr-4 py-2 text-sm text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-muted-foreground/40 shadow-sm font-bold"
+            className="w-full bg-surface-2/50 border border-transparent rounded-lg pl-9 pr-4 py-1.5 text-xs text-foreground focus:outline-none focus:bg-surface focus:border-primary/20 focus:ring-4 focus:ring-primary/5 transition-all placeholder:text-muted-foreground/40 font-medium"
           />
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-2 space-y-7 pb-6 custom-scrollbar animate-fade-in">
+      <div className="space-y-6 px-2 pb-4">
         {isLoading && channels.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 space-y-3 opacity-50">
-            <Loader2 className="animate-spin text-primary" size={24} strokeWidth={3} />
+            <Loader2 className="animate-spin text-primary" size={20} strokeWidth={3} />
             <span className="text-[10px] font-black uppercase tracking-widest">{t('common.loading')}</span>
           </div>
         ) : (
           <>
             {systemChannels.length > 0 && (
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {systemChannels.map((channel) => {
                   const contextOptions: ContextMenuOption[] = [
                     {
@@ -417,8 +414,8 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
             )}
 
             {pinnedChannels.length > 0 && (
-              <div className="space-y-1.5">
-                <div className="flex items-center space-x-2 px-3 mb-1 text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em] opacity-60">
+              <div className="space-y-0.5">
+                <div className="flex items-center space-x-2 px-3 mb-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider opacity-60">
                   <Pin size={10} className="text-muted-foreground" strokeWidth={3} />
                   <span>{t('chat.fileNotification.pinned')}</span>
                 </div>
@@ -471,8 +468,8 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
             )}
 
             {publicChannels.length > 0 && (
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between px-3 mb-1 text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em] opacity-60">
+              <div className="space-y-0.5">
+                <div className="flex items-center justify-between px-3 mb-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider opacity-60">
                   <div className="flex items-center space-x-2">
                     <Layers size={10} className="text-muted-foreground" strokeWidth={3} />
                     <span>{t('chat.publicSpace')}</span>
@@ -527,8 +524,8 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
             )}
 
             {privateChannels.length > 0 && (
-              <div className="space-y-1.5">
-                <div className="flex items-center space-x-2 px-3 mb-1 text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em] opacity-60">
+              <div className="space-y-0.5">
+                <div className="flex items-center space-x-2 px-3 mb-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider opacity-60">
                   <Lock size={10} className="text-muted-foreground" strokeWidth={3} />
                   <span>{t('chat.privateSpace')}</span>
                 </div>
@@ -581,8 +578,8 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
             )}
 
             {directChannels.length > 0 && (
-              <div className="space-y-1.5">
-                <div className="flex items-center space-x-2 px-3 mb-1 text-[10px] font-black text-muted-foreground uppercase tracking-[0.15em] opacity-60">
+              <div className="space-y-0.5">
+                <div className="flex items-center space-x-2 px-3 mb-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider opacity-60">
                   <MessageSquare size={10} className="text-muted-foreground" strokeWidth={3} />
                   <span>{t('chat.directMessages')}</span>
                 </div>
@@ -648,7 +645,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
         onClose={() => setMuteModalChannelId(null)}
         onMute={handleMute}
       />
-    </div>
+    </SecondarySidebar>
   );
 };
 

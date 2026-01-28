@@ -66,3 +66,4 @@ export type { AutocompleteUser } from './components/UserAutocomplete';
 
 // Layout
 export { AppShell } from './layout/AppShell';
+export { SecondarySidebar } from './layout/SecondarySidebar';
