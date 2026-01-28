@@ -1,6 +1,7 @@
 """
 Alembic migrations environment for async SQLAlchemy.
 """
+
 import asyncio
 from logging.config import fileConfig
 

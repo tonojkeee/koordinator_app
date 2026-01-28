@@ -7,43 +7,52 @@ import time
 import argparse
 from app.core.config import get_settings
 
+
 def run_command(command, cwd=None, shell=True):
     """Run a shell command and return the process"""
     return subprocess.Popen(command, cwd=cwd, shell=shell)
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Koordinator Runner")
-    parser.add_argument("mode", choices=["prod", "dev", "build"], default="prod", nargs="?", 
-                        help="Mode to run: 'prod' (backend only, default), 'dev' (backend + frontend dev), 'build' (build frontend + serve)")
+    parser.add_argument(
+        "mode",
+        choices=["prod", "dev", "build"],
+        default="prod",
+        nargs="?",
+        help="Mode to run: 'prod' (backend only, default), 'dev' (backend + frontend dev), 'build' (build frontend + serve)",
+    )
     args = parser.parse_args()
 
     settings = get_settings()
-    
+
     # Resolve absolute paths
-    base_dir = os.path.dirname(os.path.abspath(__file__)) # /backend
+    base_dir = os.path.dirname(os.path.abspath(__file__))  # /backend
     root_dir = os.path.dirname(base_dir)
     frontend_dir = os.path.join(root_dir, "frontend")
     cert_dir = os.path.join(base_dir, "certs")
-    
+
     processes = []
 
     try:
         if args.mode == "dev":
             print("🚀 Starting Koordinator in DEVELOPMENT mode...")
-            
+
             # Start Frontend (Vite)
             print("🎨 Starting Frontend (Vite)...")
             # Set NODE_ENV to development for consistency
             env = os.environ.copy()
             env["NODE_ENV"] = "development"
-            
+
             # Using Popen to run in background
-            frontend_proc = subprocess.Popen("npm run dev", cwd=frontend_dir, shell=True, env=env)
+            frontend_proc = subprocess.Popen(
+                "npm run dev", cwd=frontend_dir, shell=True, env=env
+            )
             processes.append(frontend_proc)
-            
+
             # Allow some time for Vite to initialize before Backend logs take over
             time.sleep(1)
-            
+
             # Backend starting is handled below by uvicorn.run
 
         elif args.mode == "build":
@@ -58,13 +67,17 @@ if __name__ == "__main__":
         # Configure SSL only if HTTPS is enabled
         ssl_config = {}
         if settings.use_https:
-            if os.path.exists(os.path.join(cert_dir, "key.pem")) and os.path.exists(os.path.join(cert_dir, "cert.pem")):
+            if os.path.exists(os.path.join(cert_dir, "key.pem")) and os.path.exists(
+                os.path.join(cert_dir, "cert.pem")
+            ):
                 ssl_config = {
                     "ssl_keyfile": os.path.join(cert_dir, "key.pem"),
-                    "ssl_certfile": os.path.join(cert_dir, "cert.pem")
+                    "ssl_certfile": os.path.join(cert_dir, "cert.pem"),
                 }
             else:
-                print("⚠️ WARNING: HTTPS enabled but certificates not found! Falling back to HTTP.")
+                print(
+                    "⚠️ WARNING: HTTPS enabled but certificates not found! Falling back to HTTP."
+                )
 
         # Run Backend
         print(f"📡 Backend starting on port 5100 (Mode: {args.mode})...")
@@ -74,7 +87,7 @@ if __name__ == "__main__":
             port=5100,
             reload=settings.debug or (args.mode == "dev"),
             log_level="info",
-            **ssl_config
+            **ssl_config,
         )
 
     except KeyboardInterrupt:
@@ -85,4 +98,3 @@ if __name__ == "__main__":
             else:
                 os.kill(p.pid, signal.SIGTERM)
         print("👋 Goodbye!")
-

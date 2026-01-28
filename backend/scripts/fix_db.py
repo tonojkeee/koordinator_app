@@ -4,6 +4,7 @@ import os
 # Absolute path to be sure
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "teamchat.db")
 
+
 def migrate():
     print(f"Connecting to database at {DB_PATH}...")
     if not os.path.exists(DB_PATH):
@@ -12,7 +13,7 @@ def migrate():
 
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    
+
     try:
         print("Attempting to add updated_at column to messages table...")
         cursor.execute("ALTER TABLE messages ADD COLUMN updated_at TIMESTAMP")
@@ -25,6 +26,7 @@ def migrate():
             print(f"❌ Error adding column: {e}")
     finally:
         conn.close()
+
 
 if __name__ == "__main__":
     migrate()

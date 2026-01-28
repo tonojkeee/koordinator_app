@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 # Load environment variables from .env file
 backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-load_dotenv(os.path.join(backend_dir, '.env'))
+load_dotenv(os.path.join(backend_dir, ".env"))
 
 # Add the backend directory to Python path
 sys.path.insert(0, backend_dir)
@@ -28,18 +28,22 @@ async def create_notifications_channels():
         # Get all users
         result = await db.execute(select(User))
         users = result.scalars().all()
-        
-        print(f'Found {len(users)} users')
-        
+
+        print(f"Found {len(users)} users")
+
         for user in users:
-            print(f'Processing user: {user.username} (ID: {user.id})')
+            print(f"Processing user: {user.username} (ID: {user.id})")
             try:
-                notifications_channel = await UserService.get_or_create_notifications_channel(db, user.id)
-                print(f'  ✓ Notifications channel: {notifications_channel.id} - {notifications_channel.display_name}')
+                notifications_channel = (
+                    await UserService.get_or_create_notifications_channel(db, user.id)
+                )
+                print(
+                    f"  ✓ Notifications channel: {notifications_channel.id} - {notifications_channel.display_name}"
+                )
             except Exception as e:
-                print(f'  ✗ Error: {e}')
-                
-        print('Done!')
+                print(f"  ✗ Error: {e}")
+
+        print("Done!")
 
 
 if __name__ == "__main__":

@@ -28,14 +28,13 @@ from app.core.security import get_password_hash
 from app.modules.auth.models import User, Unit
 from app.modules.chat.models import ChannelMember
 
-
 settings = get_settings()
 
 
 async def cleanup_duplicate_channel_memberships(session: AsyncSession) -> None:
     """Remove duplicate channel memberships to allow UniqueConstraint"""
     subquery = (
-        select(func.min(ChannelMember.id).label('min_id'))
+        select(func.min(ChannelMember.id).label("min_id"))
         .group_by(ChannelMember.channel_id, ChannelMember.user_id)
         .subquery()
     )
@@ -50,34 +49,197 @@ async def cleanup_duplicate_channel_memberships(session: AsyncSession) -> None:
 async def seed_system_settings(session: AsyncSession) -> None:
     """Create default system settings if they don't exist"""
     default_settings = [
-        {"key": "app_name", "value": settings.app_name, "type": "str", "group": "general", "description": "Название приложения", "is_public": True},
-        {"key": "maintenance_mode", "value": "false", "type": "bool", "group": "general", "description": "Режим технического обслуживания", "is_public": True},
-        {"key": "support_contact", "value": "support@example.com", "type": "str", "group": "general", "description": "Контакты техподдержки", "is_public": True},
-        {"key": "system_notice", "value": "", "type": "str", "group": "general", "description": "Системное объявление (баннер)", "is_public": True},
-        {"key": "internal_email_domain", "value": settings.internal_email_domain, "type": "str", "group": "email", "description": "Домен для внутренней почты", "is_public": True},
-        {"key": "email_max_attachment_size_mb", "value": "25", "type": "int", "group": "email", "description": "Максимальный размер одного вложения (МБ)", "is_public": True},
-        {"key": "email_max_total_attachment_size_mb", "value": "50", "type": "int", "group": "email", "description": "Максимальный общий размер вложений (МБ)", "is_public": True},
-        {"key": "email_allowed_file_types", "value": ".pdf,.doc,.docx,.xls,.xlsx,.zip,.rar,.jpg,.png,.txt", "type": "str", "group": "email", "description": "Разрешенные типы вложений", "is_public": True},
-        {"key": "email_smtp_host", "value": "127.0.0.1", "type": "str", "group": "email", "description": "SMTP Хост", "is_public": False},
-        {"key": "email_smtp_port", "value": "2525", "type": "int", "group": "email", "description": "SMTP Порт", "is_public": False},
-        {"key": "access_token_expire_minutes", "value": str(settings.access_token_expire_minutes), "type": "int", "group": "security", "description": "Время жизни токена доступа (минуты)", "is_public": False},
-        {"key": "refresh_token_expire_days", "value": str(settings.refresh_token_expire_days), "type": "int", "group": "security", "description": "Время жизни токена обновления (дни)", "is_public": False},
-        {"key": "security_password_min_length", "value": "8", "type": "int", "group": "security", "description": "Минимальная длина пароля", "is_public": True},
-        {"key": "security_password_require_digits", "value": "false", "type": "bool", "group": "security", "description": "Требовать цифры в пароле", "is_public": True},
-        {"key": "security_password_require_uppercase", "value": "false", "type": "bool", "group": "security", "description": "Требовать заглавные буквы в пароле", "is_public": True},
-        {"key": "allow_registration", "value": "true", "type": "bool", "group": "security", "description": "Разрешить самостоятельную регистрацию", "is_public": True},
-        {"key": "max_upload_size_mb", "value": "50", "type": "int", "group": "chat", "description": "Максимальный размер загружаемого файла (МБ)", "is_public": True},
-        {"key": "allowed_file_types", "value": ".pdf,.doc,.docx,.xls,.xlsx,.csv,.jpg,.jpeg,.png,.gif,.txt", "type": "str", "group": "chat", "description": "Разрешенные типы файлов", "is_public": True},
-        {"key": "chat_rate_limit", "value": "60", "type": "int", "group": "chat", "description": "Лимит сообщений в минуту", "is_public": False},
-        {"key": "chat_max_message_length", "value": "4000", "type": "int", "group": "chat", "description": "Максимальная длина сообщения", "is_public": True},
-        {"key": "chat_allow_delete", "value": "true", "type": "bool", "group": "chat", "description": "Разрешить удаление сообщений", "is_public": True},
-        {"key": "chat_allow_create_channel", "value": "true", "type": "bool", "group": "chat", "description": "Разрешить создание каналов", "is_public": True},
-        {"key": "chat_page_size", "value": "50", "type": "int", "group": "chat", "description": "Количество сообщений на странице", "is_public": True},
+        {
+            "key": "app_name",
+            "value": settings.app_name,
+            "type": "str",
+            "group": "general",
+            "description": "Название приложения",
+            "is_public": True,
+        },
+        {
+            "key": "maintenance_mode",
+            "value": "false",
+            "type": "bool",
+            "group": "general",
+            "description": "Режим технического обслуживания",
+            "is_public": True,
+        },
+        {
+            "key": "support_contact",
+            "value": "support@example.com",
+            "type": "str",
+            "group": "general",
+            "description": "Контакты техподдержки",
+            "is_public": True,
+        },
+        {
+            "key": "system_notice",
+            "value": "",
+            "type": "str",
+            "group": "general",
+            "description": "Системное объявление (баннер)",
+            "is_public": True,
+        },
+        {
+            "key": "internal_email_domain",
+            "value": settings.internal_email_domain,
+            "type": "str",
+            "group": "email",
+            "description": "Домен для внутренней почты",
+            "is_public": True,
+        },
+        {
+            "key": "email_max_attachment_size_mb",
+            "value": "25",
+            "type": "int",
+            "group": "email",
+            "description": "Максимальный размер одного вложения (МБ)",
+            "is_public": True,
+        },
+        {
+            "key": "email_max_total_attachment_size_mb",
+            "value": "50",
+            "type": "int",
+            "group": "email",
+            "description": "Максимальный общий размер вложений (МБ)",
+            "is_public": True,
+        },
+        {
+            "key": "email_allowed_file_types",
+            "value": ".pdf,.doc,.docx,.xls,.xlsx,.zip,.rar,.jpg,.png,.txt",
+            "type": "str",
+            "group": "email",
+            "description": "Разрешенные типы вложений",
+            "is_public": True,
+        },
+        {
+            "key": "email_smtp_host",
+            "value": "127.0.0.1",
+            "type": "str",
+            "group": "email",
+            "description": "SMTP Хост",
+            "is_public": False,
+        },
+        {
+            "key": "email_smtp_port",
+            "value": "2525",
+            "type": "int",
+            "group": "email",
+            "description": "SMTP Порт",
+            "is_public": False,
+        },
+        {
+            "key": "access_token_expire_minutes",
+            "value": str(settings.access_token_expire_minutes),
+            "type": "int",
+            "group": "security",
+            "description": "Время жизни токена доступа (минуты)",
+            "is_public": False,
+        },
+        {
+            "key": "refresh_token_expire_days",
+            "value": str(settings.refresh_token_expire_days),
+            "type": "int",
+            "group": "security",
+            "description": "Время жизни токена обновления (дни)",
+            "is_public": False,
+        },
+        {
+            "key": "security_password_min_length",
+            "value": "8",
+            "type": "int",
+            "group": "security",
+            "description": "Минимальная длина пароля",
+            "is_public": True,
+        },
+        {
+            "key": "security_password_require_digits",
+            "value": "false",
+            "type": "bool",
+            "group": "security",
+            "description": "Требовать цифры в пароле",
+            "is_public": True,
+        },
+        {
+            "key": "security_password_require_uppercase",
+            "value": "false",
+            "type": "bool",
+            "group": "security",
+            "description": "Требовать заглавные буквы в пароле",
+            "is_public": True,
+        },
+        {
+            "key": "allow_registration",
+            "value": "true",
+            "type": "bool",
+            "group": "security",
+            "description": "Разрешить самостоятельную регистрацию",
+            "is_public": True,
+        },
+        {
+            "key": "max_upload_size_mb",
+            "value": "50",
+            "type": "int",
+            "group": "chat",
+            "description": "Максимальный размер загружаемого файла (МБ)",
+            "is_public": True,
+        },
+        {
+            "key": "allowed_file_types",
+            "value": ".pdf,.doc,.docx,.xls,.xlsx,.csv,.jpg,.jpeg,.png,.gif,.txt",
+            "type": "str",
+            "group": "chat",
+            "description": "Разрешенные типы файлов",
+            "is_public": True,
+        },
+        {
+            "key": "chat_rate_limit",
+            "value": "60",
+            "type": "int",
+            "group": "chat",
+            "description": "Лимит сообщений в минуту",
+            "is_public": False,
+        },
+        {
+            "key": "chat_max_message_length",
+            "value": "4000",
+            "type": "int",
+            "group": "chat",
+            "description": "Максимальная длина сообщения",
+            "is_public": True,
+        },
+        {
+            "key": "chat_allow_delete",
+            "value": "true",
+            "type": "bool",
+            "group": "chat",
+            "description": "Разрешить удаление сообщений",
+            "is_public": True,
+        },
+        {
+            "key": "chat_allow_create_channel",
+            "value": "true",
+            "type": "bool",
+            "group": "chat",
+            "description": "Разрешить создание каналов",
+            "is_public": True,
+        },
+        {
+            "key": "chat_page_size",
+            "value": "50",
+            "type": "int",
+            "group": "chat",
+            "description": "Количество сообщений на странице",
+            "is_public": True,
+        },
     ]
 
     # Optimize: Use a single transaction for all settings
     for s_data in default_settings:
-        result = await session.execute(select(SystemSetting).where(SystemSetting.key == s_data["key"]))
+        result = await session.execute(
+            select(SystemSetting).where(SystemSetting.key == s_data["key"])
+        )
         if not result.scalar_one_or_none():
             setting = SystemSetting(
                 key=s_data["key"],
@@ -85,7 +247,7 @@ async def seed_system_settings(session: AsyncSession) -> None:
                 type=s_data["type"],
                 group=s_data["group"],
                 description=s_data["description"],
-                is_public=s_data["is_public"]
+                is_public=s_data["is_public"],
             )
             session.add(setting)
 
@@ -112,12 +274,14 @@ async def seed_default_units(session: AsyncSession) -> dict:
 
 async def seed_initial_admin(session: AsyncSession, units_map: dict) -> None:
     """Create initial admin user from environment variables"""
-    result = await session.execute(select(User).where(User.username == settings.admin_username))
+    result = await session.execute(
+        select(User).where(User.username == settings.admin_username)
+    )
     if not result.scalar_one_or_none():
         print(f"👤 Creating initial admin: {settings.admin_username}")
         # Find 'Управление' unit or None
         unit_id = units_map.get("Управление")
-        
+
         admin_user = User(
             username=settings.admin_username,
             email=settings.admin_email,
@@ -126,7 +290,7 @@ async def seed_initial_admin(session: AsyncSession, units_map: dict) -> None:
             role="admin",
             unit_id=unit_id,
             cabinet="Server Room",
-            phone_number="000"
+            phone_number="000",
         )
         session.add(admin_user)
         await session.commit()
@@ -141,7 +305,7 @@ async def seed_test_users(session: AsyncSession, units_map: dict) -> None:
         return
 
     print("🧪 Seeding test users...")
-    
+
     # Use the configured internal email domain
     email_domain = settings.internal_email_domain
 
@@ -153,7 +317,7 @@ async def seed_test_users(session: AsyncSession, units_map: dict) -> None:
             "role": "user",
             "unit": "Служба связи",
             "cabinet": "101",
-            "phone_number": "10-21"
+            "phone_number": "10-21",
         },
         {
             "username": "petrov",
@@ -162,7 +326,7 @@ async def seed_test_users(session: AsyncSession, units_map: dict) -> None:
             "role": "user",
             "unit": "Штаб",
             "cabinet": "205",
-            "phone_number": "12-44"
+            "phone_number": "12-44",
         },
         {
             "username": "sidorov",
@@ -171,7 +335,7 @@ async def seed_test_users(session: AsyncSession, units_map: dict) -> None:
             "role": "user",
             "unit": "Разведка",
             "cabinet": "312",
-            "phone_number": "15-01"
+            "phone_number": "15-01",
         },
         {
             "username": "smirnova",
@@ -180,7 +344,7 @@ async def seed_test_users(session: AsyncSession, units_map: dict) -> None:
             "role": "user",
             "unit": "Медслужба",
             "cabinet": "Медпункт",
-            "phone_number": "11-03"
+            "phone_number": "11-03",
         },
         {
             "username": "kuznetsov",
@@ -189,7 +353,7 @@ async def seed_test_users(session: AsyncSession, units_map: dict) -> None:
             "role": "admin",
             "unit": "Управление",
             "cabinet": "Главный корпус",
-            "phone_number": "01"
+            "phone_number": "01",
         },
         {
             "username": "telegraf",
@@ -198,22 +362,26 @@ async def seed_test_users(session: AsyncSession, units_map: dict) -> None:
             "role": "operator",
             "unit": "Служба связи",
             "cabinet": "Аппаратная",
-            "phone_number": "99"
-        }
+            "phone_number": "99",
+        },
     ]
 
     for u_data in test_users_data:
-        result = await session.execute(select(User).where(User.username == u_data["username"]))
+        result = await session.execute(
+            select(User).where(User.username == u_data["username"])
+        )
         if not result.scalar_one_or_none():
             new_user = User(
                 username=u_data["username"],
                 email=u_data["email"],
-                hashed_password=get_password_hash("test123"), # Hardcoded is fine for TEST users
+                hashed_password=get_password_hash(
+                    "test123"
+                ),  # Hardcoded is fine for TEST users
                 full_name=u_data["full_name"],
                 role=u_data["role"],
                 unit_id=units_map.get(u_data["unit"]),
                 cabinet=u_data.get("cabinet"),
-                phone_number=u_data.get("phone_number")
+                phone_number=u_data.get("phone_number"),
             )
             session.add(new_user)
 
@@ -239,13 +407,15 @@ async def main():
             print("✅ Checked/Seeded Initial Admin")
 
             await seed_test_users(session, units_map)
-            
+
             print("🎉 Database seeding completed successfully!")
         except Exception as e:
             await session.rollback()
             # If it's a lock error, provide better context
             if "locked" in str(e).lower():
-                print(f"⚠️  Database is temporarily locked. Seeding might have failed or partially completed.")
+                print(
+                    f"⚠️  Database is temporarily locked. Seeding might have failed or partially completed."
+                )
                 print(f"Error details: {e}")
             else:
                 print(f"❌ Error during seeding: {e}")

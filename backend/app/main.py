@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Depends
+from starlette.responses import FileResponse
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -413,9 +414,6 @@ async def health(db: AsyncSession = Depends(get_db)) -> dict[str, Any]:
 
 
 # ========== FRONTEND SERVING ==========
-
-from starlette.responses import FileResponse
-from fastapi import HTTPException
 
 # Path to frontend build directory
 # Assuming typical structure: backend/app/main.py -> backend/app -> backend -> frontend/dist
