@@ -6,18 +6,16 @@ import type { Message, Channel, User } from '../../types';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useUnreadStore } from '../../store/useUnreadStore';
 import { useWebSocket } from '../../hooks/useWebSocket';
-import { Send, MessageSquare, Smile, Trash2, X, Hash, Bell, Plus, Crown, Check, CheckCheck, FileText, Pencil } from 'lucide-react';
+import { Send, MessageSquare, Smile, X, Hash, Plus, FileText, Pencil, Users, Bell, BellOff, Info, LogOut, Download, UserPlus, Settings, Search, Phone } from 'lucide-react';
 import EmojiPicker, { EmojiStyle, Theme, type EmojiClickData } from 'emoji-picker-react';
 
 import { useTranslation } from 'react-i18next';
+import { formatName } from '../../utils/formatters';
 
 import ParticipantsList from './ParticipantsList';
-import { Avatar, ContextMenu, type ContextMenuOption, useToast, cn } from '../../design-system';
-import ChannelHeader from './ChannelHeader';
+import { useToast, cn } from '../../design-system';
 import MuteModal from './MuteModal';
 import SearchModal from './components/SearchModal';
-import { formatDate, renderMessageContent } from './utils';
-import { formatName } from '../../utils/formatters';
 
 import { type Reaction } from '../../types';
 
@@ -46,7 +44,6 @@ type WebSocketMessage =
 
 // Skeleton loader for messages - imported from components
 import { MessageSkeleton, MessageList } from './components';
-import { QuickReactionPicker } from './components/QuickReactionPicker';
 
 interface MessageInputProps {
     isConnected: boolean;
@@ -1187,36 +1184,70 @@ const ChatPage: React.FC = () => {
         }
     };
 
-    const groupReactions = (reactions: Reaction[]) => {
-        if (!reactions) return [];
-        const groups: { [emoji: string]: { emoji: string; count: number; users: string[]; avatars: (string | null)[]; hasMine: boolean } } = {};
-
-        reactions.forEach(r => {
-            if (!groups[r.emoji]) {
-                groups[r.emoji] = { emoji: r.emoji, count: 0, users: [], avatars: [], hasMine: false };
-            }
-            groups[r.emoji].count++;
-            groups[r.emoji].users.push(r.username);
-            groups[r.emoji].avatars.push(r.avatar_url || null);
-            if (r.user_id === user?.id) {
-                groups[r.emoji].hasMine = true;
-            }
-        });
-
-        return Object.values(groups);
+    const getHeaderIcon = () => {
+        if (channel?.is_direct && channel.other_user) {
+            return (
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100/50">
+                    <span className="text-xs font-bold uppercase">
+                        {channel.other_user.full_name
+                            ? channel.other_user.full_name.split(' ').map((n: string) => n[0]).join('')
+                            : channel.other_user.username.slice(0, 2)
+                        }
+                    </span>
+                </div>
+            );
+        }
+        if (channel?.is_system) return (
+            <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center border border-slate-100/50">
+                <Settings size={20} />
+            </div>
+        );
+        return (
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100/50">
+                <Hash size={20} />
+            </div>
+        );
     };
+
+    const getHeaderSubtitle = () => (
+        <div className="flex items-center gap-2">
+            <div className={cn(
+                "w-2 h-2 rounded-full transition-all duration-500 shadow-sm",
+                channel?.is_direct
+                    ? (isDmPartnerOnline ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-slate-300')
+                    : (isConnected ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-red-500')
+            )} />
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                {channel?.is_system ? (
+                    t('chat.system_channel')
+                ) : channel?.is_direct ? (
+                    isDmPartnerOnline ? t('chat.online') : formatLastSeen(dmPartner?.last_seen)
+                ) : (
+                    <>
+                        <span className="text-slate-900 font-extrabold">{channel?.members_count || 0}</span> {t('common.participants', { count: channel?.members_count || 0 })}
+                        {channel?.online_count ? (
+                            <>
+                                <span className="mx-2 opacity-30">|</span>
+                                <span className="text-green-600 font-extrabold">{channel.online_count}</span> {t('chat.online')}
+                            </>
+                        ) : null}
+                    </>
+                )}
+            </span>
+        </div>
+    );
 
     return (
         <div
-            className="flex-1 flex flex-col bg-slate-50 overflow-hidden animate-in fade-in duration-300 relative"
+            className="flex-1 flex flex-col h-full p-2 bg-slate-100/50 overflow-hidden animate-in fade-in duration-300 relative"
             onDragEnter={handleDragEnter}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
         >
             {isDragging && (
-                <div className="absolute inset-0 z-[100] bg-blue-600/10 backdrop-blur-[2px] border-4 border-dashed border-blue-500/50 m-4 rounded-lg flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
-                    <div className="bg-white p-8 rounded-lg shadow-2xl flex flex-col items-center space-y-4 border border-slate-200">
+                <div className="absolute inset-2 z-[100] bg-blue-600/10 backdrop-blur-[2px] border-4 border-dashed border-blue-500/50 rounded-2xl flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
+                    <div className="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center space-y-4 border border-slate-200">
                         <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center animate-bounce">
                             <Plus size={32} />
                         </div>
@@ -1228,36 +1259,122 @@ const ChatPage: React.FC = () => {
                 </div>
             )}
 
-            {channelId ? (
-                <div className="flex-1 flex flex-col h-full overflow-hidden transition-opacity duration-300" style={{ opacity: isHistoryLoading && messages.length === 0 ? 0.5 : 1 }}>
-                    <ChannelHeader
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        channel={channel as any}
-                        isConnected={isConnected}
-                        isMuted={isMuted}
-                        isDmPartnerOnline={isDmPartnerOnline}
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        dmPartner={dmPartner as any}
-                        showParticipants={showParticipants}
-                        setShowParticipants={setShowParticipants}
-                        setIsMuteModalOpen={setIsMuteModalOpen}
-                        onSearchOpen={() => setIsSearchModalOpen(true)}
-                        handleExportChat={handleExportChat}
-                        onLeaveChannel={handleLeaveChannel}
-                        formatLastSeen={formatLastSeen}
-                    />
+            <div className="flex flex-col flex-1 bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
+                {channelId ? (
+                    <>
+                        {/* Unified Header */}
+                        <header className="h-20 border-b border-slate-100 flex items-center justify-between px-6 bg-white/80 backdrop-blur-md z-40 shrink-0">
+                            <div className="flex items-center gap-4 min-w-0">
+                                {getHeaderIcon()}
+                                <div className="min-w-0">
+                                    <h1 className="font-extrabold text-slate-900 truncate leading-tight tracking-tight">
+                                        {channel?.is_direct && channel.other_user
+                                            ? formatName(channel.other_user.full_name, channel.other_user.username)
+                                            : channel?.display_name || channel?.name || `${t('chat.channel')} ${channel?.id}`
+                                        }
+                                    </h1>
+                                    {getHeaderSubtitle()}
+                                </div>
+                            </div>
 
-                    <div className="flex-1 flex overflow-hidden min-h-0 px-6 pb-6 pt-2">
-                        <div className="flex-1 flex bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden relative">
+                            <div className="flex items-center gap-1.5">
+                                <button
+                                    onClick={() => setIsSearchModalOpen(true)}
+                                    className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-95"
+                                    title={t('common.search')}
+                                >
+                                    <Search size={20} strokeWidth={2.2} />
+                                </button>
+
+                                {!channel?.is_system && (
+                                    <button
+                                        className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-95"
+                                        title={t('chat.call')}
+                                    >
+                                        <Phone size={20} strokeWidth={2.2} />
+                                    </button>
+                                )}
+
+                                {channel?.visibility === 'private' && channel?.is_member && !channel?.is_system && (
+                                    <button
+                                        className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-95"
+                                        title={t('chat.invite')}
+                                    >
+                                        <UserPlus size={20} strokeWidth={2.2} />
+                                    </button>
+                                )}
+
+                                <button
+                                    onClick={() => setIsMuteModalOpen(true)}
+                                    className={cn(
+                                        "w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95",
+                                        isMuted
+                                            ? 'text-red-500 bg-red-50 hover:bg-red-100'
+                                            : 'text-slate-500 hover:text-blue-600 hover:bg-blue-50'
+                                    )}
+                                    title={isMuted ? t('chat.notifications.unmute') : t('chat.notifications.mute')}
+                                >
+                                    {isMuted ? <BellOff size={20} strokeWidth={2.2} /> : <Bell size={20} strokeWidth={2.2} />}
+                                </button>
+
+                                {!channel?.is_system && (
+                                    <button
+                                        onClick={handleExportChat}
+                                        className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-95"
+                                        title={t('chat.export_history')}
+                                    >
+                                        <Download size={20} strokeWidth={2.2} />
+                                    </button>
+                                )}
+
+                                <div className="w-px h-6 bg-slate-100 mx-1.5" />
+
+                                {channel && !channel.is_direct && !channel.is_system && (
+                                    <button
+                                        onClick={() => setShowParticipants(!showParticipants)}
+                                        className={cn(
+                                            "w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 border",
+                                            showParticipants
+                                                ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
+                                                : 'bg-white text-slate-500 border-slate-200 hover:border-blue-200 hover:text-blue-600'
+                                        )}
+                                        title={t('chat.participants')}
+                                    >
+                                        <Users size={20} strokeWidth={2.2} />
+                                    </button>
+                                )}
+
+                                <button
+                                    className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-95"
+                                    title={t('common.info')}
+                                >
+                                    <Info size={20} strokeWidth={2.2} />
+                                </button>
+
+                                {channel && !channel.is_direct && !channel.is_system && channel.is_member && !channel.is_owner && (
+                                    <button
+                                        onClick={handleLeaveChannel}
+                                        className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all active:scale-95 ml-1"
+                                        title={t('chat.leave_channel')}
+                                    >
+                                        <LogOut size={20} strokeWidth={2.2} />
+                                    </button>
+                                )}
+                            </div>
+                        </header>
+
+                        {/* Main Body */}
+                        <div className="flex flex-1 overflow-hidden min-h-0 bg-white relative">
+                            {/* Messages Section */}
                             <div className="flex-1 flex flex-col min-w-0 relative">
                                 <div
                                     id="message-container"
                                     ref={messageContainerRef}
                                     onScroll={handleScroll}
-                                    className="flex-1 flex flex-col overflow-y-auto px-8 py-6 space-y-1 relative custom-scrollbar"
+                                    className="flex-1 flex flex-col overflow-y-auto px-6 py-4 space-y-1 relative custom-scrollbar bg-white"
                                 >
                                     {isFetchingNextPage && (
-                                        <div className="flex justify-center py-2 absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-slate-50/80 to-transparent p-2">
+                                        <div className="flex justify-center py-2 absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-white to-transparent">
                                             <div className="w-5 h-5 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
                                         </div>
                                     )}
@@ -1267,8 +1384,8 @@ const ChatPage: React.FC = () => {
                                             <MessageSkeleton />
                                         ) : messages.length === 0 ? (
                                             <div className="flex flex-col items-center justify-center h-full opacity-40 animate-in fade-in duration-500 py-20">
-                                                <div className="p-12 bg-white rounded-[3rem] shadow-xl border border-slate-100 mb-6">
-                                                    <MessageSquare size={64} className="text-slate-200" />
+                                                <div className="p-12 bg-slate-50 rounded-[3rem] shadow-sm border border-slate-100 mb-6">
+                                                    <MessageSquare size={64} className="text-slate-300" />
                                                 </div>
                                                 <p className="text-xl font-bold text-slate-600">{t('chat.noMessagesYet')}</p>
                                                 <p className="text-base text-slate-400 mt-2">{t('chat.beFirst')}</p>
@@ -1279,7 +1396,7 @@ const ChatPage: React.FC = () => {
                                                 currentUser={user}
                                                 initialLastReadId={initialLastReadId}
                                                 isUnreadBannerVisible={isUnreadBannerVisible}
-                                                othersReadId={channel?.others_read_id}
+                                                othersReadId={channel?.others_read_id ?? undefined}
                                                 highlightDocId={highlightDocId}
                                                 highlightMessageId={highlightMessageId}
                                                 onReply={setActiveThread}
@@ -1292,97 +1409,103 @@ const ChatPage: React.FC = () => {
                                                 addToast={addToast}
                                             />
                                         )}
-
                                     </div>
                                 </div>
 
-                                {canChat ? (
-                                    <MessageInput
-                                        ref={messageInputRef}
-                                        isConnected={isConnected}
-                                        sendMessage={sendMessage}
-                                        updateMessage={handleUpdateMessage}
-                                        sendTyping={sendTyping}
-                                        activeThread={activeThread}
-                                        setActiveThread={setActiveThread}
-                                        editingMessage={editingMessage}
-                                        onCancelEdit={() => setEditingMessage(null)}
-                                        handleReactionClick={handleReactionClick}
-                                        typingUsers={typingUsers}
-                                    />
-                                ) : channel?.is_system ? (
-                                    <div className="p-6 flex items-center justify-center bg-slate-50/50 backdrop-blur-xl">
-                                        <div className="text-center animate-in slide-in-from-bottom-4 duration-500">
-                                            <p className="text-slate-600 mb-2 font-medium text-sm">{t('chat.system_channel_readonly')}</p>
-                                            <p className="text-slate-400 text-xs">{t('chat.system_channel_description')}</p>
+                                {/* Input Section */}
+                                <div className="z-30 shrink-0">
+                                    {canChat ? (
+                                        <MessageInput
+                                            ref={messageInputRef}
+                                            isConnected={isConnected}
+                                            sendMessage={sendMessage}
+                                            updateMessage={handleUpdateMessage}
+                                            sendTyping={sendTyping}
+                                            activeThread={activeThread}
+                                            setActiveThread={setActiveThread}
+                                            editingMessage={editingMessage}
+                                            onCancelEdit={() => setEditingMessage(null)}
+                                            handleReactionClick={handleReactionClick}
+                                            typingUsers={typingUsers}
+                                        />
+                                    ) : channel?.is_system ? (
+                                        <div className="p-6 flex items-center justify-center bg-slate-50/50 border-t border-slate-100">
+                                            <div className="text-center">
+                                                <p className="text-slate-600 mb-1 font-bold text-sm">{t('chat.system_channel_readonly')}</p>
+                                                <p className="text-slate-400 text-xs">{t('chat.system_channel_description')}</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                ) : (
-                                    <div className="p-6 flex items-center justify-center bg-blue-50/50 backdrop-blur-xl">
-                                        <div className="text-center animate-in slide-in-from-bottom-4 duration-500">
-                                            <p className="text-slate-600 mb-4 font-bold text-lg">{t('chat.preview_mode_message')}</p>
-                                            <Button
-                                                onClick={() => joinChannelMutation.mutate()}
-                                                disabled={joinChannelMutation.isPending}
-                                                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30 px-8 py-3 rounded-xl text-base font-bold transition-all hover:scale-105 active:scale-95"
-                                            >
-                                                {joinChannelMutation.isPending ? t('common.loading') : t('chat.join_channel')}
-                                            </Button>
+                                    ) : (
+                                        <div className="p-8 flex items-center justify-center bg-blue-50/30 border-t border-blue-100/50">
+                                            <div className="text-center">
+                                                <p className="text-slate-600 mb-4 font-bold text-lg">{t('chat.preview_mode_message')}</p>
+                                                <Button
+                                                    onClick={() => joinChannelMutation.mutate()}
+                                                    disabled={joinChannelMutation.isPending}
+                                                    className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 px-8 py-3 rounded-xl text-base font-bold transition-all hover:scale-105 active:scale-95"
+                                                >
+                                                    {joinChannelMutation.isPending ? t('common.loading') : t('chat.join_channel')}
+                                                </Button>
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
                             </div>
 
+                            {/* Collapsible Participants Sidebar */}
                             {showParticipants && channelId && channel && !channel.is_direct && !channel.is_system && (
-                                <ParticipantsList
-                                    channelId={Number(channelId)}
-                                    onMention={handleMention}
-                                    className="w-80 shrink-0 transition-all duration-300"
-                                />
+                                <aside className="w-80 border-l border-slate-100 bg-slate-50/30 shrink-0 overflow-hidden flex flex-col">
+                                    <ParticipantsList
+                                        channelId={Number(channelId)}
+                                        onMention={handleMention}
+                                        className="h-full"
+                                    />
+                                </aside>
                             )}
                         </div>
-                    </div>
-                </div>
-            ) : (
-                <div className="flex-1 flex flex-col items-center justify-center animate-in bg-muted/10 p-8 overflow-y-auto w-full h-full">
-                    <div className="relative mb-12 group">
-                        <div className="relative">
-                            <div className="w-40 h-40 bg-surface rounded-full shadow-elevation-2 flex items-center justify-center group-hover:scale-105 transition-all duration-500 ring-4 ring-surface">
-                                <MessageSquare className="w-20 h-20 text-primary" strokeWidth={1.5} />
-                            </div>
-                            <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-primary rounded-full shadow-lg flex items-center justify-center border-4 border-surface">
-                                <Send className="w-8 h-8 text-primary-foreground" />
+                    </>
+                ) : (
+                    /* Welcome State */
+                    <div className="flex-1 flex flex-col items-center justify-center bg-slate-50/30 p-8 overflow-y-auto">
+                        <div className="relative mb-12 group">
+                            <div className="relative">
+                                <div className="w-40 h-40 bg-white rounded-full shadow-sm flex items-center justify-center group-hover:scale-105 transition-all duration-500 ring-8 ring-white/50 border border-slate-100">
+                                    <MessageSquare className="w-20 h-20 text-blue-600" strokeWidth={1.5} />
+                                </div>
+                                <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-blue-600 rounded-2xl shadow-lg flex items-center justify-center border-4 border-white text-white">
+                                    <Send className="w-8 h-8" />
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="text-center space-y-4 max-w-2xl mb-16 px-4">
-                        <h2 className="text-4xl font-bold tracking-tight text-foreground">
-                            {t('chat.welcomeTitle')}
-                        </h2>
-                        <p className="text-lg text-muted-foreground leading-relaxed">
-                            {t('chat.welcomeDescription')}
-                        </p>
-                    </div>
+                        <div className="text-center space-y-4 max-w-2xl mb-16 px-4">
+                            <h2 className="text-4xl font-extrabold tracking-tight text-slate-900">
+                                {t('chat.welcomeTitle')}
+                            </h2>
+                            <p className="text-lg text-slate-500 font-medium leading-relaxed">
+                                {t('chat.welcomeDescription')}
+                            </p>
+                        </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-3xl px-4 animate-in delay-200">
-                        <div className="p-6 rounded-xl bg-surface shadow-sm border border-border hover:shadow-elevation-2 transition-all duration-300 group/tip flex flex-col items-center sm:items-start text-center sm:text-left">
-                            <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover/tip:scale-110 transition-transform duration-300">
-                                <Hash size={24} />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-3xl px-4">
+                            <div className="p-8 rounded-2xl bg-white shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300 group/tip flex flex-col items-center sm:items-start text-center sm:text-left">
+                                <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-5 group-hover/tip:scale-110 transition-transform duration-300">
+                                    <Hash size={24} />
+                                </div>
+                                <h3 className="font-extrabold text-slate-900 text-lg mb-2">{t('chat.welcome_tip_1_title')}</h3>
+                                <p className="text-sm text-slate-500 font-medium leading-relaxed">{t('chat.welcome_tip_1_desc')}</p>
                             </div>
-                            <h3 className="font-bold text-foreground text-lg mb-2">{t('chat.welcome_tip_1_title')}</h3>
-                            <p className="text-sm text-muted-foreground leading-relaxed">{t('chat.welcome_tip_1_desc')}</p>
-                        </div>
-                        <div className="p-6 rounded-xl bg-surface shadow-sm border border-border hover:shadow-elevation-2 transition-all duration-300 group/tip flex flex-col items-center sm:items-start text-center sm:text-left">
-                            <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover/tip:scale-110 transition-transform duration-300">
-                                <FileText size={24} />
+                            <div className="p-8 rounded-2xl bg-white shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300 group/tip flex flex-col items-center sm:items-start text-center sm:text-left">
+                                <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-5 group-hover/tip:scale-110 transition-transform duration-300">
+                                    <FileText size={24} />
+                                </div>
+                                <h3 className="font-extrabold text-slate-900 text-lg mb-2">{t('chat.welcome_tip_2_title')}</h3>
+                                <p className="text-sm text-slate-500 font-medium leading-relaxed">{t('chat.welcome_tip_2_desc')}</p>
                             </div>
-                            <h3 className="font-bold text-foreground text-lg mb-2">{t('chat.welcome_tip_2_title')}</h3>
-                            <p className="text-sm text-muted-foreground leading-relaxed">{t('chat.welcome_tip_2_desc')}</p>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
 
             <MuteModal
                 isOpen={isMuteModalOpen}
