@@ -66,13 +66,17 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         return Object.values(groups);
     };
 
-    const msgGroupClass = isFirstInGroup && isLastInGroup
-        ? 'rounded-lg'
-        : isFirstInGroup
-            ? 'rounded-t-lg rounded-b-sm'
-            : isLastInGroup
-                ? 'rounded-b-lg rounded-t-sm'
-                : 'rounded-sm';
+    const msgGroupClass = cn(
+        isFirstInGroup && isLastInGroup
+            ? 'rounded-2xl'
+            : isFirstInGroup
+                ? 'rounded-t-2xl rounded-b-md'
+                : isLastInGroup
+                    ? 'rounded-b-2xl rounded-t-md'
+                    : 'rounded-md',
+        isLastInGroup && isSelf && "rounded-br-none",
+        isLastInGroup && !isSelf && "rounded-bl-none"
+    );
 
     const contextOptions: ContextMenuOption[] = [
         {
@@ -211,6 +215,27 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                                     )}
                                 </div>
                             </div>
+
+                            {/* Message Bubble Tail */}
+                            {isLastInGroup && (
+                                isSelf ? (
+                                    <svg
+                                        className="absolute bottom-0 -right-[7px] w-[8px] h-[13px] text-blue-600 fill-current"
+                                        viewBox="0 0 8 13"
+                                        preserveAspectRatio="none"
+                                    >
+                                        <path d="M0 0 C3 0 8 8 8 13 H0 Z" />
+                                    </svg>
+                                ) : (
+                                    <svg
+                                        className="absolute bottom-0 -left-[7px] w-[8px] h-[13px] text-slate-100 fill-current"
+                                        viewBox="0 0 8 13"
+                                        preserveAspectRatio="none"
+                                    >
+                                        <path d="M8 0 C5 0 0 8 0 13 H8 Z" />
+                                    </svg>
+                                )
+                            )}
 
                             <div className="absolute top-0 left-full ml-2 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center gap-1">
                                 <button
