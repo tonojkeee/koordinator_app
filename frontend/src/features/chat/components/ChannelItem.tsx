@@ -67,25 +67,20 @@ export const ChannelItem: React.FC<ChannelItemProps> = ({
       <div
         onClick={handleClick}
         className={cn(
-          "group relative flex items-center px-2 py-1.5 rounded-md cursor-pointer transition-all duration-200 mx-1",
+          "flex items-center gap-3 px-3 py-2 mx-2 rounded-lg transition-all duration-200 group relative cursor-pointer",
           isActive
-            ? "bg-blue-50 text-blue-900"
-            : "hover:bg-slate-100/80 text-slate-600 hover:text-slate-900"
+            ? "bg-blue-50 shadow-sm ring-1 ring-blue-100 text-blue-900 font-semibold"
+            : "hover:bg-slate-100 text-slate-700"
         )}
       >
-        {/* Active Marker */}
-        {isActive && (
-          <div className="absolute left-0 top-1.5 bottom-1.5 w-0.5 bg-blue-600 rounded-full" />
-        )}
-
-        <div className="relative shrink-0 mr-2.5">
+        <div className="relative shrink-0">
           <Avatar
             src={channel.is_direct ? channel.other_user?.avatar_url : undefined}
             name={channel.display_name || channel.name}
             size="xs"
             className={cn(
               "transition-transform duration-200",
-              isActive ? "ring-1 ring-blue-200" : "ring-1 ring-slate-200"
+              isActive ? "text-blue-600 ring-1 ring-blue-200" : "text-slate-400 ring-1 ring-slate-200"
             )}
           />
           {channel.visibility === 'private' && !channel.is_direct && (
