@@ -3,10 +3,8 @@ import { Outlet } from 'react-router-dom';
 import ChannelSidebar from './ChannelSidebar';
 import { useNotificationsChannel } from '../../hooks/useNotificationsChannel';
 import { useUIStore } from '../../stores/useUIStore';
-import { useTranslation } from 'react-i18next';
 
 const ChatLayout: React.FC = () => {
-    const { t } = useTranslation();
     const setSecondaryNavContent = useUIStore(state => state.setSecondaryNavContent);
     const setActiveModule = useUIStore(state => state.setActiveModule);
 

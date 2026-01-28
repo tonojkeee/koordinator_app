@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { emailService, type EmailAccount, type EmailFolder, type EmailMessage, type EmailMessageList, type FolderStats } from './emailService';
 import { useUnreadStore } from '../../store/useUnreadStore';
 import EmailList from './components/EmailList';
@@ -48,7 +48,7 @@ const EmailPage: React.FC = () => {
         localStorage.setItem('email_favorites', JSON.stringify(favorites));
     }, [favorites]);
 
-    const systemFolders = [
+    const systemFolders = useMemo(() => [
         { id: 'inbox', name: t('email.inbox'), icon: Inbox, unread_count: stats?.unread || 0 },
         { id: 'sent', name: t('email.sent'), icon: Send, unread_count: 0 },
         { id: 'important', name: t('email.important'), icon: AlertCircle, unread_count: 0 },
@@ -56,7 +56,7 @@ const EmailPage: React.FC = () => {
         { id: 'archive', name: t('email.archived'), icon: Archive, unread_count: 0 },
         { id: 'spam', name: t('email.spam'), icon: ShieldAlert, unread_count: stats?.spam || 0 },
         { id: 'trash', name: t('email.trash'), icon: Trash2, unread_count: 0 }
-    ];
+    ], [t, stats]);
 
     const fetchFolders = useCallback(async () => {
         try {
@@ -137,7 +137,7 @@ const EmailPage: React.FC = () => {
         }
     };
 
-    const handleDeleteFolder = async (e: React.MouseEvent, id: number) => {
+    const handleDeleteFolder = useCallback(async (e: React.MouseEvent, id: number) => {
         e.stopPropagation();
         if (confirm(t('email.delete_folder_confirm'))) {
             try {
@@ -148,7 +148,7 @@ const EmailPage: React.FC = () => {
                 addToast({ type: 'error', title: t('email.toast_error_title'), message: t('email.toast_delete_folder_error') });
             }
         }
-    };
+    }, [t, fetchFolders, selectedFolder, addToast]);
 
     const handleReply = (email: EmailMessageList | EmailMessage) => {
         const replySubject = email.subject.toLowerCase().startsWith('re:') ? email.subject : `Re: ${email.subject}`;
@@ -188,14 +188,14 @@ const EmailPage: React.FC = () => {
         setIsComposerOpen(true);
     };
 
-    const toggleFavorite = (e: React.MouseEvent, folderId: string) => {
+    const toggleFavorite = useCallback((e: { stopPropagation: () => void }, folderId: string) => {
         e.stopPropagation();
         setFavorites(prev =>
             prev.includes(folderId)
                 ? prev.filter(id => id !== folderId)
                 : [...prev, folderId]
         );
-    };
+    }, []);
 
     const handleUndo = async () => {
         if (!lastAction) return;
@@ -216,7 +216,7 @@ const EmailPage: React.FC = () => {
         }
     };
 
-    const handleMarkAllRead = async () => {
+    const handleMarkAllRead = useCallback(async () => {
         try {
             await emailService.markAllAsRead();
             fetchStats();
@@ -224,9 +224,9 @@ const EmailPage: React.FC = () => {
         } catch {
             console.error("Failed to mark folder as read");
         }
-    };
+    }, [fetchStats, fetchEmails]);
 
-    const handleEmptyFolder = async (folderId: 'trash' | 'spam') => {
+    const handleEmptyFolder = useCallback(async (folderId: 'trash' | 'spam') => {
         if (confirm(t('email.confirm_empty_folder'))) {
             try {
                 await emailService.emptyFolder(folderId);
@@ -237,7 +237,7 @@ const EmailPage: React.FC = () => {
                 addToast({ type: 'error', title: t('common.error'), message: t('email.toast_error_title') });
             }
         }
-    };
+    }, [t, fetchStats, fetchEmails, addToast]);
 
     useEffect(() => {
         setActiveModule('email');
@@ -255,11 +255,22 @@ const EmailPage: React.FC = () => {
                 onMarkAllRead={handleMarkAllRead}
                 onEmptyFolder={handleEmptyFolder}
                 account={account}
-                stats={stats}
             />
         );
         return () => setSecondaryNavContent(null);
-    }, [setActiveModule, setSecondaryNavContent, systemFolders, customFolders, selectedFolder, favorites, account, stats, t]);
+    }, [
+        setActiveModule,
+        setSecondaryNavContent,
+        systemFolders,
+        customFolders,
+        selectedFolder,
+        favorites,
+        toggleFavorite,
+        handleDeleteFolder,
+        handleMarkAllRead,
+        handleEmptyFolder,
+        account
+    ]);
 
     return (
         <div className="flex flex-col h-full w-full bg-background overflow-hidden min-h-0">

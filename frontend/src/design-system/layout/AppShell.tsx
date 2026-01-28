@@ -11,6 +11,7 @@ import { useGlobalWebSocket } from '../../hooks/useGlobalWebSocket';
 import { useToast } from '../components/ToastContext';
 import api from '../../api/client';
 import type { Channel } from '../../types';
+import type { Task } from '../../features/tasks/types';
 import { useTranslation } from 'react-i18next';
 import { playNotificationSound } from '../../utils/sound';
 import DocumentViewer from '../../features/board/components/DocumentViewer';
@@ -19,6 +20,45 @@ import { sendSystemNotification } from '../../services/notificationService';
 interface AppShellProps {
   children: React.ReactNode;
   secondaryNav?: React.ReactNode;
+}
+
+interface WSMessageData {
+  id: number;
+  channel_id: number;
+  sender_id: number;
+  sender_name: string;
+  sender_full_name?: string | null;
+  sender_rank?: string | null;
+  content: string;
+  document_id?: number;
+  created_at: string;
+}
+
+interface WSEmailData {
+  id: number;
+  subject: string;
+  from_address: string;
+  received_at: string;
+}
+
+interface WSTaskData {
+  task_id: number;
+  title: string;
+  issuer_name?: string;
+  sender_name?: string;
+}
+
+interface WSMessageUpdatedData {
+  id: number;
+  channel_id: number;
+  content: string;
+}
+
+interface WSDocumentSharedData {
+  owner_name: string;
+  title: string;
+  channel_id: number;
+  document_id: number;
 }
 
 /**
@@ -85,7 +125,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children, secondaryNav: prop
   }, [location.pathname, clearDocUnread]);
 
   // Fetch received tasks for badge
-  const { data: tasks } = useQuery<unknown[]>({
+  const { data: tasks } = useQuery<Task[]>({
     queryKey: ['tasks', 'received'],
     queryFn: async () => {
       const res = await api.get('/tasks/received');
@@ -96,7 +136,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children, secondaryNav: prop
 
   useEffect(() => {
     if (Array.isArray(tasks)) {
-      const activeCount = (tasks as { status: string }[]).filter((t) =>
+      const activeCount = tasks.filter((t) =>
         t.status === 'in_progress' || t.status === 'overdue'
       ).length;
       setTasksUnread(activeCount);
@@ -151,7 +191,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children, secondaryNav: prop
     const msgData = data as {
       channel_id: number;
       is_mentioned?: boolean;
-      message?: any;
+      message?: WSMessageData;
     };
 
     const channelId = Number(msgData.channel_id);
@@ -204,18 +244,23 @@ export const AppShell: React.FC<AppShellProps> = ({ children, secondaryNav: prop
     }
 
     if (msgData.message) {
+      const message = msgData.message;
       queryClient.setQueryData<Channel[]>(['channels'], (old) => {
         if (!old) return old;
         return old.map(ch => {
           if (ch.id === channelId) {
-            const isSelf = msgData.message?.sender_id === user?.id;
+            const isSelf = message.sender_id === user?.id;
             const isViewing = currentChannelIdNum === channelId;
             return {
               ...ch,
               last_message: {
-                ...msgData.message,
-                id: msgData.message.id || 0,
-                content: (msgData.message.content || '').slice(0, 100)
+                id: message.id,
+                content: (message.content || '').slice(0, 100),
+                sender_id: message.sender_id,
+                sender_name: message.sender_name,
+                sender_full_name: message.sender_full_name,
+                sender_rank: message.sender_rank,
+                created_at: message.created_at
               },
               unread_count: (!isSelf && !isViewing) ? (ch.unread_count || 0) + 1 : ch.unread_count
             };
@@ -226,7 +271,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children, secondaryNav: prop
     }
   }, [addUnread, location.pathname, user, queryClient, addDocUnread, t, navigate, addToast]);
 
-  const onEmailReceived = useCallback((data: any) => {
+  const onEmailReceived = useCallback((data: WSEmailData) => {
     incrementEmailsUnread();
     window.dispatchEvent(new CustomEvent('new-email', { detail: data }));
     if (user?.notify_sound) playNotificationSound();
@@ -251,7 +296,12 @@ export const AppShell: React.FC<AppShellProps> = ({ children, secondaryNav: prop
   }, [user?.notify_sound, user?.notify_browser, t, addToast, navigate, incrementEmailsUnread]);
 
   const onChannelDeleted = useCallback((data: unknown) => {
-    const { channel_id, deleted_by, is_direct, channel_name } = data as { channel_id: number; deleted_by: any; is_direct: boolean; channel_name: string };
+    const { channel_id, deleted_by, is_direct, channel_name } = data as {
+      channel_id: number;
+      deleted_by: { full_name?: string; username?: string };
+      is_direct: boolean;
+      channel_name: string
+    };
     const currentChannelId = location.pathname.match(/\/chat\/(\d+)/)?.[1];
     queryClient.invalidateQueries({ queryKey: ['channels'] });
 
@@ -274,7 +324,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children, secondaryNav: prop
   }, [location.pathname, queryClient, navigate, addToast, t]);
 
   const onDocumentShared = useCallback((data: unknown) => {
-    const sharedData = data as any;
+    const sharedData = data as WSDocumentSharedData;
     queryClient.invalidateQueries({ queryKey: ['documents', 'received'] });
 
     addToast({
@@ -320,7 +370,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children, secondaryNav: prop
     });
   }, [queryClient]);
 
-  const onTaskAssigned = useCallback((data: any) => {
+  const onTaskAssigned = useCallback((data: WSTaskData) => {
     queryClient.invalidateQueries({ queryKey: ['tasks', 'received'] });
     if (user?.notify_sound) playNotificationSound();
     addToast({
@@ -332,7 +382,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children, secondaryNav: prop
     });
   }, [queryClient, user?.notify_sound, t, addToast, navigate]);
 
-  const onTaskReturned = useCallback((data: any) => {
+  const onTaskReturned = useCallback((data: WSTaskData) => {
     queryClient.invalidateQueries({ queryKey: ['tasks', 'received'] });
     if (user?.notify_sound) playNotificationSound();
     addToast({
@@ -344,7 +394,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children, secondaryNav: prop
     });
   }, [queryClient, user?.notify_sound, t, addToast, navigate]);
 
-  const onTaskSubmitted = useCallback((data: any) => {
+  const onTaskSubmitted = useCallback((data: WSTaskData) => {
     queryClient.invalidateQueries({ queryKey: ['tasks', 'issued'] });
     if (user?.notify_sound) playNotificationSound();
     addToast({
@@ -356,7 +406,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children, secondaryNav: prop
     });
   }, [queryClient, user?.notify_sound, t, addToast, navigate]);
 
-  const onTaskConfirmed = useCallback((data: any) => {
+  const onTaskConfirmed = useCallback((data: WSTaskData) => {
     queryClient.invalidateQueries({ queryKey: ['tasks', 'received'] });
     if (user?.notify_sound) playNotificationSound();
     addToast({
@@ -379,12 +429,13 @@ export const AppShell: React.FC<AppShellProps> = ({ children, secondaryNav: prop
     onTaskReturned,
     onTaskSubmitted,
     onTaskConfirmed,
-    onMessageUpdated: (data: any) => {
+    onMessageUpdated: (data: unknown) => {
+      const messageData = data as WSMessageUpdatedData;
       queryClient.setQueryData<Channel[]>(['channels'], (old) => {
         if (!old) return old;
         return old.map(ch => {
-          if (ch.id === data.channel_id && ch.last_message?.id === data.id) {
-            return { ...ch, last_message: { ...ch.last_message, content: data.content.slice(0, 100) } };
+          if (ch.id === messageData.channel_id && ch.last_message?.id === messageData.id) {
+            return { ...ch, last_message: { ...ch.last_message, content: messageData.content.slice(0, 100) } };
           }
           return ch;
         });
@@ -395,7 +446,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children, secondaryNav: prop
   // --- Electron & Notifications ---
   useEffect(() => {
     if (!window.electron) return;
-    return window.electron.onNotificationClicked((data: any) => {
+    return window.electron.onNotificationClicked((data: Record<string, unknown>) => {
       if (data.type === 'chat' && data.channel_id) navigate(`/chat/${data.channel_id}`);
       else if (data.type === 'task') navigate('/tasks');
       else if (data.type === 'email') navigate('/email');

@@ -1,8 +1,6 @@
 import React from 'react';
 import {
-  Inbox, Send, Archive, Trash2, Mail,
-  Folder, Star, AlertCircle, ShieldAlert,
-  Plus, Book, MailOpen, Pencil
+  Trash2, Folder, Star, Plus, Book, MailOpen, type LucideIcon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -11,22 +9,28 @@ import {
   type ContextMenuOption,
   SecondarySidebar
 } from '../../../design-system';
-import type { EmailAccount, EmailFolder, FolderStats } from '../emailService';
+import type { EmailAccount, EmailFolder } from '../emailService';
+
+interface SystemFolder {
+  id: string;
+  name: string;
+  icon: LucideIcon;
+  unread_count: number;
+}
 
 interface EmailSidebarProps {
-  systemFolders: any[];
+  systemFolders: SystemFolder[];
   customFolders: EmailFolder[];
   selectedFolder: string;
   onSelectFolder: (id: string) => void;
   favorites: string[];
-  onToggleFavorite: (e: React.MouseEvent, id: string) => void;
+  onToggleFavorite: (e: { stopPropagation: () => void }, id: string) => void;
   onOpenCreateFolder: () => void;
   onOpenAddressBook: () => void;
   onDeleteFolder: (e: React.MouseEvent, id: number) => void;
   onMarkAllRead: (folderId: string) => void;
   onEmptyFolder: (folderId: 'trash' | 'spam') => void;
   account: EmailAccount | null;
-  stats: FolderStats | null;
 }
 
 export const EmailSidebar: React.FC<EmailSidebarProps> = ({
@@ -41,8 +45,7 @@ export const EmailSidebar: React.FC<EmailSidebarProps> = ({
   onDeleteFolder,
   onMarkAllRead,
   onEmptyFolder,
-  account,
-  stats
+  account
 }) => {
   const { t } = useTranslation();
 
@@ -77,7 +80,7 @@ export const EmailSidebar: React.FC<EmailSidebarProps> = ({
                 {
                   label: isFav ? t('email.remove_from_favorites') : t('email.add_to_favorites'),
                   icon: Star,
-                  onClick: (e: any) => onToggleFavorite(e, folder.id)
+                  onClick: () => onToggleFavorite({ stopPropagation: () => {} }, folder.id)
                 }
               ];
 

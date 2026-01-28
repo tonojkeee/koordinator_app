@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   MessageSquare,
   Mail,
@@ -30,7 +30,7 @@ export const PrimarySidebar: React.FC = () => {
 
   const totalChatUnread = Object.values(unreadCounts).reduce((sum, count) => sum + count, 0);
 
-  const modules = [
+  const modules = useMemo(() => [
     {
       id: 'chat',
       label: t('sidebar.chats'),
@@ -78,7 +78,7 @@ export const PrimarySidebar: React.FC = () => {
       icon: <ShieldCheck size={24} />,
       path: '/zsspd'
     },
-  ];
+  ], [t, totalChatUnread, emailsUnreadCount, tasksUnreadCount, tasksReviewCount, unreadDocs.length]);
 
   const handleModuleClick = (id: string, path: string) => {
     setActiveModule(id);
@@ -98,7 +98,7 @@ export const PrimarySidebar: React.FC = () => {
     } else if (currentPath.startsWith('/help')) {
       setActiveModule('help');
     }
-  }, [location.pathname, setActiveModule]);
+  }, [location.pathname, setActiveModule, modules]);
 
   return (
     <aside className="flex flex-col items-center w-16 h-screen bg-surface-1 border-r border-border py-4 z-40 shrink-0">
