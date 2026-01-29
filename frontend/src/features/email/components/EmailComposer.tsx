@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { emailService, type SendEmailData } from '../emailService';
 import type { User } from '../../../types';
-import { X, Send, Paperclip, FileText, AlertCircle, Bold, Italic, List, Link, AlignLeft, Image, MoreHorizontal } from 'lucide-react';
+import { X, Send, Paperclip, FileText, AlertCircle, Bold, Italic, List, Link, AlignLeft, Image, Underline, Strikethrough, Quote, AlignCenter, AlignRight, Minus } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../../api/client';
 import { Modal, Button, cn } from '../../../design-system';
@@ -31,6 +31,7 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [allUsers, setAllUsers] = useState<User[]>([]);
 
+    const editorRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const suggestionsRef = useRef<HTMLDivElement>(null);
     const recipientInputRef = useRef<HTMLInputElement>(null);
@@ -44,6 +45,13 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
 
     const maxTotalSizeMb = settings?.email_max_total_attachment_size_mb ? parseInt(settings.email_max_total_attachment_size_mb) : 50;
     const maxTotalSizeBytes = maxTotalSizeMb * 1024 * 1024;
+
+    // Initialize editor content
+    useEffect(() => {
+        if (editorRef.current && initialBody) {
+            editorRef.current.innerHTML = initialBody;
+        }
+    }, []);
 
     // Initial load of address book for autocomplete
     useEffect(() => {
@@ -146,6 +154,23 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
 
     const totalSize = files.reduce((acc, f) => acc + f.size, 0);
 
+    const handleFormat = (command: string, value?: string) => {
+        document.execCommand(command, false, value);
+        if (editorRef.current) {
+            setBody(editorRef.current.innerHTML);
+        }
+    };
+
+    const handleLink = () => {
+        const url = prompt(t('email.compose.enter_link_url') || 'Enter URL:');
+        if (url) handleFormat('createLink', url);
+    };
+
+    const handleImage = () => {
+        const url = prompt(t('email.compose.enter_image_url') || 'Enter Image URL:');
+        if (url) handleFormat('insertImage', url);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (recipients.length === 0) {
@@ -155,12 +180,11 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
 
         setLoading(true);
         try {
-            // Send to ALL recipients (simple loop for now, or backend handles list)
-            // The service expects a single string for to_address, usually comma separated
             const emailData: SendEmailData = {
                 to_address: recipients.join(', '),
                 subject,
-                body_text: body,
+                body_text: editorRef.current?.innerText || '',
+                body_html: body,
                 attachments: files,
                 is_important: isImportant
             };
@@ -253,7 +277,7 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
             <form onSubmit={handleSubmit} className="flex flex-col h-full min-h-[500px]">
                 {/* Recipients */}
                 <div className="relative flex items-start border-b border-slate-100 py-3 group">
-                    <label className="text-xs font-medium text-slate-500 w-16 pt-1.5">{t('email.compose.recipients')}:</label>
+                    <label className="text-xs font-medium text-slate-500 w-24 pt-2">{t('email.compose.recipients')}:</label>
                     <div
                         className="flex-1 flex flex-wrap gap-1.5 items-center cursor-text"
                         onClick={() => recipientInputRef.current?.focus()}
@@ -306,7 +330,7 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
 
                 {/* Subject */}
                 <div className="flex items-center border-b border-slate-100 py-3">
-                    <label className="text-xs font-medium text-slate-500 w-16">{t('email.compose.subject')}:</label>
+                    <label className="text-xs font-medium text-slate-500 w-24">{t('email.compose.subject')}:</label>
                     <input
                         placeholder={t('email.compose.subject_placeholder')}
                         value={subject}
@@ -317,25 +341,140 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
 
                 {/* Formatting Toolbar */}
                 <div className="flex items-center gap-0.5 py-2 border-b border-slate-50 bg-slate-50/30 px-1">
-                    <button type="button" className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all" title="Bold"><Bold size={16} /></button>
-                    <button type="button" className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all" title="Italic"><Italic size={16} /></button>
+                    {/* Group 1: Text Styling */}
+                    <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => handleFormat('bold')}
+                        className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+                        title="Bold"
+                    >
+                        <Bold size={16} />
+                    </button>
+                    <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => handleFormat('italic')}
+                        className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+                        title="Italic"
+                    >
+                        <Italic size={16} />
+                    </button>
+                    <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => handleFormat('underline')}
+                        className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+                        title="Underline"
+                    >
+                        <Underline size={16} />
+                    </button>
+                    <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => handleFormat('strikeThrough')}
+                        className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+                        title="Strikethrough"
+                    >
+                        <Strikethrough size={16} />
+                    </button>
+
                     <div className="w-px h-4 bg-slate-200 mx-1" />
-                    <button type="button" className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all" title="Bullet List"><List size={16} /></button>
-                    <button type="button" className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all" title="Align Left"><AlignLeft size={16} /></button>
+
+                    {/* Group 2: Lists & Blocks */}
+                    <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => handleFormat('insertUnorderedList')}
+                        className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+                        title="Bullet List"
+                    >
+                        <List size={16} />
+                    </button>
+                    <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => handleFormat('formatBlock', 'blockquote')}
+                        className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+                        title="Quote"
+                    >
+                        <Quote size={16} />
+                    </button>
+                    <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => handleFormat('insertHorizontalRule')}
+                        className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+                        title="Horizontal Rule"
+                    >
+                        <Minus size={16} />
+                    </button>
+
                     <div className="w-px h-4 bg-slate-200 mx-1" />
-                    <button type="button" className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all" title="Insert Link"><Link size={16} /></button>
-                    <button type="button" className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all" title="Insert Image"><Image size={16} /></button>
-                    <div className="flex-1" />
-                    <button type="button" className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all" title="More Options"><MoreHorizontal size={16} /></button>
+
+                    {/* Group 3: Alignment */}
+                    <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => handleFormat('justifyLeft')}
+                        className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+                        title="Align Left"
+                    >
+                        <AlignLeft size={16} />
+                    </button>
+                    <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => handleFormat('justifyCenter')}
+                        className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+                        title="Align Center"
+                    >
+                        <AlignCenter size={16} />
+                    </button>
+                    <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => handleFormat('justifyRight')}
+                        className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+                        title="Align Right"
+                    >
+                        <AlignRight size={16} />
+                    </button>
+
+                    <div className="w-px h-4 bg-slate-200 mx-1" />
+
+                    {/* Group 4: Links & Media */}
+                    <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={handleLink}
+                        className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+                        title="Insert Link"
+                    >
+                        <Link size={16} />
+                    </button>
+                    <button
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={handleImage}
+                        className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+                        title="Insert Image"
+                    >
+                        <Image size={16} />
+                    </button>
                 </div>
 
                 {/* Body */}
-                <div className="flex-1 py-4">
-                    <textarea
-                        placeholder={t('email.compose.message_placeholder')}
-                        value={body}
-                        onChange={e => setBody(e.target.value)}
-                        className="w-full h-full min-h-[300px] bg-transparent outline-none text-base text-slate-800 placeholder:text-slate-300 resize-none leading-relaxed custom-scrollbar"
+                <div
+                    className="flex-1 py-4 overflow-hidden flex flex-col cursor-text"
+                    onClick={() => editorRef.current?.focus()}
+                >
+                    <div
+                        ref={editorRef}
+                        contentEditable="true"
+                        onInput={(e) => setBody(e.currentTarget.innerHTML)}
+                        className="flex-1 w-full min-h-[300px] bg-transparent outline-none text-base text-slate-800 empty:before:content-[attr(data-placeholder)] empty:before:text-slate-300 leading-relaxed custom-scrollbar overflow-y-auto px-1"
+                        data-placeholder={t('email.compose.message_placeholder')}
                     />
                 </div>
 
