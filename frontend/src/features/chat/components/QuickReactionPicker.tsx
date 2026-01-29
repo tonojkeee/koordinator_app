@@ -1,56 +1,89 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Plus } from 'lucide-react';
+import { getEmojiUrl } from '../../../utils/emoji';
 
 // Popular quick reactions
 const QUICK_REACTIONS = ['❤️', '🔥', '👍', '👎', '😁', '👏', '😮', '😢'];
 
 interface QuickReactionPickerProps {
     messageId: number;
+    triggerRef: React.RefObject<HTMLElement>;
     onReaction: (messageId: number, emoji: string) => void;
     onOpenFullPicker?: () => void;
     onClose: () => void;
-    position?: 'top' | 'bottom';
     className?: string;
 }
 
 export const QuickReactionPicker: React.FC<QuickReactionPickerProps> = ({
     messageId,
+    triggerRef,
     onReaction,
     onOpenFullPicker,
     onClose,
-    position = 'top',
     className = ''
 }) => {
-    const pickerRef = useRef<HTMLDivElement>(null);
-    const isInitialClick = useRef(true);
+    const [position, setPosition] = useState<{ top: number; left: number; placement: 'top' | 'bottom' } | null>(null);
+    const pickerElementRef = useRef<HTMLDivElement | null>(null);
+    const isPositionCalculated = useRef(false);
 
-    // Close on click outside (with delay to prevent immediate close on open click)
-    useEffect(() => {
-        // Reset initial click flag
-        isInitialClick.current = true;
+    // Calculate position using ref callback - runs once when picker mounts
+    const setPickerRef = useCallback((node: HTMLDivElement | null) => {
+        pickerElementRef.current = node;
 
-        const handleClickOutside = (event: MouseEvent) => {
-            // Skip the first click (which is the button that opened the picker)
-            if (isInitialClick.current) {
-                isInitialClick.current = false;
-                return;
+        if (node && triggerRef.current && !isPositionCalculated.current) {
+            isPositionCalculated.current = true;
+
+            const triggerRect = triggerRef.current.getBoundingClientRect();
+            const pickerRect = node.getBoundingClientRect();
+
+            const spaceAbove = triggerRect.top;
+            const spaceBelow = window.innerHeight - triggerRect.bottom;
+            const pickerHeight = pickerRect.height + 10; // + offset
+
+            let top = 0;
+            let placement: 'top' | 'bottom' = 'top';
+
+            if (spaceAbove > pickerHeight) {
+                top = triggerRect.top - pickerHeight;
+                placement = 'top';
+            } else if (spaceBelow > pickerHeight) {
+                top = triggerRect.bottom + 10;
+                placement = 'bottom';
+            } else {
+                // Fallback: Stick to top edge if no space
+                top = 10;
             }
 
-            if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
+            // Center horizontally
+            let left = triggerRect.left + (triggerRect.width / 2) - (pickerRect.width / 2);
+
+            // Constrain to viewport width
+            left = Math.max(10, Math.min(left, window.innerWidth - pickerRect.width - 10));
+
+            setPosition({ top, left, placement });
+        }
+    }, [triggerRef]);
+
+    // Close on click outside (document level)
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                pickerElementRef.current &&
+                !pickerElementRef.current.contains(event.target as Node) &&
+                triggerRef.current &&
+                !triggerRef.current.contains(event.target as Node)
+            ) {
                 onClose();
             }
         };
 
-        // Add listener after a short delay to avoid catching the opening click
-        const timeoutId = setTimeout(() => {
-            document.addEventListener('mousedown', handleClickOutside);
-        }, 500);
-
+        // Use capture phase to ensure we catch clicks before other handlers might stop propagation
+        document.addEventListener('mousedown', handleClickOutside, true);
         return () => {
-            clearTimeout(timeoutId);
-            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('mousedown', handleClickOutside, true);
         };
-    }, [onClose]);
+    }, [onClose, triggerRef]);
 
     // Close on Escape key
     useEffect(() => {
@@ -59,7 +92,6 @@ export const QuickReactionPicker: React.FC<QuickReactionPickerProps> = ({
                 onClose();
             }
         };
-
         document.addEventListener('keydown', handleEscape);
         return () => document.removeEventListener('keydown', handleEscape);
     }, [onClose]);
@@ -71,29 +103,49 @@ export const QuickReactionPicker: React.FC<QuickReactionPickerProps> = ({
         onClose();
     };
 
-    return (
+    if (!position) {
+        // Render invisibly first to measure dimensions
+        return createPortal(
+            <div ref={setPickerRef} className="fixed top-[-9999px] left-[-9999px] opacity-0 pointer-events-none">
+                <div className="flex items-center gap-1 px-2 py-1.5 bg-white rounded-md shadow-lg border border-[#E0E0E0]">
+                    {QUICK_REACTIONS.map((emoji) => (
+                        <div key={emoji} className="w-8 h-8" />
+                    ))}
+                    {onOpenFullPicker && <div className="w-8 h-8" />}
+                </div>
+            </div>,
+            document.body
+        );
+    }
+
+    return createPortal(
         <div
-            ref={pickerRef}
+            ref={setPickerRef}
+            style={{
+                top: position.top,
+                left: position.left,
+                position: 'fixed',
+                zIndex: 9999
+            }}
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
             onContextMenu={(e) => e.stopPropagation()}
-            className={`
-                absolute z-[100] 
-                ${position === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'}
-                left-1/2 -translate-x-1/2
-                animate-in zoom-in-95 fade-in duration-150
-                ${className}
-            `}
+            className={`animate-in zoom-in-95 fade-in duration-150 ${className}`}
         >
             <div className="flex items-center gap-1 px-2 py-1.5 bg-white rounded-md shadow-lg border border-[#E0E0E0]">
                 {QUICK_REACTIONS.map((emoji) => (
                     <button
                         key={emoji}
                         onClick={(e) => handleReaction(e, emoji)}
-                        className="w-7 h-7 flex items-center justify-center rounded hover:bg-[#F5F5F5] hover:scale-110 active:scale-95 transition-all duration-150"
+                        className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#F5F5F5] hover:scale-110 active:scale-95 transition-all duration-150"
                         title={emoji}
                     >
-                        <span className="text-lg leading-none select-none">{emoji}</span>
+                        <img
+                            src={getEmojiUrl(emoji)}
+                            alt={emoji}
+                            className="w-6 h-6 object-contain pointer-events-none select-none"
+                            loading="eager"
+                        />
                     </button>
                 ))}
 
@@ -107,28 +159,18 @@ export const QuickReactionPicker: React.FC<QuickReactionPickerProps> = ({
                                 onOpenFullPicker();
                                 onClose();
                             }}
-                            className="w-7 h-7 flex items-center justify-center rounded text-[#616161] hover:text-[#5B5FC7] hover:bg-[#F0F0F0] transition-all"
+                            className="w-8 h-8 flex items-center justify-center rounded text-[#616161] hover:text-[#5B5FC7] hover:bg-[#F0F0F0] transition-all"
                             title="More reactions"
                         >
-                            <Plus size={16} strokeWidth={1.5} />
+                            <Plus size={18} strokeWidth={1.5} />
                         </button>
                     </>
                 )}
             </div>
 
-            {/* Arrow pointer */}
-            <div
-                className={`
-                    absolute left-1/2 -translate-x-1/2 w-0 h-0
-                    border-l-[6px] border-l-transparent
-                    border-r-[6px] border-r-transparent
-                    ${position === 'top'
-                        ? 'top-full border-t-[6px] border-t-white drop-shadow-sm'
-                        : 'bottom-full border-b-[6px] border-b-white drop-shadow-sm'
-                    }
-                `}
-            />
-        </div>
+            {/* Arrow pointer - optional, might be tricky with fixed positioning, simplified to just shadow for now or remove */}
+        </div>,
+        document.body
     );
 };
 

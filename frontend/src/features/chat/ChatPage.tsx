@@ -329,7 +329,7 @@ const MessageInput = React.forwardRef<MessageInputHandle, MessageInputProps>((
                         <div className="shadow-xl rounded-2xl overflow-hidden border border-slate-100 bg-white">
                             <EmojiPicker
                                 onEmojiClick={onEmojiClick}
-                                theme={Theme.AUTO}
+                                theme={Theme.LIGHT}
                                 emojiStyle={EmojiStyle.GOOGLE}
                                 getEmojiUrl={(unified) => `/emoji/${unified}.png`}
                                 lazyLoadEmojis={true}

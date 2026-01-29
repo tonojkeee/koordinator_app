@@ -350,6 +350,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
                         </button>
                         {!isSelf && (
                         <button
+                            data-reaction-trigger={message.id}
                             onMouseDown={(e) => {
                                 e.preventDefault(); e.stopPropagation();
                                 setQuickReactionMessageId(quickReactionMessageId === message.id ? null : message.id);
@@ -397,18 +398,18 @@ const MessageItem: React.FC<MessageItemProps> = ({
 
                 {/* Quick Reaction Picker Popover */}
                 {quickReactionMessageId === message.id && (
-                    <div className="absolute right-0 top-full mt-2 z-[100]">
-                        <QuickReactionPicker
-                            messageId={message.id}
-                            onReaction={onReact}
-                            onOpenFullPicker={() => {
-                                setQuickReactionMessageId(null);
-                                openFullEmojiPicker(message.id);
-                            }}
-                            onClose={() => setQuickReactionMessageId(null)}
-                            position="bottom"
-                        />
-                    </div>
+                    <QuickReactionPicker
+                        messageId={message.id}
+                        triggerRef={
+                            { current: document.querySelector(`[data-reaction-trigger="${message.id}"]`) } as React.RefObject<HTMLElement>
+                        }
+                        onReaction={onReact}
+                        onOpenFullPicker={() => {
+                            setQuickReactionMessageId(null);
+                            openFullEmojiPicker(message.id);
+                        }}
+                        onClose={() => setQuickReactionMessageId(null)}
+                    />
                 )}
 
                 {/* Reactions Display (Hanging below bubble) */}
