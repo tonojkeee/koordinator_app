@@ -60,7 +60,7 @@ const EmailList: React.FC<EmailListProps> = ({
     onForward,
     onPrint
 }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
 
     const allSelected = emails.length > 0 && emails.every(e => selectedIds.has(e.id));
     const someSelected = emails.some(e => selectedIds.has(e.id)) && !allSelected;
@@ -120,7 +120,8 @@ const EmailList: React.FC<EmailListProps> = ({
         const isoStr = email.received_at.includes('Z') ? email.received_at : `${email.received_at}Z`;
         const dateObj = new Date(isoStr);
 
-        const dateStr = dateObj.toLocaleDateString('ru-RU', {
+        const currentLocale = i18n.language === 'ru' ? 'ru-RU' : 'en-US';
+        const dateStr = dateObj.toLocaleDateString(currentLocale, {
             day: 'numeric',
             month: 'short',
         });

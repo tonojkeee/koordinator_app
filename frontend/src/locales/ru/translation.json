@@ -67,7 +67,10 @@
         "info": "Информация",
         "system": "Система",
         "public": "Публично",
-        "someone": "Кто-то"
+        "someone": "Кто-то",
+        "messages_one": "сообщение",
+        "messages_few": "сообщения",
+        "messages_many": "сообщений"
     },
     "auth": {
         "signInTitle": "Вход в ГИС «КООРДИНАТОР»",
@@ -1114,7 +1117,21 @@
             "sending": "Отправка...",
             "at_least_one_recipient": "Укажите хотя бы одного получателя",
             "send_error": "Ошибка при отправке письма",
-            "size_limit": "Общий размер файлов не должен превышать {{size}} МБ."
+            "size_limit": "Общий размер файлов не должен превышать {{size}} МБ.",
+            "tool_bold": "Жирный",
+            "tool_italic": "Курсив",
+            "tool_underline": "Подчеркнутый",
+            "tool_strikethrough": "Зачеркнутый",
+            "tool_list": "Маркированный список",
+            "tool_quote": "Цитата",
+            "tool_horizontal_rule": "Горизонтальная линия",
+            "tool_align_left": "По левому краю",
+            "tool_align_center": "По центру",
+            "tool_align_right": "По правому краю",
+            "tool_link": "Вставить ссылку",
+            "tool_image": "Вставить изображение",
+            "enter_link_url": "Введите URL ссылки:",
+            "enter_image_url": "Введите URL изображения:"
         },
         "address_book_modal": {
             "title": "Адресная книга",
@@ -1156,6 +1173,7 @@
         "list_header_correspondent": "Корреспондент",
         "list_header_date": "Дата",
         "list_no_subject": "(Без темы)",
+        "list_empty_folder_desc": "В этой папке пока нет писем",
         "list_tooltip_mark_unread": "Отметить как непрочитанное",
         "list_tooltip_mark_read": "Отметить как прочитанное",
         "details_delete_confirm": "Удалить письмо?",
@@ -1188,7 +1206,7 @@
         "bulk_delete_confirm": "Удалить {{count}} выбранных сообщений?",
         "read": "Прочитано",
         "unread": "Непрочитано",
-        "archive": "В архив",
+        "move_to_archive": "В архив",
         "quick_reply_to": "Быстрый ответ для",
         "expand_to_full_composer": "Развернуть во весь экран",
         "quick_reply_placeholder": "Напишите быстрый ответ...",
@@ -1203,7 +1221,14 @@
             "last_7_days": "Последние 7 дней",
             "last_month": "В этом месяце",
             "older": "Ранее"
-        }
+        },
+        "system_folders": "Системные папки",
+        "welcome_title": "Электронная почта",
+        "welcome_description": "Выберите письмо из списка слева, чтобы прочитать его содержимое, или создайте новое письмо.",
+        "welcome_tip_shortcuts_title": "Горячие клавиши",
+        "welcome_tip_shortcuts_desc": "Используйте 'J' и 'K' для навигации, 'C' для создания письма и '/' для поиска сообщений.",
+        "welcome_tip_address_book_title": "Адресная книга",
+        "welcome_tip_address_book_desc": "Быстро находите коллег и проверяйте их статус онлайн перед отправкой важного сообщения."
     },
     "connection": {
         "error_title": "Не удалось подключиться к серверу",

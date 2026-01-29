@@ -162,12 +162,20 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
     };
 
     const handleLink = () => {
+<<<<<<< HEAD
         const url = prompt(t('email.compose.enter_link_url') || 'Enter URL:');
+=======
+        const url = prompt(t('email.compose.enter_link_url') || 'Enter URL:', 'https://');
+>>>>>>> 8bec10f (feat: Enhance email composer UI/UX, internationalize rich text editor tooltips, and add locale-aware date formatting to the email list.)
         if (url) handleFormat('createLink', url);
     };
 
     const handleImage = () => {
+<<<<<<< HEAD
         const url = prompt(t('email.compose.enter_image_url') || 'Enter Image URL:');
+=======
+        const url = prompt(t('email.compose.enter_image_url') || 'Enter Image URL:', 'https://');
+>>>>>>> 8bec10f (feat: Enhance email composer UI/UX, internationalize rich text editor tooltips, and add locale-aware date formatting to the email list.)
         if (url) handleFormat('insertImage', url);
     };
 
@@ -276,10 +284,20 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
         >
             <form onSubmit={handleSubmit} className="flex flex-col h-full min-h-[500px]">
                 {/* Recipients */}
+<<<<<<< HEAD
                 <div className="relative flex items-start border-b border-slate-100 py-3 group">
                     <label className="text-xs font-medium text-slate-500 w-24 pt-2">{t('email.compose.recipients')}:</label>
+=======
+                <div className="relative flex items-start border-b border-slate-100 min-h-[52px] group transition-colors focus-within:bg-slate-50/50">
+                    <label
+                        className="text-xs font-bold text-slate-500 w-24 shrink-0 pt-3.5 pl-1 select-none cursor-pointer"
+                        onClick={() => recipientInputRef.current?.focus()}
+                    >
+                        {t('email.compose.recipients')}
+                    </label>
+>>>>>>> 8bec10f (feat: Enhance email composer UI/UX, internationalize rich text editor tooltips, and add locale-aware date formatting to the email list.)
                     <div
-                        className="flex-1 flex flex-wrap gap-1.5 items-center cursor-text"
+                        className="flex-1 flex flex-wrap gap-2 items-center cursor-text py-2.5"
                         onClick={() => recipientInputRef.current?.focus()}
                     >
                         {recipients.map(email => (
@@ -329,9 +347,20 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                 </div>
 
                 {/* Subject */}
+<<<<<<< HEAD
                 <div className="flex items-center border-b border-slate-100 py-3">
                     <label className="text-xs font-medium text-slate-500 w-24">{t('email.compose.subject')}:</label>
+=======
+                <div className="flex items-center border-b border-slate-100 h-[52px] transition-colors focus-within:bg-slate-50/50">
+                    <label
+                        className="text-xs font-bold text-slate-500 w-24 shrink-0 pl-1 select-none cursor-pointer"
+                        htmlFor="subject-input"
+                    >
+                        {t('email.compose.subject')}
+                    </label>
+>>>>>>> 8bec10f (feat: Enhance email composer UI/UX, internationalize rich text editor tooltips, and add locale-aware date formatting to the email list.)
                     <input
+                        id="subject-input"
                         placeholder={t('email.compose.subject_placeholder')}
                         value={subject}
                         onChange={e => setSubject(e.target.value)}
@@ -347,7 +376,11 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => handleFormat('bold')}
                         className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+<<<<<<< HEAD
                         title="Bold"
+=======
+                        title={t('email.compose.tool_bold')}
+>>>>>>> 8bec10f (feat: Enhance email composer UI/UX, internationalize rich text editor tooltips, and add locale-aware date formatting to the email list.)
                     >
                         <Bold size={16} />
                     </button>
@@ -356,7 +389,11 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => handleFormat('italic')}
                         className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+<<<<<<< HEAD
                         title="Italic"
+=======
+                        title={t('email.compose.tool_italic')}
+>>>>>>> 8bec10f (feat: Enhance email composer UI/UX, internationalize rich text editor tooltips, and add locale-aware date formatting to the email list.)
                     >
                         <Italic size={16} />
                     </button>
@@ -365,7 +402,11 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => handleFormat('underline')}
                         className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+<<<<<<< HEAD
                         title="Underline"
+=======
+                        title={t('email.compose.tool_underline')}
+>>>>>>> 8bec10f (feat: Enhance email composer UI/UX, internationalize rich text editor tooltips, and add locale-aware date formatting to the email list.)
                     >
                         <Underline size={16} />
                     </button>
@@ -374,7 +415,11 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => handleFormat('strikeThrough')}
                         className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+<<<<<<< HEAD
                         title="Strikethrough"
+=======
+                        title={t('email.compose.tool_strikethrough')}
+>>>>>>> 8bec10f (feat: Enhance email composer UI/UX, internationalize rich text editor tooltips, and add locale-aware date formatting to the email list.)
                     >
                         <Strikethrough size={16} />
                     </button>
@@ -387,7 +432,11 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => handleFormat('insertUnorderedList')}
                         className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+<<<<<<< HEAD
                         title="Bullet List"
+=======
+                        title={t('email.compose.tool_list')}
+>>>>>>> 8bec10f (feat: Enhance email composer UI/UX, internationalize rich text editor tooltips, and add locale-aware date formatting to the email list.)
                     >
                         <List size={16} />
                     </button>
@@ -396,7 +445,11 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => handleFormat('formatBlock', 'blockquote')}
                         className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+<<<<<<< HEAD
                         title="Quote"
+=======
+                        title={t('email.compose.tool_quote')}
+>>>>>>> 8bec10f (feat: Enhance email composer UI/UX, internationalize rich text editor tooltips, and add locale-aware date formatting to the email list.)
                     >
                         <Quote size={16} />
                     </button>
@@ -405,7 +458,11 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => handleFormat('insertHorizontalRule')}
                         className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+<<<<<<< HEAD
                         title="Horizontal Rule"
+=======
+                        title={t('email.compose.tool_horizontal_rule')}
+>>>>>>> 8bec10f (feat: Enhance email composer UI/UX, internationalize rich text editor tooltips, and add locale-aware date formatting to the email list.)
                     >
                         <Minus size={16} />
                     </button>
@@ -418,7 +475,11 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => handleFormat('justifyLeft')}
                         className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+<<<<<<< HEAD
                         title="Align Left"
+=======
+                        title={t('email.compose.tool_align_left')}
+>>>>>>> 8bec10f (feat: Enhance email composer UI/UX, internationalize rich text editor tooltips, and add locale-aware date formatting to the email list.)
                     >
                         <AlignLeft size={16} />
                     </button>
@@ -427,7 +488,11 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => handleFormat('justifyCenter')}
                         className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+<<<<<<< HEAD
                         title="Align Center"
+=======
+                        title={t('email.compose.tool_align_center')}
+>>>>>>> 8bec10f (feat: Enhance email composer UI/UX, internationalize rich text editor tooltips, and add locale-aware date formatting to the email list.)
                     >
                         <AlignCenter size={16} />
                     </button>
@@ -436,7 +501,11 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => handleFormat('justifyRight')}
                         className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+<<<<<<< HEAD
                         title="Align Right"
+=======
+                        title={t('email.compose.tool_align_right')}
+>>>>>>> 8bec10f (feat: Enhance email composer UI/UX, internationalize rich text editor tooltips, and add locale-aware date formatting to the email list.)
                     >
                         <AlignRight size={16} />
                     </button>
@@ -449,7 +518,11 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={handleLink}
                         className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+<<<<<<< HEAD
                         title="Insert Link"
+=======
+                        title={t('email.compose.tool_link')}
+>>>>>>> 8bec10f (feat: Enhance email composer UI/UX, internationalize rich text editor tooltips, and add locale-aware date formatting to the email list.)
                     >
                         <Link size={16} />
                     </button>
@@ -458,7 +531,11 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={handleImage}
                         className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all"
+<<<<<<< HEAD
                         title="Insert Image"
+=======
+                        title={t('email.compose.tool_image')}
+>>>>>>> 8bec10f (feat: Enhance email composer UI/UX, internationalize rich text editor tooltips, and add locale-aware date formatting to the email list.)
                     >
                         <Image size={16} />
                     </button>
