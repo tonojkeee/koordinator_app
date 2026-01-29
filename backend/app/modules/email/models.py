@@ -115,6 +115,19 @@ class EmailMessage(Base):
     def has_attachments(self) -> bool:
         return len(self.attachments) > 0
 
+    @property
+    def snippet(self) -> str:
+        """Returns a brief snippet of the email body text."""
+        if not self.body_text:
+            if self.body_html:
+                # Basic HTML tag removal if body_text is missing
+                import re
+                clean = re.compile('<.*?>')
+                text = re.sub(clean, '', self.body_html)
+                return text[:200].strip()
+            return ""
+        return self.body_text[:200].strip()
+
 
 class EmailAttachment(Base):
     __tablename__ = "email_attachments"

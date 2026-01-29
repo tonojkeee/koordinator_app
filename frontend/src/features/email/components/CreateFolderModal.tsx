@@ -27,7 +27,7 @@ const CreateFolderModal: React.FC<CreateFolderModalProps> = ({ isOpen, onClose, 
             title={t('email.create_folder_modal.title')}
             size="sm"
             footer={
-                <>
+                <div className="flex items-center gap-3 w-full">
                     <Button
                         variant="secondary"
                         onClick={onClose}
@@ -40,15 +40,16 @@ const CreateFolderModal: React.FC<CreateFolderModalProps> = ({ isOpen, onClose, 
                         onClick={handleSubmit}
                         disabled={!folderName.trim()}
                         fullWidth
+                        className="bg-cyan-700 hover:bg-cyan-800 text-white shadow-md shadow-cyan-500/20"
                     >
                         {t('email.create_folder_modal.create')}
                     </Button>
-                </>
+                </div>
             }
         >
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 py-2">
                 <div>
-                    <label className="block text-[10px] font-bold text-[#888888] uppercase tracking-widest mb-2 px-1">
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">
                         {t('email.create_folder_modal.name_placeholder')}
                     </label>
                     <input
@@ -56,7 +57,7 @@ const CreateFolderModal: React.FC<CreateFolderModalProps> = ({ isOpen, onClose, 
                         value={folderName}
                         onChange={(e) => setFolderName(e.target.value)}
                         placeholder={t('email.create_folder_modal.name_placeholder')}
-                        className="w-full h-11 px-4 bg-[#F5F5F5] border border-[#E0E0E0] rounded-md text-sm font-semibold focus:outline-none focus:bg-white focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7] transition-all placeholder:text-[#888888]"
+                        className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:bg-white focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/5 transition-all placeholder:text-slate-400 placeholder:font-medium"
                         autoFocus
                     />
                 </div>

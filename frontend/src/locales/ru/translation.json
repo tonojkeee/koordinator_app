@@ -1181,7 +1181,29 @@
         "details_tooltip_download": "Скачать",
         "empty_folder": "Очистить папку",
         "confirm_empty_folder": "Вы уверены, что хотите безвозвратно удалить все сообщения в этой папке?",
-        "rename_folder": "Переименовать папку"
+        "rename_folder": "Переименовать папку",
+        "selected": "Выбрано",
+        "selected_count": "Выбрано: {{count}}",
+        "list_selection_help": "Выберите сообщения для действий",
+        "bulk_delete_confirm": "Удалить {{count}} выбранных сообщений?",
+        "read": "Прочитано",
+        "unread": "Непрочитано",
+        "archive": "В архив",
+        "quick_reply_to": "Быстрый ответ для",
+        "expand_to_full_composer": "Развернуть во весь экран",
+        "quick_reply_placeholder": "Напишите быстрый ответ...",
+        "sent_success": "Письмо отправлено",
+        "sent_success_desc": "Ваш ответ успешно доставлен получателю",
+        "send_error": "Ошибка отправки",
+        "send_error_desc": "Не удалось отправить быстрый ответ",
+        "send": "Отправить",
+        "groups": {
+            "today": "Сегодня",
+            "yesterday": "Вчера",
+            "last_7_days": "Последние 7 дней",
+            "last_month": "В этом месяце",
+            "older": "Ранее"
+        }
     },
     "connection": {
         "error_title": "Не удалось подключиться к серверу",

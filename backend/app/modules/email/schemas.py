@@ -98,6 +98,7 @@ class EmailMessageList(BaseModel):
     is_spam: bool
     received_at: datetime
     has_attachments: bool
+    snippet: Optional[str] = ""
 
     class Config:
         from_attributes = True

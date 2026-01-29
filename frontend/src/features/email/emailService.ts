@@ -51,6 +51,7 @@ export interface EmailMessageList {
     is_archived: boolean;
     is_spam: boolean;
     has_attachments: boolean;
+    snippet?: string;
     folder_id?: number | null;
 }
 

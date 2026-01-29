@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { emailService, type SendEmailData } from '../emailService';
 import type { User } from '../../../types';
-import { X, Send, Paperclip, FileText, Trash2, AlertCircle } from 'lucide-react';
+import { X, Send, Paperclip, FileText, AlertCircle, Bold, Italic, List, Link, AlignLeft, Image, MoreHorizontal } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../../api/client';
-import { Modal, Input, Button, TextArea } from '../../../design-system';
+import { Modal, Button, cn } from '../../../design-system';
 import { useTranslation } from 'react-i18next';
 
 interface EmailComposerProps {
@@ -65,7 +65,7 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                 recipientInputRef.current.focus();
             }
         }, 150); // Slightly longer delay than Modal's focus management
-        
+
         return () => clearTimeout(timer);
     }, []);
 
@@ -180,12 +180,16 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
         <Modal
             isOpen={true}
             onClose={onClose}
-            title={t('email.compose.title')}
+            title={
+                <div className="flex items-center gap-2">
+                    <span className="text-lg font-semibold text-slate-900">{t('email.compose.title')}</span>
+                </div>
+            }
             size="xl"
             closeOnOverlayClick={false}
             footer={
-                <>
-                    <div className="flex items-center gap-4 flex-1">
+                <div className="flex items-center justify-between w-full border-t border-slate-100 pt-4 mt-2">
+                    <div className="flex items-center gap-2">
                         <input
                             type="file"
                             multiple
@@ -196,105 +200,103 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                         <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className="flex items-center gap-2 group p-1.5 rounded-md hover:bg-[#F5F5F5] transition-all"
+                            className="p-2 text-slate-500 hover:text-cyan-600 hover:bg-cyan-50 rounded-lg transition-all"
                             title={t('email.compose.attach')}
                         >
-                            <div className="text-[#616161] group-hover:text-[#5B5FC7] transition-colors">
-                                <Paperclip size={18} className="group-hover:rotate-45 transition-transform duration-300" strokeWidth={1.5} />
-                            </div>
-                            <span className="text-xs font-semibold text-[#616161] group-hover:text-[#5B5FC7] transition-colors">{t('email.compose.attach')}</span>
+                            <Paperclip size={20} />
                         </button>
-
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-[#888888] border-l border-[#E0E0E0] pl-4">
-                            {files.length > 0 && (
-                                <span className={totalSize > maxTotalSizeBytes ? "text-[#C4314B]" : "text-[#616161]"}>
-                                    {(totalSize / (1024 * 1024)).toFixed(2)} MB / {maxTotalSizeMb} MB
-                                </span>
-                            )}
-                        </div>
 
                         <button
                             type="button"
                             onClick={() => setIsImportant(!isImportant)}
-                            className={`flex items-center gap-2 px-2 py-1.5 rounded-md transition-all ${isImportant ? 'bg-[#C4314B]/10 text-[#C4314B]' : 'text-[#616161] hover:bg-[#F5F5F5]'}`}
+                            className={cn(
+                                "p-2 rounded-lg transition-all",
+                                isImportant ? 'bg-rose-50 text-rose-600' : 'text-slate-500 hover:bg-slate-50'
+                            )}
                             title={t('email.important')}
                         >
-                            <AlertCircle size={16} fill={isImportant ? "currentColor" : "none"} strokeWidth={1.5} />
-                            <span className="text-xs font-bold uppercase tracking-wide">{t('email.important')}</span>
+                            <AlertCircle size={20} fill={isImportant ? "currentColor" : "none"} />
                         </button>
+
+                        {files.length > 0 && (
+                            <div className="ml-2 text-xs font-medium text-slate-400">
+                                <span className={totalSize > maxTotalSizeBytes ? "text-rose-600" : ""}>
+                                    {(totalSize / (1024 * 1024)).toFixed(1)}MB / {maxTotalSizeMb}MB
+                                </span>
+                            </div>
+                        )}
                     </div>
 
-                    <Button
-                        variant="secondary"
-                        onClick={onClose}
-                    >
-                        {t('email.compose.cancel')}
-                    </Button>
-                    <Button
-                        variant="primary"
-                        type="submit"
-                        disabled={loading || recipients.length === 0}
-                        loading={loading}
-                        icon={<Send size={16} />}
-                        iconPosition="right"
-                        onClick={handleSubmit}
-                    >
-                        {loading ? t('email.compose.sending') : t('email.compose.send')}
-                    </Button>
-                </>
+                    <div className="flex items-center gap-3">
+                        <Button
+                            variant="ghost"
+                            onClick={onClose}
+                            className="text-slate-500 hover:text-slate-700"
+                        >
+                            {t('email.compose.cancel')}
+                        </Button>
+                        <Button
+                            variant="primary"
+                            type="submit"
+                            disabled={loading || recipients.length === 0}
+                            loading={loading}
+                            onClick={handleSubmit}
+                            className="bg-cyan-700 hover:bg-cyan-800 text-white px-6 py-2 rounded-lg shadow-sm font-medium flex items-center gap-2"
+                        >
+                            <span>{loading ? t('email.compose.sending') : t('email.compose.send')}</span>
+                            {!loading && <Send size={16} />}
+                        </Button>
+                    </div>
+                </div>
             }
         >
-            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            <form onSubmit={handleSubmit} className="flex flex-col h-full min-h-[500px]">
                 {/* Recipients */}
-                <div className="relative group z-20">
-                    <label className="text-[10px] uppercase font-bold text-[#616161] mb-1.5 block tracking-widest ml-1">{t('email.compose.recipients')}</label>
+                <div className="relative flex items-start border-b border-slate-100 py-3 group">
+                    <label className="text-xs font-medium text-slate-500 w-16 pt-1.5">{t('email.compose.recipients')}:</label>
                     <div
-                        className="w-full min-h-[48px] px-3 py-2 bg-white border border-[#E0E0E0] focus-within:border-[#5B5FC7] rounded-md transition-all flex flex-wrap gap-2 items-center cursor-text"
+                        className="flex-1 flex flex-wrap gap-1.5 items-center cursor-text"
                         onClick={() => recipientInputRef.current?.focus()}
                     >
                         {recipients.map(email => (
-                            <div key={email} className="flex items-center gap-1.5 bg-[#EEF2FF] text-[#5B5FC7] px-2 py-1 rounded text-xs font-medium border border-[#E0E7FF] animate-in fade-in zoom-in duration-200">
-                                <span className="truncate max-w-[200px]">{email}</span>
+                            <div key={email} className="flex items-center gap-1 bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-sm border border-slate-200/50 transition-colors hover:border-slate-300">
+                                <span className="max-w-[200px] truncate">{email}</span>
                                 <button
                                     type="button"
                                     onClick={(e) => { e.stopPropagation(); removeRecipient(email); }}
-                                    className="text-[#5B5FC7] hover:text-[#4f52b2] rounded-full hover:bg-[#E0E7FF] p-0.5 transition-colors"
+                                    className="text-slate-400 hover:text-rose-500 transition-colors"
                                 >
-                                    <X size={12} strokeWidth={2} />
+                                    <X size={14} />
                                 </button>
                             </div>
                         ))}
                         <input
                             ref={recipientInputRef}
-                            id="recipient-input"
                             type="text"
-                            className="flex-1 bg-transparent min-w-[150px] outline-none text-sm text-[#242424] placeholder-[#888888] h-7"
+                            className="flex-1 bg-transparent min-w-[120px] outline-none text-sm text-slate-900 placeholder:text-slate-400 py-1"
                             placeholder={recipients.length === 0 ? t('email.compose.recipients_placeholder') : ""}
                             value={recipientInput}
                             onChange={e => setRecipientInput(e.target.value)}
                             onKeyDown={handleKeyDown}
-                            tabIndex={0}
                         />
                     </div>
 
                     {/* Suggestions Dropdown */}
                     {showSuggestions && suggestions.length > 0 && (
-                        <div ref={suggestionsRef} className="absolute left-0 right-0 top-full mt-1 bg-white rounded-md shadow-lg border border-[#E0E0E0] overflow-hidden z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                        <div ref={suggestionsRef} className="absolute left-16 right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden z-50 p-1 animate-in fade-in slide-in-from-top-2 duration-200">
                             {suggestions.map((user) => (
                                 <button
                                     key={user.id}
                                     type="button"
                                     onClick={() => user.email && addRecipient(user.email)}
-                                    className="w-full text-left px-4 py-2 hover:bg-[#F5F5F5] flex items-center justify-between group/item transition-colors border-b border-[#F5F5F5] last:border-0"
+                                    className="w-full text-left px-3 py-2 hover:bg-slate-50 rounded-lg flex items-center gap-3 transition-colors group/item"
                                 >
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded bg-[#F0F0F0] text-[#616161] group-hover/item:bg-[#EEF2FF] group-hover/item:text-[#5B5FC7] flex items-center justify-center font-bold text-xs transition-colors">
-                                            {user.full_name?.[0] || user.username[0]}
-                                        </div>
-                                        <div>
-                                            <div className="text-sm font-semibold text-[#242424] group-hover/item:text-[#5B5FC7] transition-colors">{user.full_name || user.username}</div>
-                                            <div className="text-[10px] text-[#888888] uppercase tracking-wide group-hover/item:text-[#5B5FC7]/70 transition-colors">{user.email}</div>
-                                        </div>
+                                    <div className="w-8 h-8 rounded-full bg-cyan-50 text-cyan-700 flex items-center justify-center font-bold text-xs border border-cyan-100/50">
+                                        {user.full_name?.[0] || user.username[0]}
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-semibold text-slate-900 group-hover/item:text-cyan-700 transition-colors">{user.full_name || user.username}</span>
+                                        <span className="text-xs text-slate-500">{user.email}</span>
                                     </div>
                                 </button>
                             ))}
@@ -303,44 +305,58 @@ const EmailComposer: React.FC<EmailComposerProps> = ({ onClose, onSent, initialT
                 </div>
 
                 {/* Subject */}
-                <Input
-                    label={t('email.compose.subject')}
-                    placeholder={t('email.compose.subject_placeholder')}
-                    value={subject}
-                    onChange={e => setSubject(e.target.value)}
-                    fullWidth
-                    tabIndex={0}
-                />
+                <div className="flex items-center border-b border-slate-100 py-3">
+                    <label className="text-xs font-medium text-slate-500 w-16">{t('email.compose.subject')}:</label>
+                    <input
+                        placeholder={t('email.compose.subject_placeholder')}
+                        value={subject}
+                        onChange={e => setSubject(e.target.value)}
+                        className="flex-1 bg-transparent outline-none text-sm text-slate-900 placeholder:text-slate-400 py-1 font-medium"
+                    />
+                </div>
+
+                {/* Formatting Toolbar */}
+                <div className="flex items-center gap-0.5 py-2 border-b border-slate-50 bg-slate-50/30 px-1">
+                    <button type="button" className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all" title="Bold"><Bold size={16} /></button>
+                    <button type="button" className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all" title="Italic"><Italic size={16} /></button>
+                    <div className="w-px h-4 bg-slate-200 mx-1" />
+                    <button type="button" className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all" title="Bullet List"><List size={16} /></button>
+                    <button type="button" className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all" title="Align Left"><AlignLeft size={16} /></button>
+                    <div className="w-px h-4 bg-slate-200 mx-1" />
+                    <button type="button" className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all" title="Insert Link"><Link size={16} /></button>
+                    <button type="button" className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all" title="Insert Image"><Image size={16} /></button>
+                    <div className="flex-1" />
+                    <button type="button" className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded transition-all" title="More Options"><MoreHorizontal size={16} /></button>
+                </div>
 
                 {/* Body */}
-                <TextArea
-                    label={t('email.compose.message')}
-                    placeholder={t('email.compose.message_placeholder')}
-                    value={body}
-                    onChange={e => setBody(e.target.value)}
-                    rows={12}
-                    fullWidth
-                    tabIndex={0}
-                />
+                <div className="flex-1 py-4">
+                    <textarea
+                        placeholder={t('email.compose.message_placeholder')}
+                        value={body}
+                        onChange={e => setBody(e.target.value)}
+                        className="w-full h-full min-h-[300px] bg-transparent outline-none text-base text-slate-800 placeholder:text-slate-300 resize-none leading-relaxed custom-scrollbar"
+                    />
+                </div>
 
                 {/* Files List */}
                 {files.length > 0 && (
-                    <div className="flex flex-wrap gap-2 pt-2 border-t border-[#E0E0E0]">
+                    <div className="flex flex-wrap gap-2 py-4 border-t border-slate-100">
                         {files.map((file, i) => (
-                            <div key={i} className="flex items-center gap-2 bg-white pl-3 pr-2 py-2 rounded border border-[#E0E0E0] shadow-sm hover:border-[#5B5FC7]/50 transition-all duration-200 group animate-in fade-in slide-in-from-bottom duration-200" style={{ animationDelay: `${i * 50}ms` }}>
-                                <div className="w-7 h-7 rounded bg-[#F0F0F0] text-[#616161] flex items-center justify-center">
-                                    <FileText size={14} strokeWidth={1.5} />
+                            <div key={i} className="flex items-center gap-2 bg-slate-50 pl-2 pr-1 py-1.5 rounded-lg border border-slate-200 group transition-all hover:bg-white hover:border-cyan-200 hover:shadow-sm">
+                                <div className="w-7 h-7 rounded bg-white text-slate-400 flex items-center justify-center border border-slate-100 group-hover:text-cyan-600 transition-colors">
+                                    <FileText size={14} />
                                 </div>
-                                <div className="flex flex-col">
-                                    <span className="text-xs font-semibold text-[#242424] truncate max-w-[150px]">{file.name}</span>
-                                    <span className="text-[9px] font-medium text-[#888888] uppercase tracking-tight">{(file.size / 1024).toFixed(0)} {t('common.kb')}</span>
+                                <div className="flex flex-col min-w-0">
+                                    <span className="text-xs font-medium text-slate-900 truncate max-w-[120px]">{file.name}</span>
+                                    <span className="text-[10px] text-slate-400">{(file.size / 1024).toFixed(0)} KB</span>
                                 </div>
                                 <button
                                     type="button"
                                     onClick={() => removeFile(i)}
-                                    className="p-1 text-[#BDBDBD] hover:text-[#C4314B] hover:bg-[#C4314B]/10 rounded transition-colors ml-1"
+                                    className="p-1 text-slate-400 hover:text-rose-500 transition-colors ml-1"
                                 >
-                                    <Trash2 size={14} />
+                                    <X size={14} />
                                 </button>
                             </div>
                         ))}
