@@ -124,7 +124,7 @@ const ParticipantsPanel: React.FC<ParticipantsPanelProps> = ({ channelId, onMent
     if (isLoading) {
         return (
             <div className={cn("flex flex-col items-center justify-center h-full animate-in fade-in duration-500", className)}>
-                <Loader2 className="animate-spin text-blue-500 mb-4" size={24} />
+                <Loader2 className="animate-spin text-cyan-500 mb-4" size={24} />
                 <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">{t('common.loading')}</p>
             </div>
         );
@@ -174,14 +174,14 @@ const ParticipantsPanel: React.FC<ParticipantsPanelProps> = ({ channelId, onMent
                     <Crown size={12} className="text-amber-500 shrink-0" fill="currentColor" />
                 )}
                 {member.role === 'admin' && !member.is_owner && (
-                    <Shield size={12} className="text-blue-500 shrink-0" fill="currentColor" />
+                    <Shield size={12} className="text-cyan-500 shrink-0" fill="currentColor" />
                 )}
 
                 {member.id !== user?.id && (
                     <button
                         onClick={(e) => handleMessage(e, member.id)}
                         disabled={createDmMutation.isPending}
-                        className="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-all opacity-0 group-hover:opacity-100"
+                        className="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 rounded transition-all opacity-0 group-hover:opacity-100"
                         title={t('chat.sendMessage')}
                     >
                         <MessageSquare size={12} />
@@ -210,7 +210,7 @@ const ParticipantsPanel: React.FC<ParticipantsPanelProps> = ({ channelId, onMent
                         placeholder={t('common.search')}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full h-8 pl-8 pr-3 bg-slate-50 border border-slate-200 rounded-md text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/10 transition-all placeholder:text-slate-400"
+                        className="w-full h-8 pl-8 pr-3 bg-slate-50 border border-slate-200 rounded-md text-xs font-medium text-slate-900 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 transition-all placeholder:text-slate-400"
                     />
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
                 </div>

@@ -85,7 +85,7 @@ export const MessageGroupCard: React.FC<MessageGroupCardProps> = ({
                 )}>
                     <span className={cn(
                         "font-bold text-sm truncate",
-                        isSelf ? 'text-blue-600' : 'text-slate-700'
+                        isSelf ? 'text-cyan-600' : 'text-slate-700'
                     )}>
                         {isSelf
                             ? t('chat.you')
@@ -100,13 +100,13 @@ export const MessageGroupCard: React.FC<MessageGroupCardProps> = ({
                     )}
 
                     {((isSelf && currentUser?.role === 'admin') || (!isSelf && role === 'admin')) && (
-                        <div className="text-blue-500" title={t('admin.roleAdmin')}>
+                        <div className="text-cyan-500" title={t('admin.roleAdmin')}>
                             <Crown size={12} fill="currentColor" />
                         </div>
                     )}
 
                     <span className="text-xs text-slate-400 tabular-nums">
-                         {new Date(group.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(group.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                 </div>
 
@@ -238,7 +238,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
     const bubbleClass = cn(
         "relative px-4 py-3 shadow-sm transition-all duration-200",
         isSelf
-            ? "bg-blue-500 text-white rounded-2xl rounded-tr-sm"
+            ? "bg-cyan-600 text-white rounded-2xl rounded-tr-sm"
             : "bg-slate-100 text-slate-800 rounded-2xl rounded-tl-sm",
         // Stacking radius adjustments
         !isFirst && isSelf && "rounded-tr-2xl", // Restore top-right for non-first self
@@ -257,30 +257,30 @@ const MessageItem: React.FC<MessageItemProps> = ({
             )}
             {...(message.document_id ? { 'data-doc-id': message.document_id } : {})}
         >
-             <ContextMenu options={contextOptions} className="w-full">
+            <ContextMenu options={contextOptions} className="w-full">
                 <div className={bubbleClass}>
 
                     {/* Parent Message (Reply Context) */}
                     {message.parent && (
-                         <div
+                        <div
                             className={cn(
                                 "flex items-center gap-2 mb-2 px-2 py-1 rounded bg-black/5 cursor-pointer transition-opacity opacity-80 hover:opacity-100",
-                                isSelf ? "text-blue-50" : "text-slate-600"
+                                isSelf ? "text-cyan-50" : "text-slate-600"
                             )}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 const el = document.getElementById(`message-${message.parent!.id}`);
                                 if (el) {
                                     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                    el.classList.add('ring-2', 'ring-blue-400/50');
-                                    setTimeout(() => el.classList.remove('ring-2', 'ring-blue-400/50'), 1500);
+                                    el.classList.add('ring-2', 'ring-cyan-400/50');
+                                    setTimeout(() => el.classList.remove('ring-2', 'ring-cyan-400/50'), 1500);
                                 }
                             }}
-                         >
-                            <div className={cn("w-1 h-3 rounded-full", isSelf ? "bg-white/40" : "bg-blue-500/40")} />
+                        >
+                            <div className={cn("w-1 h-3 rounded-full", isSelf ? "bg-white/40" : "bg-cyan-500/40")} />
                             <span className="text-xs font-bold">{message.parent.username}</span>
                             <span className="text-xs truncate max-w-[150px]">{renderMessageContent(message.parent.content, false)}</span>
-                         </div>
+                        </div>
                     )}
 
                     <div className="flex flex-col gap-1">
@@ -322,8 +322,8 @@ const MessageItem: React.FC<MessageItemProps> = ({
                                     fontSize: typeof currentUser?.preferences?.font_size === 'number'
                                         ? `${currentUser.preferences.font_size}px`
                                         : currentUser?.preferences?.font_size === 'small' ? '13px'
-                                        : currentUser?.preferences?.font_size === 'large' ? '17px'
-                                        : '15px'
+                                            : currentUser?.preferences?.font_size === 'large' ? '17px'
+                                                : '15px'
                                 }}
                             >
                                 {renderMessageContent(message.content, isSelf, message.invitation_id)}
@@ -341,34 +341,34 @@ const MessageItem: React.FC<MessageItemProps> = ({
                         "opacity-0 group-hover/message:opacity-100 transition-opacity absolute top-1/2 -translate-y-1/2 bg-white shadow-sm border border-slate-200 rounded-lg flex items-center p-0.5 gap-0.5 z-20",
                         isSelf ? "right-full mr-2" : "left-full ml-2"
                     )}>
-                            <button
+                        <button
                             onClick={(e) => { e.stopPropagation(); onReply(message); }}
-                            className="p-1.5 hover:bg-slate-50 rounded text-slate-400 hover:text-blue-600 transition-colors"
+                            className="p-1.5 hover:bg-slate-50 rounded text-slate-400 hover:text-cyan-600 transition-colors"
                             title={t('chat.reply')}
                         >
                             <MessageSquare size={14} />
                         </button>
                         {!isSelf && (
-                        <button
-                            data-reaction-trigger={message.id}
-                            onMouseDown={(e) => {
-                                e.preventDefault(); e.stopPropagation();
-                                setQuickReactionMessageId(quickReactionMessageId === message.id ? null : message.id);
-                            }}
-                            className={cn(
-                                "p-1.5 hover:bg-slate-50 rounded transition-colors",
-                                quickReactionMessageId === message.id ? "text-blue-600 bg-blue-50" : "text-slate-400 hover:text-blue-600"
-                            )}
-                            title={t('chat.reactions.add')}
-                        >
-                            <Smile size={14} />
-                        </button>
-                    )}
-                            {(message.user_id === currentUser?.id || currentUser?.role === 'admin') && (
+                            <button
+                                data-reaction-trigger={message.id}
+                                onMouseDown={(e) => {
+                                    e.preventDefault(); e.stopPropagation();
+                                    setQuickReactionMessageId(quickReactionMessageId === message.id ? null : message.id);
+                                }}
+                                className={cn(
+                                    "p-1.5 hover:bg-slate-50 rounded transition-colors",
+                                    quickReactionMessageId === message.id ? "text-cyan-600 bg-cyan-50" : "text-slate-400 hover:text-cyan-600"
+                                )}
+                                title={t('chat.reactions.add')}
+                            >
+                                <Smile size={14} />
+                            </button>
+                        )}
+                        {(message.user_id === currentUser?.id || currentUser?.role === 'admin') && (
                             <>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onEdit(message); }}
-                                    className="p-1.5 hover:bg-slate-50 rounded text-slate-400 hover:text-blue-600 transition-colors"
+                                    className="p-1.5 hover:bg-slate-50 rounded text-slate-400 hover:text-cyan-600 transition-colors"
                                     title={t('common.edit')}
                                 >
                                     <Pencil size={14} />
@@ -387,7 +387,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
                     {/* Read Receipt (Inside or outside? Reference puts it inside or just below) */}
                     {isSelf && (
                         <div className="absolute bottom-1 right-2 text-white/70">
-                                {message.id <= (othersReadId || 0) ? (
+                            {message.id <= (othersReadId || 0) ? (
                                 <CheckCheck size={12} className="text-white" />
                             ) : (
                                 <Check size={12} />
@@ -425,7 +425,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
                                 className={cn(
                                     "flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-medium transition-all border shadow-sm",
                                     group.hasMine
-                                        ? 'bg-blue-50 border-blue-200 text-blue-600'
+                                        ? 'bg-cyan-50 border-cyan-200 text-cyan-600'
                                         : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
                                 )}
                                 title={group.users.join(', ')}

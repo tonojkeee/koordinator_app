@@ -200,9 +200,9 @@ const MessageInput = React.forwardRef<MessageInputHandle, MessageInputProps>((
                     <div className={`absolute bottom-full left-0 mb-2 z-50 pointer-events-none ${animations.slideIn}`}>
                         <div className="px-3 py-1.5 bg-white/90 backdrop-blur-md rounded-lg shadow-sm border border-slate-100 flex items-center space-x-2">
                             <div className="flex space-x-1">
-                                <div className="w-1 h-1 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                                <div className="w-1 h-1 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                                <div className="w-1 h-1 bg-blue-500 rounded-full animate-bounce" />
+                                <div className="w-1 h-1 bg-cyan-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                                <div className="w-1 h-1 bg-cyan-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                                <div className="w-1 h-1 bg-cyan-500 rounded-full animate-bounce" />
                             </div>
                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                                 {(Object.values(typingUsers) as { name: string }[]).map(u => u.name).join(', ')} {t('chat.typing')}
@@ -211,13 +211,13 @@ const MessageInput = React.forwardRef<MessageInputHandle, MessageInputProps>((
                     </div>
                 )}
 
-                <div className="relative flex flex-col bg-slate-50 border border-slate-200/60 rounded-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-blue-500/10 focus-within:border-blue-500/30 overflow-hidden">
+                <div className="relative flex flex-col bg-slate-50 border border-slate-200/60 rounded-xl transition-all duration-300 focus-within:ring-2 focus-within:ring-cyan-500/10 focus-within:border-cyan-500/30 overflow-hidden">
                     {editingMessage && (
-                        <div className={`bg-blue-50/50 px-4 py-2 border-b border-blue-100 flex items-center justify-between ${animations.slideIn}`}>
+                        <div className={`bg-cyan-50/50 px-4 py-2 border-b border-cyan-100 flex items-center justify-between ${animations.slideIn}`}>
                             <div className="flex items-center space-x-3 overflow-hidden flex-1 min-w-0">
-                                <Pencil size={14} className="text-blue-600 shrink-0" />
+                                <Pencil size={14} className="text-cyan-600 shrink-0" />
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest leading-none mb-0.5">
+                                    <p className="text-[9px] font-black text-cyan-600 uppercase tracking-widest leading-none mb-0.5">
                                         {t('chat.editing_message')}
                                     </p>
                                     <p className="text-xs text-slate-600 truncate font-bold">
@@ -237,11 +237,11 @@ const MessageInput = React.forwardRef<MessageInputHandle, MessageInputProps>((
                         </div>
                     )}
                     {activeThread && !editingMessage && (
-                        <div className={`bg-blue-50/50 px-4 py-2 border-b border-blue-100 flex items-center justify-between ${animations.slideIn}`}>
+                        <div className={`bg-cyan-50/50 px-4 py-2 border-b border-cyan-100 flex items-center justify-between ${animations.slideIn}`}>
                             <div className="flex items-center space-x-3 overflow-hidden flex-1 min-w-0">
-                                <div className="w-0.5 h-6 bg-blue-500 rounded-full shrink-0" />
+                                <div className="w-0.5 h-6 bg-cyan-500 rounded-full shrink-0" />
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest leading-none mb-0.5">
+                                    <p className="text-[9px] font-black text-cyan-600 uppercase tracking-widest leading-none mb-0.5">
                                         {t('chat.replying_to')} {activeThread.username}
                                     </p>
                                     <p className="text-xs text-slate-600 truncate font-bold">
@@ -304,7 +304,7 @@ const MessageInput = React.forwardRef<MessageInputHandle, MessageInputProps>((
                                     setShowEmojiPicker(!showEmojiPicker);
                                 }}
                                 icon={<Smile size={20} />}
-                                className={cn("w-9 h-9 rounded-lg transition-all", showEmojiPicker ? 'text-blue-600 bg-blue-50' : 'text-slate-400 hover:text-blue-600')}
+                                className={cn("w-9 h-9 rounded-lg transition-all", showEmojiPicker ? 'text-cyan-600 bg-cyan-50' : 'text-slate-400 hover:text-cyan-600')}
                             />
 
                             <Button
@@ -316,7 +316,7 @@ const MessageInput = React.forwardRef<MessageInputHandle, MessageInputProps>((
                                 className={cn(
                                     "w-9 h-9 rounded-lg transition-all flex items-center justify-center p-0",
                                     inputMessage.trim() && isConnected
-                                        ? 'bg-blue-600 text-white shadow-sm hover:scale-105 active:scale-95'
+                                        ? 'bg-cyan-600 text-white shadow-sm hover:scale-105 active:scale-95'
                                         : 'bg-slate-200 text-slate-400 opacity-50'
                                 )}
                             />
@@ -399,8 +399,8 @@ const ChatPage: React.FC = () => {
             const element = document.querySelector(`[data-message-id="${messageId}"]`);
             if (element) {
                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                element.classList.add('bg-blue-50');
-                setTimeout(() => element.classList.remove('bg-blue-50'), 2000);
+                element.classList.add('bg-cyan-50');
+                setTimeout(() => element.classList.remove('bg-cyan-50'), 2000);
             }
         }
     };
@@ -1185,7 +1185,7 @@ const ChatPage: React.FC = () => {
     const getHeaderIcon = () => {
         if (channel?.is_direct && channel.other_user) {
             return (
-                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100/50">
+                <div className="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center border border-cyan-100/50">
                     <span className="text-xs font-bold uppercase">
                         {channel.other_user.full_name
                             ? channel.other_user.full_name.split(' ').map((n: string) => n[0]).join('')
@@ -1201,7 +1201,7 @@ const ChatPage: React.FC = () => {
             </div>
         );
         return (
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100/50">
+            <div className="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center border border-cyan-100/50">
                 <Hash size={20} />
             </div>
         );
@@ -1244,9 +1244,9 @@ const ChatPage: React.FC = () => {
             onDrop={handleDrop}
         >
             {isDragging && (
-                <div className="absolute inset-0 z-[100] bg-blue-600/10 backdrop-blur-[2px] border-4 border-dashed border-blue-500/50 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
+                <div className="absolute inset-0 z-[100] bg-cyan-600/10 backdrop-blur-[2px] border-4 border-dashed border-cyan-500/50 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
                     <div className="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center space-y-4 border border-slate-200">
-                        <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center animate-bounce">
+                        <div className="w-16 h-16 bg-cyan-50 text-cyan-600 rounded-2xl flex items-center justify-center animate-bounce">
                             <Plus size={32} />
                         </div>
                         <div className="text-center">
@@ -1278,7 +1278,7 @@ const ChatPage: React.FC = () => {
                             <div className="flex items-center gap-1.5">
                                 <button
                                     onClick={() => setIsSearchModalOpen(true)}
-                                    className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-95"
+                                    className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-cyan-600 hover:bg-cyan-50 rounded-xl transition-all active:scale-95"
                                     title={t('common.search')}
                                 >
                                     <Search size={20} strokeWidth={2.2} />
@@ -1286,7 +1286,7 @@ const ChatPage: React.FC = () => {
 
                                 {!channel?.is_system && (
                                     <button
-                                        className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-95"
+                                        className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-cyan-600 hover:bg-cyan-50 rounded-xl transition-all active:scale-95"
                                         title={t('chat.call')}
                                     >
                                         <Phone size={20} strokeWidth={2.2} />
@@ -1295,7 +1295,7 @@ const ChatPage: React.FC = () => {
 
                                 {channel?.visibility === 'private' && channel?.is_member && !channel?.is_system && (
                                     <button
-                                        className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-95"
+                                        className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-cyan-600 hover:bg-cyan-50 rounded-xl transition-all active:scale-95"
                                         title={t('chat.invite')}
                                     >
                                         <UserPlus size={20} strokeWidth={2.2} />
@@ -1308,7 +1308,7 @@ const ChatPage: React.FC = () => {
                                         "w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95",
                                         isMuted
                                             ? 'text-red-500 bg-red-50 hover:bg-red-100'
-                                            : 'text-slate-500 hover:text-blue-600 hover:bg-blue-50'
+                                            : 'text-slate-500 hover:text-cyan-600 hover:bg-cyan-50'
                                     )}
                                     title={isMuted ? t('chat.notifications.unmute') : t('chat.notifications.mute')}
                                 >
@@ -1318,7 +1318,7 @@ const ChatPage: React.FC = () => {
                                 {!channel?.is_system && (
                                     <button
                                         onClick={handleExportChat}
-                                        className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-95"
+                                        className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-cyan-600 hover:bg-cyan-50 rounded-xl transition-all active:scale-95"
                                         title={t('chat.export_history')}
                                     >
                                         <Download size={20} strokeWidth={2.2} />
@@ -1333,8 +1333,8 @@ const ChatPage: React.FC = () => {
                                         className={cn(
                                             "w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 border",
                                             showParticipants
-                                                ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
-                                                : 'bg-white text-slate-500 border-slate-200 hover:border-blue-200 hover:text-blue-600'
+                                                ? 'bg-cyan-600 text-white border-cyan-600 shadow-md shadow-cyan-500/20'
+                                                : 'bg-white text-slate-500 border-slate-200 hover:border-cyan-200 hover:text-cyan-600'
                                         )}
                                         title={t('chat.participants')}
                                     >
@@ -1343,7 +1343,7 @@ const ChatPage: React.FC = () => {
                                 )}
 
                                 <button
-                                    className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-95"
+                                    className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-cyan-600 hover:bg-cyan-50 rounded-xl transition-all active:scale-95"
                                     title={t('common.info')}
                                 >
                                     <Info size={20} strokeWidth={2.2} />
@@ -1373,7 +1373,7 @@ const ChatPage: React.FC = () => {
                                 >
                                     {isFetchingNextPage && (
                                         <div className="flex justify-center py-2 absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-white to-transparent">
-                                            <div className="w-5 h-5 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+                                            <div className="w-5 h-5 border-2 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
                                         </div>
                                     )}
 
@@ -1434,13 +1434,13 @@ const ChatPage: React.FC = () => {
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="p-8 flex items-center justify-center bg-blue-50/30 border-t border-blue-100/50">
+                                        <div className="p-8 flex items-center justify-center bg-cyan-50/30 border-t border-cyan-100/50">
                                             <div className="text-center">
                                                 <p className="text-slate-600 mb-4 font-bold text-lg">{t('chat.preview_mode_message')}</p>
                                                 <Button
                                                     onClick={() => joinChannelMutation.mutate()}
                                                     disabled={joinChannelMutation.isPending}
-                                                    className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 px-8 py-3 rounded-xl text-base font-bold transition-all hover:scale-105 active:scale-95"
+                                                    className="bg-cyan-600 hover:bg-cyan-700 text-white shadow-lg shadow-cyan-500/20 px-8 py-3 rounded-xl text-base font-bold transition-all hover:scale-105 active:scale-95"
                                                 >
                                                     {joinChannelMutation.isPending ? t('common.loading') : t('chat.join_channel')}
                                                 </Button>
@@ -1468,9 +1468,9 @@ const ChatPage: React.FC = () => {
                         <div className="relative mb-12 group">
                             <div className="relative">
                                 <div className="w-40 h-40 bg-white rounded-full shadow-sm flex items-center justify-center group-hover:scale-105 transition-all duration-500 ring-8 ring-white/50 border border-slate-100">
-                                    <MessageSquare className="w-20 h-20 text-blue-600" strokeWidth={1.5} />
+                                    <MessageSquare className="w-20 h-20 text-cyan-600" strokeWidth={1.5} />
                                 </div>
-                                <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-blue-600 rounded-2xl shadow-lg flex items-center justify-center border-4 border-white text-white">
+                                <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-cyan-600 rounded-2xl shadow-lg flex items-center justify-center border-4 border-white text-white">
                                     <Send className="w-8 h-8" />
                                 </div>
                             </div>
@@ -1487,14 +1487,14 @@ const ChatPage: React.FC = () => {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-3xl px-4">
                             <div className="p-8 rounded-2xl bg-white shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300 group/tip flex flex-col items-center sm:items-start text-center sm:text-left">
-                                <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-5 group-hover/tip:scale-110 transition-transform duration-300">
+                                <div className="w-12 h-12 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center mb-5 group-hover/tip:scale-110 transition-transform duration-300">
                                     <Hash size={24} />
                                 </div>
                                 <h3 className="font-extrabold text-slate-900 text-lg mb-2">{t('chat.welcome_tip_1_title')}</h3>
                                 <p className="text-sm text-slate-500 font-medium leading-relaxed">{t('chat.welcome_tip_1_desc')}</p>
                             </div>
                             <div className="p-8 rounded-2xl bg-white shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300 group/tip flex flex-col items-center sm:items-start text-center sm:text-left">
-                                <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-5 group-hover/tip:scale-110 transition-transform duration-300">
+                                <div className="w-12 h-12 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center mb-5 group-hover/tip:scale-110 transition-transform duration-300">
                                     <FileText size={24} />
                                 </div>
                                 <h3 className="font-extrabold text-slate-900 text-lg mb-2">{t('chat.welcome_tip_2_title')}</h3>

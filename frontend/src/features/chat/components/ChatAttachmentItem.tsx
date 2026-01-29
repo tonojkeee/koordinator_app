@@ -62,7 +62,7 @@ export const ChatAttachmentItem: React.FC<ChatAttachmentItemProps> = ({
                 <div className={cn(
                     "flex items-center space-x-4 p-3 rounded-xl border transition-all duration-300",
                     isSent
-                        ? 'bg-blue-600 border-blue-400/30 text-white'
+                        ? 'bg-cyan-600 border-cyan-400/30 text-white'
                         : 'bg-white border-slate-200 text-slate-500'
                 )}>
                     <div className={cn(
@@ -93,7 +93,7 @@ export const ChatAttachmentItem: React.FC<ChatAttachmentItemProps> = ({
             >
                 <div className={cn(
                     "rounded-xl overflow-hidden transition-all duration-300 border relative shadow-sm",
-                    isSent ? "border-blue-400/30" : "border-slate-200",
+                    isSent ? "border-cyan-400/30" : "border-slate-200",
                     "group-hover/attach:shadow-md"
                 )}>
                     <img
@@ -146,8 +146,8 @@ export const ChatAttachmentItem: React.FC<ChatAttachmentItemProps> = ({
             <div className={cn(
                 "flex items-center space-x-3 p-3 rounded-xl border transition-all duration-200 relative overflow-hidden group/card shadow-sm",
                 isSent
-                    ? 'bg-blue-600 border-blue-500 hover:bg-blue-700 text-white'
-                    : 'bg-white border-slate-200 hover:border-blue-200 hover:shadow-md text-slate-800'
+                    ? 'bg-cyan-600 border-cyan-500 hover:bg-cyan-700 text-white'
+                    : 'bg-white border-slate-200 hover:border-cyan-200 hover:shadow-md text-slate-800'
             )}>
                 <div className={cn(
                     "w-10 h-10 rounded-lg flex items-center justify-center shrink-0 shadow-sm transition-transform duration-300 group-hover/attach:scale-105",
@@ -160,21 +160,21 @@ export const ChatAttachmentItem: React.FC<ChatAttachmentItemProps> = ({
                 <div className="flex-1 min-w-0 pr-1">
                     <h4 className={cn(
                         "text-[13px] font-semibold truncate tracking-tight transition-colors",
-                        isSent ? 'text-white' : 'text-slate-800 group-hover/attach:text-blue-600'
+                        isSent ? 'text-white' : 'text-slate-800 group-hover/attach:text-cyan-600'
                     )}>
                         {msg.document_title || t('chat.fileNotification.document')}
                     </h4>
                     <div className="flex items-center space-x-2 mt-0.5">
                         <span className={cn(
                             "text-[10px] font-bold tracking-wider uppercase opacity-70",
-                            isSent ? 'text-blue-100' : 'text-slate-500'
+                            isSent ? 'text-cyan-100' : 'text-slate-500'
                         )}>
                             {fileExt}
                         </span>
                         <span className={cn("w-0.5 h-0.5 rounded-full opacity-40", isSent ? 'bg-white' : 'bg-slate-400')} />
                         <span className={cn(
                             "text-[10px] font-medium uppercase tracking-wider truncate max-w-[120px] opacity-70",
-                            isSent ? 'text-blue-100' : 'text-slate-500'
+                            isSent ? 'text-cyan-100' : 'text-slate-500'
                         )}>
                             {config.label}
                         </span>
@@ -197,7 +197,7 @@ export const ChatAttachmentItem: React.FC<ChatAttachmentItemProps> = ({
                             "w-8 h-8 rounded-lg flex items-center justify-center transition-all active:scale-90",
                             isSent
                                 ? 'hover:bg-white/20 text-white'
-                                : 'hover:bg-slate-100 text-slate-500 hover:text-blue-600'
+                                : 'hover:bg-slate-100 text-slate-500 hover:text-cyan-600'
                         )}
                         title={t('chat.fileNotification.download')}
                     >

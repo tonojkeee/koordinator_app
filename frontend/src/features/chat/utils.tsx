@@ -57,7 +57,7 @@ export const getFileConfig = (filename: string, t: (key: string) => string): { i
         return { icon: <FileText size={24} />, color: 'bg-red-100 text-red-600', label: t('chat.fileNotification.pdf') };
     }
     if (['doc', 'docx'].includes(ext)) {
-        return { icon: <FileText size={24} />, color: 'bg-blue-100 text-blue-600', label: t('chat.fileNotification.word') };
+        return { icon: <FileText size={24} />, color: 'bg-cyan-100 text-cyan-600', label: t('chat.fileNotification.word') };
     }
     if (['xls', 'xlsx', 'csv'].includes(ext)) {
         return { icon: <FileSpreadsheet size={24} />, color: 'bg-emerald-100 text-emerald-600', label: t('chat.fileNotification.excel') };

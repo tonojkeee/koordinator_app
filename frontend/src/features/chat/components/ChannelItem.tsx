@@ -92,7 +92,7 @@ export const ChannelItem: React.FC<ChannelItemProps> = ({
         className={cn(
           "w-full flex items-center gap-3 px-4 py-1.5 border-l-[3px] transition-all duration-200 group relative cursor-pointer",
           isActive
-            ? "border-blue-600 bg-blue-50/60"
+            ? "border-cyan-600 bg-cyan-50/60"
             : "border-transparent hover:bg-slate-50"
         )}
       >
@@ -103,7 +103,7 @@ export const ChannelItem: React.FC<ChannelItemProps> = ({
             size="sm"
             className={cn(
               "transition-transform duration-200",
-              isActive ? "ring-2 ring-blue-100" : "ring-1 ring-slate-100"
+              isActive ? "ring-2 ring-cyan-100" : "ring-1 ring-slate-100"
             )}
           />
           {channel.visibility === 'private' && !channel.is_direct && (
@@ -135,7 +135,7 @@ export const ChannelItem: React.FC<ChannelItemProps> = ({
                 )}
                 <span className={cn(
                     "truncate text-[13px]",
-                    isActive ? "font-semibold text-blue-900" : (unread > 0 ? "font-semibold text-slate-900" : "font-medium text-slate-700")
+                    isActive ? "font-semibold text-cyan-900" : (unread > 0 ? "font-semibold text-slate-900" : "font-medium text-slate-700")
                 )}>
                     {channel.display_name || channel.name}
                 </span>
@@ -155,7 +155,7 @@ export const ChannelItem: React.FC<ChannelItemProps> = ({
           <div className="flex justify-between items-center w-full h-4">
              <span className={cn(
                  "text-[11px] truncate pr-2",
-                 isActive ? "text-blue-700/80" : "text-slate-500",
+                 isActive ? "text-cyan-700/80" : "text-slate-500",
                  unread > 0 && "font-medium text-slate-700"
              )}>
                  {lastMessageText ? (
@@ -173,7 +173,7 @@ export const ChannelItem: React.FC<ChannelItemProps> = ({
             {/* Unread Badge & Hover Actions */}
             <div className="flex items-center shrink-0">
               {unread > 0 ? (
-                <span className="min-w-[16px] h-[16px] bg-blue-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 shadow-sm">
+                <span className="min-w-[16px] h-[16px] bg-cyan-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 shadow-sm">
                   {unread > 99 ? '99+' : unread}
                 </span>
               ) : (
@@ -181,7 +181,7 @@ export const ChannelItem: React.FC<ChannelItemProps> = ({
                     {!isSystem && (
                     <button
                         onClick={(e) => { e.stopPropagation(); onPin(e, channel.id); }}
-                        className="text-slate-400 hover:text-blue-600 transition-colors"
+                        className="text-slate-400 hover:text-cyan-600 transition-colors"
                         title={channel.is_pinned ? t('chat.unpin') : t('chat.pin')}
                     >
                         <Pin size={12} fill={channel.is_pinned ? "currentColor" : "none"} />

@@ -90,12 +90,12 @@ function CreateChannelModal({ isOpen, onClose, onCreate }: CreateChannelModalPro
               type="button"
               onClick={() => setVisibility('public')}
               className={`p-4 rounded-xl border-2 transition-all text-left ${visibility === 'public'
-                ? 'border-blue-500 bg-blue-50'
+                ? 'border-cyan-500 bg-cyan-50'
                 : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                 }`}
             >
               <div className="flex flex-col items-center gap-2">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${visibility === 'public' ? 'bg-blue-500' : 'bg-slate-400'
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${visibility === 'public' ? 'bg-cyan-600' : 'bg-slate-400'
                   }`}>
                   <Globe size={20} className="text-white" />
                 </div>
@@ -112,12 +112,12 @@ function CreateChannelModal({ isOpen, onClose, onCreate }: CreateChannelModalPro
               type="button"
               onClick={() => setVisibility('private')}
               className={`p-4 rounded-xl border-2 transition-all text-left ${visibility === 'private'
-                ? 'border-blue-500 bg-blue-50'
+                ? 'border-cyan-500 bg-cyan-50'
                 : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                 }`}
             >
               <div className="flex flex-col items-center gap-2">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${visibility === 'private' ? 'bg-blue-500' : 'bg-slate-400'
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${visibility === 'private' ? 'bg-cyan-600' : 'bg-slate-400'
                   }`}>
                   <Lock size={20} className="text-white" />
                 </div>
@@ -156,7 +156,7 @@ const SectionHeader = ({
       case 'pinned':
         return 'bg-amber-50/80 border-y border-amber-100/50 text-amber-700 hover:bg-amber-100/80 hover:text-amber-900';
       case 'private':
-        return 'bg-indigo-50/80 border-y border-indigo-100/50 text-indigo-700 hover:bg-indigo-100/80 hover:text-indigo-900';
+        return 'bg-cyan-50/80 border-y border-cyan-100/50 text-cyan-700 hover:bg-cyan-100/80 hover:text-cyan-900';
       default:
         return 'bg-slate-50/80 border-y border-slate-100 text-slate-600 hover:bg-slate-100 hover:text-slate-900';
     }
@@ -167,7 +167,7 @@ const SectionHeader = ({
       case 'pinned':
         return 'bg-amber-100/60 text-amber-600 group-hover:text-amber-800';
       case 'private':
-        return 'bg-indigo-100/60 text-indigo-600 group-hover:text-indigo-800';
+        return 'bg-cyan-100/60 text-cyan-600 group-hover:text-cyan-800';
       default:
         return 'bg-slate-200/60 text-slate-500 group-hover:text-slate-700';
     }
@@ -405,7 +405,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
     <div className="flex items-center gap-0.5">
       <button
         onClick={() => setIsCreating(true)}
-        className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-all active:scale-95"
+        className="p-1.5 text-slate-500 hover:text-cyan-600 hover:bg-cyan-50 rounded-md transition-all active:scale-95"
         title={t('chat.create_channel')}
       >
         <Plus size={18} strokeWidth={2.5} />
@@ -420,13 +420,13 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
     <SecondarySidebar title={t('chat.title')} actions={actions}>
       <div className="px-4 py-2 border-b border-slate-100 bg-white sticky top-0 z-10">
         <div className="relative group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={14} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-600 transition-colors" size={14} />
           <input
             type="text"
             placeholder={t('common.search') || 'Search...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-100 border border-transparent rounded-lg pl-9 pr-4 py-2 text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-blue-500/30 focus:ring-4 focus:ring-blue-500/5 transition-all placeholder:text-slate-400 font-medium"
+            className="w-full bg-slate-100 border border-transparent rounded-lg pl-9 pr-4 py-2 text-sm text-slate-900 focus:outline-none focus:bg-white focus:border-cyan-500/30 focus:ring-4 focus:ring-cyan-500/5 transition-all placeholder:text-slate-400 font-medium"
           />
         </div>
       </div>
@@ -434,7 +434,7 @@ const ChannelSidebar: React.FC<ChannelSidebarProps> = ({ onCloseMobile }) => {
       <div className="flex-1 overflow-y-auto min-h-0 pb-4">
         {isLoading && channels.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 space-y-3">
-            <Loader2 className="animate-spin text-blue-500" size={24} />
+            <Loader2 className="animate-spin text-cyan-500" size={24} />
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{t('common.loading')}</span>
           </div>
         ) : (
