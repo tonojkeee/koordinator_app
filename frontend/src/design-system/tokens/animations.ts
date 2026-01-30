@@ -1,7 +1,14 @@
 /**
  * Design System - Animation Tokens
- * 
+ *
  * Единая система анимаций для плавных переходов и взаимодействий.
+ *
+ * CSS Custom Properties (Use these for all animations):
+ * - --duration-fast: 150ms - Quick micro-interactions (hover, focus, button press)
+ * - --duration-normal: 200ms - Standard transitions (menu open/close, panel slide)
+ * - --duration-slow: 300ms - Deliberate animations (page load, complex transitions)
+ * - --easing-out: cubic-bezier(0.4, 0, 0.2, 1) - Standard exits (smooth deceleration)
+ * - --easing-spring: cubic-bezier(0.34, 1.56, 0.64, 1) - Enter animations (subtle overshoot)
  */
 
 export const animations = {

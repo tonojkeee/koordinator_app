@@ -35,6 +35,18 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
 
+  --color-tertiary: var(--tertiary);
+  --color-tertiary-foreground: var(--tertiary-foreground);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -71,9 +83,9 @@
   --surface-2: hsl(210 20% 97%);
   --surface-3: hsl(210 20% 94%);
 
-  /* Accent - Professional Corporate Blue */
-  --brand-primary: hsl(210 100% 40%); /* #0066CC */
-  --brand-primary-hover: hsl(210 100% 35%);
+  /* Accent - Professional Corporate Blue (Refined Saturation for WCAG AA) */
+  --brand-primary: hsl(210 95% 42%); /* #0066CC base refined for better contrast */
+  --brand-primary-hover: hsl(210 95% 37%);
 
   /* Teams Signature Colors (Legacy support) */
   --teams-brand: hsl(231 48% 48%);
@@ -81,32 +93,74 @@
   --teams-sidebar-bg: hsl(0 0% 100%);
   --teams-sidebar-rail: hsl(210 20% 96%);
 
-  /* Semantic Colors */
+  /* Semantic Colors - 6-Level Hierarchy */
   --card: hsl(0 0% 100%);
   --card-foreground: hsl(220 15% 15%);
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(220 15% 15%);
 
+  /* Primary: Main CTAs/active elements (Corporate blue #0066CC base) */
   --primary: var(--brand-primary);
   --primary-foreground: hsl(0 0% 100%);
 
-  --secondary: hsl(210 20% 96%);
-  --secondary-foreground: hsl(220 15% 15%);
+  /* Secondary: Headers/labels (Dark gray for strong readability) */
+  --secondary: hsl(220 30% 15%);
+  --secondary-foreground: hsl(0 0% 100%);
 
+  /* Tertiary: Metadata/captions (Medium gray, WCAG AA compliant) */
+  --tertiary: hsl(220 12% 47%);
+  --tertiary-foreground: hsl(0 0% 100%);
+
+  /* Success: Completed states (Emerald green) */
+  --success: hsl(142 76% 36%);
+  --success-foreground: hsl(0 0% 100%);
+
+  /* Warning: Pending tasks (Amber/yellow) */
+  --warning: hsl(38 92% 50%);
+  --warning-foreground: hsl(0 0% 100%);
+
+  /* Danger: Errors/destructive actions (Red) */
+  --danger: hsl(0 84% 60%);
+  --danger-foreground: hsl(0 0% 100%);
+
+  /* Muted: Background/secondary UI elements */
   --muted: hsl(210 20% 96%);
-  --muted-foreground: hsl(220 10% 45%);
+  --muted-foreground: var(--tertiary);
 
-  --accent: hsl(210 100% 97%);
+  /* Accent: Highlights/accents */
+  --accent: hsl(210 95% 97%);
   --accent-foreground: var(--brand-primary);
 
-  --destructive: hsl(0 75% 42%);
-  --destructive-foreground: hsl(0 0% 100%);
+  /* Destructive: Legacy alias for Danger */
+  --destructive: var(--danger);
+  --destructive-foreground: var(--danger-foreground);
 
   --border: hsl(210 20% 90%);
   --input: hsl(210 20% 90%);
   --ring: var(--brand-primary);
 
-  --radius: 4px; /* Sharper corners for corporate look */
+  --radius: 8px;
+
+  /* Shadow System - 3-Level Hierarchy */
+  /* Design Philosophy: Create depth through intentional elevation hierarchy */
+  /* Usage: Apply these shadows directly with box-shadow: var(--shadow-*) */
+  /* Semantic mapping:
+     - --shadow-subtle: Default cards, static elements, background elevation
+     - --shadow-medium: Hover states, interactive elements, dropdowns
+     - --shadow-strong: Modals, active states, popovers, critical overlays
+   */
+  --shadow-subtle: 0 2px 4px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-medium: 0 8px 16px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04);
+  --shadow-strong: 0 20px 40px rgba(0, 0, 0, 0.12), 0 10px 20px rgba(0, 0, 0, 0.08);
+
+  /* Animation Duration Tokens - Use these for all transitions and animations */
+  --duration-fast: 150ms;   /* Quick micro-interactions (hover, focus, button press) */
+  --duration-normal: 200ms;  /* Standard transitions (menu open/close, panel slide) */
+  --duration-slow: 300ms;    /* Deliberate animations (page load, complex transitions) */
+
+  /* Animation Easing Tokens - Use these for consistent feel */
+  --easing-out: cubic-bezier(0.4, 0, 0.2, 1);      /* Standard exits - smooth deceleration */
+  --easing-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* Enter animations - subtle overshoot for energy */
 }
 
 .dark {
@@ -127,24 +181,52 @@
   --popover: hsl(0 0% 14%);
   --popover-foreground: hsl(0 0% 100%);
 
-  --primary: hsl(231 48% 65%);
+  /* Primary: Main CTAs/active elements (Bright blue for dark mode visibility) */
+  --primary: hsl(217 91% 60%);
   --primary-foreground: hsl(0 0% 100%);
 
-  --secondary: hsl(0 0% 20%);
+  /* Secondary: Headers/labels (Light gray for readability) */
+  --secondary: hsl(220 10% 90%);
   --secondary-foreground: hsl(0 0% 100%);
 
-  --muted: hsl(0 0% 20%);
-  --muted-foreground: hsl(0 0% 70%);
+  /* Tertiary: Metadata/captions (Medium gray) */
+  --tertiary: hsl(220 8% 65%);
+  --tertiary-foreground: hsl(0 0% 100%);
 
+  /* Success: Completed states (Bright green) */
+  --success: hsl(142 71% 55%);
+  --success-foreground: hsl(0 0% 100%);
+
+  /* Warning: Pending tasks (Bright amber) */
+  --warning: hsl(38 92% 60%);
+  --warning-foreground: hsl(0 0% 100%);
+
+  /* Danger: Errors/destructive actions (Bright red) */
+  --danger: hsl(0 84% 65%);
+  --danger-foreground: hsl(0 0% 100%);
+
+  /* Muted: Background/secondary UI elements */
+  --muted: hsl(0 0% 20%);
+  --muted-foreground: var(--tertiary);
+
+  /* Accent: Highlights/accents */
   --accent: hsl(231 48% 25%);
   --accent-foreground: hsl(231 48% 75%);
 
-  --destructive: hsl(0 85% 60%);
-  --destructive-foreground: hsl(0 0% 100%);
+  /* Destructive: Legacy alias for Danger */
+  --destructive: var(--danger);
+  --destructive-foreground: var(--danger-foreground);
 
   --border: hsl(0 0% 25%);
   --input: hsl(0 0% 25%);
   --ring: var(--primary);
+
+  /* Shadow System - Dark Theme variants */
+  /* Dark theme shadows use white with low opacity for subtle elevation */
+  /* Same semantic mapping as light theme */
+  --shadow-subtle: 0 2px 4px rgba(255, 255, 255, 0.05), 0 1px 2px rgba(255, 255, 255, 0.025);
+  --shadow-medium: 0 8px 16px rgba(255, 255, 255, 0.08), 0 4px 8px rgba(255, 255, 255, 0.04);
+  --shadow-strong: 0 20px 40px rgba(255, 255, 255, 0.12), 0 10px 20px rgba(255, 255, 255, 0.06);
 }
 
 * {
@@ -186,7 +268,7 @@ textarea {
   backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.5);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
-  border-radius: 2.5rem;
+  border-radius: 8px;
 }
 
 .dark .glass {
@@ -457,7 +539,7 @@ aside nav::-webkit-scrollbar {
   position: relative;
   max-width: 85%;
   padding: 10px 16px;
-  border-radius: 12px;
+  border-radius: 8px;
   font-size: inherit;
   line-height: 1.5;
   font-weight: 600;
@@ -663,7 +745,7 @@ aside nav::-webkit-scrollbar {
 
 #message-container::-webkit-scrollbar-thumb {
   background: rgba(226, 232, 240, 0.8);
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 /* Document message highlight animation */
