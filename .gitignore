@@ -133,3 +133,6 @@ backend/certs/
 *.tmp
 *.temp.worktrees/
 .worktrees/
+
+# Sisyphus
+.sisyphus/
