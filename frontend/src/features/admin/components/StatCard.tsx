@@ -34,12 +34,33 @@ export const StatCard: React.FC<StatCardProps> = ({
     const selectedColor = colorStyles[color];
 
     return (
-        <div className="group relative bg-surface border border-border p-6 rounded-2xl transition-all duration-500 hover:shadow-m3-2 hover:-translate-y-1 overflow-hidden flex flex-col justify-between h-36">
+        <div
+            className="group relative bg-surface border border-border p-6 overflow-hidden flex flex-col justify-between h-36"
+            style={{
+                borderRadius: 'var(--radius)',
+                boxShadow: 'var(--shadow-subtle)',
+                transitionDuration: 'var(--duration-normal)',
+                transitionTimingFunction: 'var(--easing-out)'
+            }}
+            onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-medium)';
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-subtle)';
+            }}
+        >
             {/* Background Accent */}
             <div className={cn("absolute inset-0 opacity-0 transition-opacity group-hover:opacity-[0.03]", selectedColor.split(' ')[0])} />
 
             <div className="flex justify-between items-start relative z-10">
-                <div className={cn("p-3 rounded-xl border transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-sm", selectedColor)}>
+                <div
+                    className={cn("p-3 border transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-sm", selectedColor)}
+                    style={{ borderRadius: 'var(--radius)' }}
+                    onMouseEnter={(e) => e.currentTarget.style.boxShadow = 'var(--shadow-medium)'}
+                    onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'var(--shadow-subtle)'}
+                >
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     <div className="w-5 h-5">{React.cloneElement(icon as React.ReactElement<any>, { strokeWidth: 2.5 } as any)}</div>
                 </div>

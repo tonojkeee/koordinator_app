@@ -24,9 +24,20 @@ export const UnitsTab: React.FC<UnitsTabProps> = ({
     ) || [];
 
     return (
-        <Card variant="default" padding="none" hoverable={false} className="overflow-hidden animate-fade-in shadow-m3-1 border-border/60">
+        <Card
+            variant="default"
+            padding="none"
+            hoverable={false}
+            className="overflow-hidden animate-fade-in border-border/60"
+            style={{
+                boxShadow: 'var(--shadow-subtle)'
+            }}
+        >
             {/* Header */}
-            <div className="p-8 border-b border-border flex flex-col sm:flex-row justify-between items-center bg-surface-1/50 gap-6">
+            <div
+                className="border-b border-border flex flex-col sm:flex-row justify-between items-center bg-surface-1/50 gap-6"
+                style={{ padding: 'var(--spacing-lg)' }}
+            >
                 <div className="relative group w-full sm:w-96">
                     <Search
                         className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60 group-focus-within:text-primary transition-colors"
@@ -38,7 +49,12 @@ export const UnitsTab: React.FC<UnitsTabProps> = ({
                         placeholder={t('admin.searchUnits')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-surface border border-border rounded-2xl text-sm font-black text-foreground focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all shadow-inner placeholder:text-muted-foreground/40 uppercase tracking-widest text-[11px]"
+                        className="w-full pl-12 pr-4 py-3 bg-surface border border-border rounded-lg text-sm font-black text-foreground focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary shadow-inner placeholder:text-muted-foreground/40 uppercase tracking-widest text-[11px]"
+                        style={{
+                            borderRadius: 'var(--radius)',
+                            transitionDuration: 'var(--duration-fast)',
+                            transitionTimingFunction: 'var(--easing-out)'
+                        }}
                     />
                 </div>
                 <Button
@@ -46,7 +62,10 @@ export const UnitsTab: React.FC<UnitsTabProps> = ({
                     size="md"
                     icon={<Building2 size={18} strokeWidth={2.5} />}
                     onClick={() => setEditingUnit({})}
-                    className="shadow-m3-2 font-black uppercase tracking-widest text-xs px-6 scale-105"
+                    className="font-black uppercase tracking-widest text-xs px-6 scale-105"
+                    style={{
+                        boxShadow: 'var(--shadow-medium)'
+                    }}
                 >
                     {t('admin.addUnit')}
                 </Button>
@@ -73,7 +92,11 @@ export const UnitsTab: React.FC<UnitsTabProps> = ({
                             filteredUnits.map((unit: Unit) => (
                                 <tr
                                     key={unit.id}
-                                    className="hover:bg-primary/5 transition-all duration-300 group active:bg-primary/10"
+                                    className="hover:bg-primary/5 group active:bg-primary/10"
+                                    style={{
+                                        transitionDuration: 'var(--duration-normal)',
+                                        transitionTimingFunction: 'var(--easing-out)'
+                                    }}
                                 >
                                     <td className="px-8 py-5">
                                         <div className="flex items-center gap-3">
@@ -94,8 +117,13 @@ export const UnitsTab: React.FC<UnitsTabProps> = ({
                                         <div className="flex justify-end gap-2">
                                             <button
                                                 onClick={() => setEditingUnit(unit)}
-                                                className="w-9 h-9 flex items-center justify-center rounded-xl bg-surface-2 text-muted-foreground hover:text-primary hover:bg-primary/10 border border-border/50 transition-all active:scale-90 shadow-sm"
+                                                className="w-9 h-9 flex items-center justify-center bg-surface-2 text-muted-foreground hover:text-primary hover:bg-primary/10 border border-border/50 shadow-sm"
                                                 title={t('common.edit')}
+                                                style={{
+                                                    borderRadius: 'var(--radius)',
+                                                    transitionDuration: 'var(--duration-fast)',
+                                                    transitionTimingFunction: 'var(--easing-out)'
+                                                }}
                                             >
                                                 <Pencil size={16} strokeWidth={2.5} />
                                             </button>
@@ -105,8 +133,13 @@ export const UnitsTab: React.FC<UnitsTabProps> = ({
                                                         deleteUnitMutation.mutate(unit.id);
                                                     }
                                                 }}
-                                                className="w-9 h-9 flex items-center justify-center rounded-xl bg-surface-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-border/50 transition-all active:scale-90 shadow-sm"
+                                                className="w-9 h-9 flex items-center justify-center bg-surface-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-border/50 shadow-sm"
                                                 title={t('common.delete')}
+                                                style={{
+                                                    borderRadius: 'var(--radius)',
+                                                    transitionDuration: 'var(--duration-fast)',
+                                                    transitionTimingFunction: 'var(--easing-out)'
+                                                }}
                                             >
                                                 <Trash2 size={16} strokeWidth={2.5} />
                                             </button>
@@ -118,7 +151,10 @@ export const UnitsTab: React.FC<UnitsTabProps> = ({
                             <tr>
                                 <td colSpan={3} className="px-8 py-20 text-center animate-scale-in">
                                     <div className="flex flex-col items-center gap-4">
-                                        <div className="w-20 h-20 bg-surface-2 rounded-full flex items-center justify-center shadow-inner">
+                                        <div
+                                            className="w-20 h-20 bg-surface-2 flex items-center justify-center"
+                                            style={{ borderRadius: '100%', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.04)' }}
+                                        >
                                             <Building2 size={48} className="text-muted-foreground/20" strokeWidth={1} />
                                         </div>
                                         <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-50">

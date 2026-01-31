@@ -44,7 +44,7 @@ const BoardPage: React.FC = () => {
                         variant="primary"
                         icon={<Upload size={16} />}
                         onClick={() => setIsUploadModalOpen(true)}
-                        className="shadow-m3-2"
+                        style={{ borderRadius: 'var(--radius)', boxShadow: 'var(--shadow-medium)' }}
                     >
                         {t('board.upload')}
                     </Button>
@@ -56,13 +56,13 @@ const BoardPage: React.FC = () => {
             <div className="flex-1 overflow-y-auto px-6 pb-6 pt-2 custom-scrollbar">
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center h-full space-y-4 animate-fade-in">
-                        <Loader2 className="animate-spin h-10 w-10 text-primary" />
-                        <p className="font-black text-muted-foreground uppercase tracking-[0.2em] text-[10px] opacity-70">{t('common.loading')}</p>
+                        <Loader2 className="animate-spin h-10 w-10 text-[hsl(210_95%_42%)]" />
+                        <p className="font-black text-[hsl(220_12%_47%)] uppercase tracking-[0.2em] text-[10px] opacity-70">{t('common.loading')}</p>
                     </div>
                 ) : (
                     <div
                         key={activeTab}
-                        className="animate-slide-up"
+                        className="animate-in"
                     >
                         <DocumentList
                             documents={activeTab === 'owned' ? (currentDocs as Document[]) : undefined}
@@ -73,13 +73,28 @@ const BoardPage: React.FC = () => {
                 )}
 
                 {!isLoading && currentDocs?.length === 0 && (
-                    <div className="h-full flex flex-col items-center justify-center space-y-6 animate-scale-in">
-                        <div className="w-24 h-24 rounded-full bg-surface-2 flex items-center justify-center border border-border shadow-m3-1 scale-110">
-                            <FileText size={48} className="text-muted-foreground/30" />
+                    <div className="h-full flex flex-col items-center justify-center space-y-6 animate-zoom-in">
+                        <div
+                            className="w-28 h-28 bg-surface-2 flex items-center justify-center border border-border shadow-subtle"
+                            style={{ borderRadius: 'var(--radius)' }}
+                        >
+                            <FileText size={56} className="text-tertiary/30" />
                         </div>
-                        <p className="font-black uppercase tracking-widest text-sm text-muted-foreground opacity-60">
+                        <p className="font-black uppercase tracking-widest text-sm text-secondary">
                             {t('board.no_documents')}
                         </p>
+                        <p className="text-xs font-bold text-tertiary/60 max-w-sm text-center">
+                            {activeTab === 'owned' ? t('board.no_documents_hint_owned') : t('board.no_documents_hint_received')}
+                        </p>
+                        <Button
+                            variant="primary"
+                            icon={<Upload size={16} />}
+                            onClick={() => setIsUploadModalOpen(true)}
+                            className="shadow-subtle hover:shadow-medium hover:-translate-y-0.5 active:shadow-subtle active:translate-y-0.5 transition-all duration-[var(--duration-normal)] ease-[var(--easing-out)]"
+                            style={{ borderRadius: 'var(--radius)' }}
+                        >
+                            {t('board.upload')}
+                        </Button>
                     </div>
                 )}
             </div>

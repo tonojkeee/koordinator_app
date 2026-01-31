@@ -181,24 +181,39 @@ const AdminPage: React.FC = () => {
                 actions={
                     <div className="relative group">
                         <button
-                            className={`flex items-center gap-2.5 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab.startsWith('settings')
-                                ? 'bg-primary text-white shadow-m3-1 scale-105'
+                            className={`flex items-center gap-2.5 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest ${activeTab.startsWith('settings')
+                                ? 'bg-primary text-white shadow-medium scale-105'
                                 : 'text-muted-foreground hover:text-foreground hover:bg-surface-3 opacity-80 hover:opacity-100'
                                 }`}
+                            style={{
+                                transitionDuration: 'var(--duration-normal)',
+                                transitionTimingFunction: 'var(--easing-out)'
+                            }}
                         >
                             <Sliders size={16} strokeWidth={2.5} />
                             <span>{t('admin.settings')}</span>
                         </button>
 
-                        <div className="absolute top-full right-0 mt-3 w-56 bg-surface border border-border rounded-2xl shadow-m3-3 p-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-y-2 group-hover:translate-y-0 transition-all z-50">
+                        <div
+                            className="absolute top-full right-0 mt-3 w-56 bg-surface border border-border rounded-lg p-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible translate-y-2 group-hover:translate-y-0 z-50"
+                            style={{
+                                boxShadow: 'var(--shadow-strong)',
+                                transitionDuration: 'var(--duration-normal)',
+                                transitionTimingFunction: 'var(--easing-out)'
+                            }}
+                        >
                             {settingsTabs.map(sub => (
                                 <button
                                     key={sub.id}
                                     onClick={() => setActiveTab(sub.id)}
-                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === sub.id
+                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold ${activeTab === sub.id
                                         ? 'bg-primary/10 text-primary'
                                         : 'text-muted-foreground hover:bg-surface-2 hover:text-foreground'
                                         }`}
+                                    style={{
+                                        transitionDuration: 'var(--duration-fast)',
+                                        transitionTimingFunction: 'var(--easing-out)'
+                                    }}
                                 >
                                     <span className={activeTab === sub.id ? 'text-primary' : 'text-muted-foreground'}>
                                         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
@@ -213,7 +228,7 @@ const AdminPage: React.FC = () => {
             />
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto px-6 pb-6 pt-2 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto custom-scrollbar" style={{ padding: 'var(--spacing-xs) var(--spacing-lg) var(--spacing-lg)' }}>
                 <div className="max-w-7xl mx-auto pb-20 animate-slide-up">
                     {activeTab === 'overview' && (
                         <OverviewTab

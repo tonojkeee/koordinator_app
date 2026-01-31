@@ -21,14 +21,13 @@ import { cn } from '../utils/cn';
 import { Loader2 } from 'lucide-react';
 
 const buttonVariants = cva(
-  // Base styles - Teams/Material 3 Hybrid
-  'inline-flex items-center justify-center gap-2 font-semibold rounded-md transition-all duration-200 ease-in-out disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 overflow-hidden relative active:scale-[0.97]',
+  'inline-flex items-center justify-center gap-2 font-semibold rounded-[var(--radius)] transition-all duration-[var(--duration-normal)] ease-[var(--easing-out)] disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 overflow-hidden relative active:scale-[0.97]',
   {
     variants: {
       variant: {
-        primary: 'bg-primary text-primary-foreground shadow-m3-1 hover:bg-teams-brandHover hover:shadow-m3-2',
+        primary: 'bg-primary text-primary-foreground shadow-subtle shadow-subtle-hover hover:bg-teams-brandHover',
         secondary: 'bg-secondary text-secondary-foreground border border-border hover:bg-surface-3 hover:border-border/80',
-        danger: 'bg-destructive text-destructive-foreground shadow-m3-1 hover:bg-destructive/90 hover:shadow-m3-2',
+        danger: 'bg-destructive text-destructive-foreground shadow-subtle shadow-subtle-hover hover:bg-destructive/90',
         ghost: 'bg-transparent text-foreground hover:bg-surface-2',
         outline: 'border border-border bg-transparent text-foreground hover:bg-surface-1 hover:border-teams-brand/30 hover:text-teams-brand',
         link: 'text-teams-brand underline-offset-4 hover:underline px-0 h-auto'

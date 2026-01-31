@@ -18,9 +18,20 @@ export const UsersTab: React.FC<UsersTabProps> = ({
     setEditingUser,
     deleteUserMutation
 }) => (
-    <Card variant="default" padding="none" hoverable={false} className="overflow-hidden animate-fade-in shadow-m3-1 border-border/60">
+    <Card
+        variant="default"
+        padding="none"
+        hoverable={false}
+        className="overflow-hidden animate-fade-in border-border/60"
+        style={{
+            boxShadow: 'var(--shadow-subtle)'
+        }}
+    >
         {/* Search Header */}
-        <div className="p-8 border-b border-border flex flex-col sm:flex-row justify-between items-center bg-surface-1/50 gap-6">
+        <div
+            className="border-b border-border flex flex-col sm:flex-row justify-between items-center bg-surface-1/50 gap-6"
+            style={{ padding: 'var(--spacing-lg)' }}
+        >
             <div className="relative group w-full sm:w-96">
                 <Search
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60 group-focus-within:text-primary transition-colors"
@@ -32,7 +43,12 @@ export const UsersTab: React.FC<UsersTabProps> = ({
                     placeholder={t('admin.searchUsers')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 bg-surface border border-border rounded-2xl text-sm font-black text-foreground focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all shadow-inner placeholder:text-muted-foreground/40 uppercase tracking-widest text-[11px]"
+                    className="w-full pl-12 pr-4 py-3 bg-surface border border-border rounded-lg text-sm font-black text-foreground focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary shadow-inner placeholder:text-muted-foreground/40 uppercase tracking-widest text-[11px]"
+                    style={{
+                        borderRadius: 'var(--radius)',
+                        transitionDuration: 'var(--duration-fast)',
+                        transitionTimingFunction: 'var(--easing-out)'
+                    }}
                 />
             </div>
             <div className="flex items-center gap-4 shrink-0">
@@ -70,7 +86,11 @@ export const UsersTab: React.FC<UsersTabProps> = ({
                     {filteredUsers.map((user: User) => (
                         <tr
                             key={user.id}
-                            className="hover:bg-primary/5 transition-all duration-300 group active:bg-primary/10"
+                            className="hover:bg-primary/5 group active:bg-primary/10"
+                            style={{
+                                transitionDuration: 'var(--duration-normal)',
+                                transitionTimingFunction: 'var(--easing-out)'
+                            }}
                         >
                             <td className="px-8 py-5">
                                 <div className="flex items-center gap-4">
@@ -111,11 +131,15 @@ export const UsersTab: React.FC<UsersTabProps> = ({
                                 <span className={cn(
                                     "inline-flex px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.15em] border shadow-sm transition-all",
                                     user.role === 'admin'
-                                        ? 'bg-primary text-white border-primary shadow-m3-1'
+                                        ? 'bg-primary text-white border-primary'
                                         : user.role === 'operator'
                                             ? 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20'
                                             : 'bg-surface-3 text-muted-foreground border-border/50'
-                                )}>
+                                )}
+                                style={{
+                                    boxShadow: user.role === 'admin' ? 'var(--shadow-subtle)' : 'var(--shadow-subtle)'
+                                }}
+                                >
                                     {user.role === 'admin'
                                         ? t('admin.roleAdmin')
                                         : user.role === 'operator'
@@ -159,8 +183,13 @@ export const UsersTab: React.FC<UsersTabProps> = ({
                                 <div className="flex justify-end gap-2">
                                     <button
                                         onClick={() => setEditingUser(user)}
-                                        className="w-9 h-9 flex items-center justify-center rounded-xl bg-surface-2 text-muted-foreground hover:text-primary hover:bg-primary/10 border border-border/50 transition-all active:scale-90 shadow-sm"
+                                        className="w-9 h-9 flex items-center justify-center bg-surface-2 text-muted-foreground hover:text-primary hover:bg-primary/10 border border-border/50 shadow-sm"
                                         title={t('common.edit')}
+                                        style={{
+                                            borderRadius: 'var(--radius)',
+                                            transitionDuration: 'var(--duration-fast)',
+                                            transitionTimingFunction: 'var(--easing-out)'
+                                        }}
                                     >
                                         <Pencil size={16} strokeWidth={2.5} />
                                     </button>
@@ -170,8 +199,13 @@ export const UsersTab: React.FC<UsersTabProps> = ({
                                                 deleteUserMutation.mutate(user.id);
                                             }
                                         }}
-                                        className="w-9 h-9 flex items-center justify-center rounded-xl bg-surface-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-border/50 transition-all active:scale-90 shadow-sm"
+                                        className="w-9 h-9 flex items-center justify-center bg-surface-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-border/50 shadow-sm"
                                         title={t('common.delete')}
+                                        style={{
+                                            borderRadius: 'var(--radius)',
+                                            transitionDuration: 'var(--duration-fast)',
+                                            transitionTimingFunction: 'var(--easing-out)'
+                                        }}
                                     >
                                         <Trash2 size={16} strokeWidth={2.5} />
                                     </button>

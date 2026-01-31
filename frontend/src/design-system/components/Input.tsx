@@ -52,7 +52,7 @@ export const Input = React.memo<InputProps>(({
       {label && (
         <label
           htmlFor={inputId}
-          className="block text-sm font-medium text-[#242424]"
+          className="block text-sm font-medium text-foreground transition-opacity duration-[var(--duration-normal)] ease-[var(--easing-out)]"
         >
           {label}
         </label>
@@ -60,7 +60,7 @@ export const Input = React.memo<InputProps>(({
 
       <div className="relative group">
         {leftIcon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors duration-[var(--duration-normal)] ease-[var(--easing-out)] group-focus-within:text-primary">
             {leftIcon}
           </div>
         )}
@@ -68,12 +68,12 @@ export const Input = React.memo<InputProps>(({
         <input
           id={inputId}
           className={cn(
-            'w-full px-3 py-2.5 bg-surface border border-border rounded-md',
+            'w-full px-3 py-2.5 bg-surface border border-border rounded-[var(--radius)]',
             'font-normal text-foreground placeholder:text-muted-foreground/60 text-sm',
-            'transition-all duration-200 ease-out outline-none',
-            'focus:border-primary focus:ring-1 focus:ring-primary/20',
-            'hover:border-border-hover shadow-sm',
-            error && 'border-destructive focus:border-destructive focus:ring-destructive/20',
+            'transition-all duration-[var(--duration-normal)] ease-[var(--easing-out)] outline-none',
+            'focus:border-primary focus:ring-2 focus:ring-primary/20',
+            'hover:border-input shadow-subtle',
+            error && 'border-danger focus:border-danger focus:ring-2 focus:ring-danger/20',
             leftIcon && 'pl-10',
             rightIcon && 'pr-10',
             className
@@ -82,18 +82,18 @@ export const Input = React.memo<InputProps>(({
         />
 
         {rightIcon && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors duration-[var(--duration-normal)] ease-[var(--easing-out)] group-focus-within:text-primary">
             {rightIcon}
           </div>
         )}
       </div>
 
       {error && (
-        <p className="text-xs font-semibold text-destructive px-1 animate-slide-up">{error}</p>
+        <p className="text-xs font-semibold text-danger px-1 animate-slide-up">{error}</p>
       )}
 
       {helperText && !error && (
-        <p className="text-xs text-muted-foreground px-1">{helperText}</p>
+        <p className="text-xs text-muted-foreground px-1 transition-opacity duration-[var(--duration-normal)] ease-[var(--easing-out)]">{helperText}</p>
       )}
     </div>
   );

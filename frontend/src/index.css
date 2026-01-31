@@ -163,6 +163,14 @@
   --easing-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* Enter animations - subtle overshoot for energy */
 }
 
+.shadow-subtle {
+  box-shadow: var(--shadow-subtle);
+}
+
+.shadow-subtle-hover:hover {
+  box-shadow: var(--shadow-medium);
+}
+
 .dark {
   /* Core Base Colors - Microsoft Teams Dark */
   --background: hsl(0 0% 12%);

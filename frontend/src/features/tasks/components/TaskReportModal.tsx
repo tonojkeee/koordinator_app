@@ -62,7 +62,7 @@ const TaskReportModal: React.FC<TaskReportModalProps> = ({ isOpen, onClose, task
             <div className="space-y-6">
                 <p className="text-sm text-muted-foreground font-bold opacity-80 leading-relaxed px-1">{t('tasks.report_modal.description')}</p>
                 <textarea
-                    className="w-full h-40 p-4 bg-surface-2 border border-border rounded-2xl text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary focus:bg-surface transition-all resize-none shadow-inner placeholder:text-muted-foreground/40"
+                    className="w-full h-40 p-4 bg-surface-2 border border-border rounded-lg text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary focus:bg-surface transition-all resize-none shadow-inner placeholder:text-muted-foreground/40"
                     placeholder={t('tasks.report_modal.placeholder')}
                     value={reportText}
                     onChange={(e) => setReportText(e.target.value)}

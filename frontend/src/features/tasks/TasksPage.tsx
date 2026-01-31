@@ -137,28 +137,28 @@ const TasksPage: React.FC = () => {
                         size="md"
                         icon={<Plus size={18} />}
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="shadow-m3-2"
+                        className="shadow-medium hover:shadow-strong hover:-translate-y-0.5 active:shadow-subtle active:translate-y-0 transition-all duration-[var(--duration-normal)] ease-[var(--easing-out)]"
                     >
                         <span className="hidden sm:inline">{t('tasks.create_button')}</span>
                     </Button>
                 }
                 tabsActions={
                     activeTab === 'completed' ? (
-                        <div className="flex bg-surface-2 p-1 rounded-lg border border-border animate-scale-in shadow-sm">
+                        <div className="flex bg-surface-2 p-1 rounded-lg border border-border animate-scale-in shadow-subtle">
                             <button
                                 onClick={() => setCompletedFilter('my_execution')}
-                                className={`px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest transition-all ${completedFilter === 'my_execution'
-                                    ? 'bg-primary text-white shadow-m3-1'
-                                    : 'text-muted-foreground hover:bg-surface-3 hover:text-foreground'
+                                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-[var(--duration-normal)] ease-[var(--easing-out)] ${completedFilter === 'my_execution'
+                                    ? 'bg-primary text-primary-foreground shadow-medium hover:shadow-medium'
+                                    : 'text-tertiary hover:bg-surface-3 hover:text-secondary hover:shadow-subtle active:scale-95'
                                     }`}
                             >
                                 {t('tasks.filter.my_execution')}
                             </button>
                             <button
                                 onClick={() => setCompletedFilter('my_orders')}
-                                className={`px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest transition-all ${completedFilter === 'my_orders'
-                                    ? 'bg-primary text-white shadow-m3-1'
-                                    : 'text-muted-foreground hover:bg-surface-3 hover:text-foreground'
+                                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-[var(--duration-normal)] ease-[var(--easing-out)] ${completedFilter === 'my_orders'
+                                    ? 'bg-primary text-primary-foreground shadow-medium hover:shadow-medium'
+                                    : 'text-tertiary hover:bg-surface-3 hover:text-secondary hover:shadow-subtle active:scale-95'
                                     }`}
                             >
                                 {t('tasks.filter.my_orders')}
@@ -176,11 +176,14 @@ const TasksPage: React.FC = () => {
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>
                 ) : currentTasks.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground/40 animate-scale-in">
-                        <div className="w-20 h-20 bg-surface-2 rounded-full flex items-center justify-center mb-6">
-                            <CheckCircle2 size={40} className="text-muted-foreground/20" strokeWidth={1} />
+                    <div className="flex flex-col items-center justify-center h-full animate-scale-in">
+                        <div className="w-24 h-24 bg-surface-2 rounded-full flex items-center justify-center mb-8 shadow-subtle animate-pulse-slow">
+                            <CheckCircle2 size={48} className="text-tertiary/30" strokeWidth={1} />
                         </div>
-                        <p className="text-sm font-black tracking-tight">{t('tasks.empty.title')}</p>
+                        <p className="text-sm font-black tracking-tight text-tertiary mb-2">{t('tasks.empty.title')}</p>
+                        <p className="text-xs text-tertiary/60 font-medium uppercase tracking-widest">
+                            {activeTab === 'completed' ? t('tasks.empty.completed_hint') : t('tasks.empty.hint')}
+                        </p>
                     </div>
                 ) : (
                     <div

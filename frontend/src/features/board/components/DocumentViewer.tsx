@@ -98,7 +98,7 @@ const DocumentViewer: React.FC = () => {
             <div className="absolute top-6 right-6 flex items-center space-x-4 z-10">
                 <button
                     onClick={handleDownload}
-                    className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl backdrop-blur-xl border border-white/10 transition-all flex items-center space-x-2"
+                    className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-lg backdrop-blur-xl border border-white/10 transition-all flex items-center space-x-2"
                     title={t('board.download_button')}
                 >
                     <Download size={20} />
@@ -106,14 +106,14 @@ const DocumentViewer: React.FC = () => {
                 </button>
                 <button
                     onClick={close}
-                    className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl backdrop-blur-xl border border-white/10 transition-all"
+                    className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-lg backdrop-blur-xl border border-white/10 transition-all"
                 >
                     <X size={20} />
                 </button>
             </div>
 
             <div className="absolute top-6 left-6 z-10">
-                <div className="bg-white/10 px-6 py-3 rounded-2xl backdrop-blur-xl border border-white/10">
+                <div className="bg-white/10 px-6 py-3 rounded-lg backdrop-blur-xl border border-white/10">
                     <h3 className="text-white font-bold tracking-tight">{title}</h3>
                 </div>
             </div>
@@ -208,14 +208,14 @@ const DocumentViewer: React.FC = () => {
                                         href={url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="px-8 h-12 bg-white text-slate-900 border border-slate-200 rounded-2xl flex items-center space-x-2 font-bold hover:bg-slate-50 transition-all shadow-sm"
+                                        className="px-8 h-12 bg-white text-slate-900 border border-slate-200 rounded-lg flex items-center space-x-2 font-bold hover:bg-slate-50 transition-all shadow-sm"
                                     >
                                         <ExternalLink size={18} />
                                         <span>{t('board.viewer.open_in_browser')}</span>
                                     </a>
                                     <button
                                         onClick={handleDownload}
-                                        className="px-8 h-12 bg-indigo-600 text-white rounded-2xl flex items-center space-x-2 font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200"
+                                        className="px-8 h-12 bg-indigo-600 text-white rounded-lg flex items-center space-x-2 font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200"
                                     >
                                         <Download size={18} />
                                         <span>{t('board.viewer.download_file')}</span>

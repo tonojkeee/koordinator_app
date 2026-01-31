@@ -135,7 +135,7 @@ const CompanyEmployees: React.FC<CompanyEmployeesProps> = ({
                                     <div
                                         onClick={() => onToggleSelection(user.id)}
                                         className={cn(
-                                            "group flex flex-col lg:grid lg:grid-cols-[48px_2.5fr_1.5fr_1.2fr_1fr_48px] items-center gap-6 px-5 py-3.5 rounded-2xl transition-all duration-300 border cursor-pointer relative overflow-hidden animate-slide-up",
+                                            "group flex flex-col lg:grid lg:grid-cols-[48px_2.5fr_1.5fr_1.2fr_1fr_48px] items-center gap-6 px-5 py-3.5 rounded-lg transition-all duration-300 border cursor-pointer relative overflow-hidden animate-slide-up",
                                             selectedUserIds.includes(user.id)
                                                 ? 'bg-primary/5 border-primary shadow-m3-1 scale-[1.01] z-10'
                                                 : 'bg-surface border-border hover:bg-surface-2 hover:border-primary/20 hover:shadow-teams-card'

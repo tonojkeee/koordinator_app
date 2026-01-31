@@ -116,7 +116,7 @@ export const EmailSettingsTab: React.FC = () => {
       {/* Current Settings Overview */}
       <div className="bg-white/70 backdrop-blur-md p-8 rounded-[2rem] border border-white shadow-[0_25px_60px_rgba(0,0,0,0.02)]">
         <div className="flex items-center gap-4 mb-8">
-          <div className="p-3 rounded-2xl bg-violet-50 text-violet-600">
+          <div className="p-3 rounded-lg bg-violet-50 text-violet-600">
             <Mail size={20} />
           </div>
           <div>
@@ -130,7 +130,7 @@ export const EmailSettingsTab: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-gradient-to-br from-violet-50 to-purple-50 p-6 rounded-2xl border border-violet-100">
+          <div className="bg-gradient-to-br from-violet-50 to-purple-50 p-6 rounded-lg border border-violet-100">
             <div className="flex items-center gap-3 mb-2">
               <Server size={16} className="text-violet-600" />
               <span className="text-xs font-bold text-violet-600 uppercase tracking-wider">
@@ -142,7 +142,7 @@ export const EmailSettingsTab: React.FC = () => {
             </p>
           </div>
 
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border border-blue-100">
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-100">
             <div className="flex items-center gap-3 mb-2">
               <Mail size={16} className="text-blue-600" />
               <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">
@@ -154,7 +154,7 @@ export const EmailSettingsTab: React.FC = () => {
             </p>
           </div>
 
-          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-6 rounded-2xl border border-emerald-100">
+          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-6 rounded-lg border border-emerald-100">
             <div className="flex items-center gap-3 mb-2">
               <Settings size={16} className="text-emerald-600" />
               <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">
@@ -166,7 +166,7 @@ export const EmailSettingsTab: React.FC = () => {
             </p>
           </div>
 
-          <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-6 rounded-2xl border border-amber-100">
+          <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-6 rounded-lg border border-amber-100">
             <div className="flex items-center gap-3 mb-2">
               <Server size={16} className="text-amber-600" />
               <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">
@@ -183,7 +183,7 @@ export const EmailSettingsTab: React.FC = () => {
       {/* Domain Configuration */}
       <div className="bg-white/70 backdrop-blur-md p-8 rounded-[2rem] border border-white shadow-[0_25px_60px_rgba(0,0,0,0.02)]">
         <div className="flex items-center gap-4 mb-8">
-          <div className="p-3 rounded-2xl bg-violet-50 text-violet-600">
+          <div className="p-3 rounded-lg bg-violet-50 text-violet-600">
             <Settings size={20} />
           </div>
           <div>
@@ -228,7 +228,7 @@ export const EmailSettingsTab: React.FC = () => {
       {/* Account Recreation */}
       <div className="bg-white/70 backdrop-blur-md p-8 rounded-[2rem] border border-white shadow-[0_25px_60px_rgba(0,0,0,0.02)]">
         <div className="flex items-center gap-4 mb-8">
-          <div className="p-3 rounded-2xl bg-red-50 text-red-600">
+          <div className="p-3 rounded-lg bg-red-50 text-red-600">
             <RefreshCw size={20} />
           </div>
           <div>

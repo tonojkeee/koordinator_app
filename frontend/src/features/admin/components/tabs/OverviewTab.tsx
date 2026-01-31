@@ -68,10 +68,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             <Card variant="elevated" padding="lg" hoverable={false} className="lg:col-span-2">
                 <div className="flex items-center justify-between mb-6">
                     <div>
-                        <h3 className="text-lg font-black text-slate-900 leading-none tracking-tight mb-1">
+                        <h3 className="text-lg font-black text-foreground leading-none tracking-tight mb-1">
                             {t('admin.activityTrend')}
                         </h3>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                             {t('admin.last30Days')}
                         </p>
                     </div>
@@ -81,42 +81,42 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                         <AreaChart data={activityData || []}>
                             <defs>
                                 <linearGradient id="colorMessages" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.15} />
-                                    <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
+                                    <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.15} />
+                                    <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                             <XAxis
                                 dataKey="date"
                                 axisLine={false}
                                 tickLine={false}
-                                tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
+                                tick={{ fontSize: 10, fontWeight: 700, fill: 'var(--muted-foreground)' }}
                                 dy={10}
                                 tickFormatter={formatChartDate}
                             />
                             <YAxis
                                 axisLine={false}
                                 tickLine={false}
-                                tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
+                                tick={{ fontSize: 10, fontWeight: 700, fill: 'var(--muted-foreground)' }}
                             />
                             <Tooltip
                                 contentStyle={{
                                     backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                    borderRadius: '16px',
-                                    border: '1px solid #eef2ff',
+                                    borderRadius: 'var(--radius)',
+                                    border: '1px solid var(--border)',
                                     fontWeight: 900,
                                     fontSize: '12px',
-                                    boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+                                    boxShadow: 'var(--shadow-medium)',
                                     backdropFilter: 'blur(10px)'
                                 }}
-                                cursor={{ stroke: '#4f46e5', strokeWidth: 2, strokeDasharray: '5 5' }}
+                                cursor={{ stroke: 'var(--primary)', strokeWidth: 2, strokeDasharray: '5 5' }}
                                 labelFormatter={(value) => formatActivityDate(value, t)}
                                 formatter={(value: number | string | undefined) => [value, t('admin.messagesToday')]}
                             />
                             <Area
                                 type="monotone"
                                 dataKey="messages"
-                                stroke="#4f46e5"
+                                stroke="var(--primary)"
                                 strokeWidth={4}
                                 fillOpacity={1}
                                 fill="url(#colorMessages)"
@@ -129,7 +129,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             {/* Storage Breakdown */}
             <Card variant="elevated" padding="lg" hoverable={false} className="relative overflow-hidden">
                 <div className="absolute top-6 left-6">
-                    <h3 className="text-lg font-black text-slate-900 tracking-tight">
+                    <h3 className="text-lg font-black text-foreground tracking-tight">
                         {t('admin.storageUsage')}
                     </h3>
                 </div>
@@ -152,12 +152,12 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                             </Pie>
                             <Tooltip
                                 contentStyle={{
-                                    backgroundColor: 'white',
-                                    borderRadius: '12px',
+                                    backgroundColor: 'var(--surface)',
+                                    borderRadius: 'var(--radius)',
                                     border: 'none',
                                     fontWeight: 800,
-                                    color: '#1e293b',
-                                    boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
+                                    color: 'var(--foreground)',
+                                    boxShadow: 'var(--shadow-medium)'
                                 }}
                                 formatter={(value: number | string | undefined) => [
                                     typeof value === 'number' ? formatBytes(value) : (value || ''),
@@ -169,12 +169,12 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 </div>
                 <table className="w-full text-left">
                     <thead>
-                        <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <tr className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                             <th className="pb-3">{t('admin.type')}</th>
                             <th className="pb-3 text-right">{t('admin.size')}</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-50">
+                    <tbody className="divide-y divide-border/20">
                         {(storageData || []).map((item: StorageStat) => (
                             <tr key={item.name} className="group/item">
                                 <td className="py-2.5 flex items-center gap-2">
@@ -182,11 +182,11 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                                         className="w-2 h-2 rounded-full"
                                         style={{ backgroundColor: item.color }}
                                     />
-                                    <span className="text-[11px] font-black text-slate-600 uppercase tracking-tight">
+                                    <span className="text-[11px] font-black text-foreground/70 uppercase tracking-tight">
                                         {t(`admin.storageTypes.${item.name}`, item.name)}
                                     </span>
                                 </td>
-                                <td className="py-2.5 text-right font-black text-slate-900 text-[11px]">
+                                <td className="py-2.5 text-right font-black text-foreground text-[11px]">
                                     {formatBytes(item.value)}
                                 </td>
                             </tr>
@@ -198,14 +198,25 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-10">
             {/* Recent Activity Feed */}
-            <Card variant="default" padding="lg" hoverable={false} className="shadow-m3-1 border-border/60">
+            <Card
+                variant="default"
+                padding="lg"
+                hoverable={false}
+                className="border-border/60"
+                style={{ boxShadow: 'var(--shadow-subtle)' }}
+            >
                 <div className="flex items-center justify-between mb-8">
                     <h3 className="text-lg font-black text-foreground tracking-tight uppercase tracking-widest opacity-90">
                         {t('admin.recentActivity')}
                     </h3>
                     <button
                         onClick={onViewLogs}
-                        className="text-[9px] font-black text-primary uppercase tracking-[0.2em] hover:text-teams-brandHover transition-all bg-primary/5 hover:bg-primary/10 px-4 py-2 rounded-xl border border-primary/10 shadow-sm active:scale-95"
+                        className="text-[9px] font-black text-primary uppercase tracking-[0.2em] bg-primary/5 hover:bg-primary/10 px-4 py-2 border border-primary/10 shadow-sm"
+                        style={{
+                            borderRadius: 'var(--radius)',
+                            transitionDuration: 'var(--duration-fast)',
+                            transitionTimingFunction: 'var(--easing-out)'
+                        }}
                     >
                         {t('admin.viewAllLogs')}
                     </button>
@@ -214,7 +225,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     {(recentActivity || []).map((activity: ActivityLogEvent) => (
                         <div
                             key={activity.id}
-                            className="flex items-center gap-4 p-4 hover:bg-surface-2 rounded-2xl transition-all border border-transparent hover:border-border/50 group active:scale-[0.99]"
+                            className="flex items-center gap-4 p-4 hover:bg-surface-2 transition-all border border-transparent hover:border-border/50 group active:scale-[0.99]"
+                            style={{ borderRadius: 'var(--radius)' }}
                         >
                             <div className={cn(
                                 "w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-110",
@@ -244,7 +256,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     ))}
                     {!recentActivity?.length && (
                         <div className="text-center py-20 animate-scale-in">
-                            <div className="w-16 h-16 bg-surface-2 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+                            <div
+                                className="w-16 h-16 bg-surface-2 flex items-center justify-center mx-auto mb-4"
+                                style={{
+                                    borderRadius: '50%',
+                                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.04)'
+                                }}
+                            >
                                 <Activity size={32} className="text-muted-foreground/20" />
                             </div>
                             <p className="text-muted-foreground font-black text-[10px] uppercase tracking-[0.2em] opacity-50">
@@ -257,7 +275,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
             {/* Unit Distribution & System Health */}
             <div className="space-y-6">
-                <Card variant="default" padding="lg" hoverable={false} className="shadow-m3-1 border-border/60">
+                <Card
+                    variant="default"
+                    padding="lg"
+                    hoverable={false}
+                    className="border-border/60"
+                    style={{ boxShadow: 'var(--shadow-subtle)' }}
+                >
                     <h3 className="text-lg font-black text-foreground tracking-tight mb-8 uppercase tracking-widest opacity-90">
                         {t('admin.unitDistribution')}
                     </h3>
@@ -280,7 +304,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 </Card>
 
                 {/* System Health Card */}
-                <div className="bg-primary p-8 rounded-3xl shadow-m3-3 text-white relative overflow-hidden group active:scale-[0.98] transition-all duration-500">
+                <div
+                    className="bg-primary p-8 text-white relative overflow-hidden group active:scale-[0.98] transition-all duration-500"
+                    style={{
+                        borderRadius: 'calc(var(--radius) * 3)',
+                        boxShadow: 'var(--shadow-strong)'
+                    }}
+                >
                     <div className="absolute right-[-20px] top-[-20px] opacity-10 group-hover:scale-125 group-hover:rotate-12 transition-all duration-1000 pointer-events-none">
                         <Shield size={200} strokeWidth={1} />
                     </div>
@@ -289,16 +319,22 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
                     <div className="relative z-10">
                         <div className="flex items-center gap-3 mb-8">
-                            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md shadow-sm">
+                            <div
+                                className="w-10 h-10 bg-white/20 flex items-center justify-center backdrop-blur-md shadow-sm"
+                                style={{ borderRadius: 'var(--radius)' }}
+                            >
                                 <Activity size={22} strokeWidth={2.5} />
                             </div>
                             <h3 className="text-xl font-black tracking-tight uppercase tracking-[0.1em]">
                                 {t('admin.systemHealth')}
                             </h3>
                         </div>
-
+ 
                         <div className="grid grid-cols-2 gap-6">
-                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10 shadow-lg group-hover:bg-white/15 transition-colors">
+                            <div
+                                className="bg-white/10 backdrop-blur-md p-5 border border-white/10 shadow-lg group-hover:bg-white/15 transition-colors"
+                                style={{ borderRadius: 'var(--radius)' }}
+                            >
                                 <p className="text-[9px] uppercase font-black opacity-60 mb-2 tracking-[0.2em]">
                                     {t('admin.uptime')}
                                 </p>
@@ -306,7 +342,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                                     {systemHealth?.uptime || '99.9%'}
                                 </p>
                             </div>
-                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/10 shadow-lg group-hover:bg-white/15 transition-colors">
+                            <div
+                                className="bg-white/10 backdrop-blur-md p-5 border border-white/10 shadow-lg group-hover:bg-white/15 transition-colors"
+                                style={{ borderRadius: 'var(--radius)' }}
+                            >
                                 <p className="text-[9px] uppercase font-black opacity-60 mb-2 tracking-[0.2em]">
                                     {t('admin.status')}
                                 </p>

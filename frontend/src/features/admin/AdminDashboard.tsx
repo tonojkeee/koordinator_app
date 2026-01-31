@@ -82,8 +82,8 @@ export const DatabaseSettingsTab = ({ t }: { t: TFunction }) => {
         }
     };
 
-    const inputClasses = "w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none";
-    const labelClasses = "block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2 ml-1";
+    const inputClasses = "w-full bg-surface border border-border px-4 py-3 text-sm font-semibold text-foreground focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all outline-none";
+    const labelClasses = "block text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-2 ml-1";
 
     if (isLoading) return (
         <div className="p-10 text-center">
@@ -92,9 +92,15 @@ export const DatabaseSettingsTab = ({ t }: { t: TFunction }) => {
     );
 
     return (
-        <div className="bg-white/70 backdrop-blur-md p-8 rounded-[2rem] border border-white shadow-[0_25px_60px_rgba(0,0,0,0.02)] max-w-2xl mx-auto">
+        <div
+            className="bg-white/70 backdrop-blur-md p-8 border border-white max-w-2xl mx-auto"
+            style={{
+                borderRadius: 'calc(var(--radius) * 2)',
+                boxShadow: 'var(--shadow-subtle)'
+            }}
+        >
             <div className="flex items-center gap-4 mb-8">
-                <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-600">
+                <div className="p-3 rounded-lg bg-indigo-50 text-indigo-600">
                     <Database size={20} />
                 </div>
                 <div>
@@ -109,20 +115,30 @@ export const DatabaseSettingsTab = ({ t }: { t: TFunction }) => {
                     <div className="grid grid-cols-2 gap-4">
                         <button
                             onClick={() => setConfig({ ...config, type: 'sqlite' })}
-                            className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${config.type === 'sqlite'
-                                ? 'border-indigo-500 bg-indigo-50/50 text-indigo-700'
-                                : 'border-slate-100 bg-white text-slate-400 hover:border-slate-200'
+                            className={`p-4 border-2 flex flex-col items-center gap-2 ${config.type === 'sqlite'
+                                ? 'border-primary bg-primary/10 text-primary'
+                                : 'border-border/50 bg-surface text-muted-foreground hover:border-border'
                                 }`}
+                            style={{
+                                borderRadius: 'var(--radius)',
+                                transitionDuration: 'var(--duration-fast)',
+                                transitionTimingFunction: 'var(--easing-out)'
+                            }}
                         >
                             <span className="font-black text-lg">SQLite</span>
                             <span className="text-[10px] uppercase font-bold opacity-60">{t('admin.database.embedded')}</span>
                         </button>
                         <button
                             onClick={() => setConfig({ ...config, type: 'mysql' })}
-                            className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${config.type === 'mysql'
-                                ? 'border-indigo-500 bg-indigo-50/50 text-indigo-700'
-                                : 'border-slate-100 bg-white text-slate-400 hover:border-slate-200'
+                            className={`p-4 border-2 flex flex-col items-center gap-2 ${config.type === 'mysql'
+                                ? 'border-primary bg-primary/10 text-primary'
+                                : 'border-border/50 bg-surface text-muted-foreground hover:border-border'
                                 }`}
+                            style={{
+                                borderRadius: 'var(--radius)',
+                                transitionDuration: 'var(--duration-fast)',
+                                transitionTimingFunction: 'var(--easing-out)'
+                            }}
                         >
                             <span className="font-black text-lg">MySQL</span>
                             <span className="text-[10px] uppercase font-bold opacity-60">{t('admin.database.external')}</span>
@@ -189,23 +205,37 @@ export const DatabaseSettingsTab = ({ t }: { t: TFunction }) => {
                 )}
 
                 {config.type === 'sqlite' && (
-                    <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl text-xs text-slate-500 font-medium">
+                    <div
+                        className="p-4 bg-surface border border-border text-xs text-muted-foreground font-medium"
+                        style={{ borderRadius: 'var(--radius)' }}
+                    >
                         {t('admin.database.sqliteDesc')}
                     </div>
                 )}
 
-                <div className="pt-6 border-t border-slate-100 flex gap-4">
+                <div className="pt-6 border-t border-border flex gap-4">
                     <button
                         onClick={handleTest}
                         disabled={isTesting || config.type === 'sqlite'}
-                        className="flex-1 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="flex-1 py-3 bg-surface border border-border text-foreground font-bold text-xs uppercase tracking-wider hover:bg-surface-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        style={{
+                            borderRadius: 'var(--radius)',
+                            transitionDuration: 'var(--duration-fast)',
+                            transitionTimingFunction: 'var(--easing-out)'
+                        }}
                     >
                         {isTesting ? t('admin.database.testing') : t('admin.database.testConnection')}
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-indigo-700 shadow-lg shadow-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
+                        className="flex-1 py-3 bg-primary text-white font-bold text-xs uppercase tracking-wider hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        style={{
+                            borderRadius: 'var(--radius)',
+                            boxShadow: 'var(--shadow-medium)',
+                            transitionDuration: 'var(--duration-normal)',
+                            transitionTimingFunction: 'var(--easing-out)'
+                        }}
                     >
                         {isSaving ? t('admin.database.saving') : t('admin.database.saveRestart')}
                     </button>
@@ -253,27 +283,56 @@ const SettingField = ({ setting, onUpdate, t }: { setting: SystemSetting, onUpda
     };
 
     return (
-        <div className="group">
-            <div className="flex justify-between items-center mb-2">
-                <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.15em] ml-1">
-                    {setting.description || setting.key}
-                </label>
-                {setting.is_public && (
-                    <span className="text-[9px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100/50 uppercase tracking-wider">{t('common.public')}</span>
-                )}
-            </div>
+            <div className="group">
+                <div className="flex justify-between items-center mb-2">
+                    <label className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.15em] ml-1">
+                        {setting.description || setting.key}
+                    </label>
+                    {setting.is_public && (
+                        <span
+                            className="text-[9px] font-bold text-green-700 bg-green-500/10 px-2 py-0.5 border uppercase tracking-wider"
+                            style={{
+                                borderColor: 'var(--green-500/20)',
+                                borderRadius: 'var(--radius)'
+                            }}
+                        >
+                            {t('common.public')}
+                        </span>
+                    )}
+                </div>
 
             {setting.type === 'bool' ? (
                 <button
                     onClick={() => handleChange(!val)}
-                    className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 ${val
-                        ? 'bg-indigo-50/50 border-indigo-200 text-indigo-700 shadow-sm'
-                        : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'
+                    className={`w-full flex items-center justify-between p-4 border transition-all ${val
+                        ? 'bg-primary/10 border-primary text-primary'
+                        : 'bg-surface border-border text-muted-foreground hover:bg-surface-2'
                         }`}
+                    style={{
+                        borderRadius: 'var(--radius)',
+                        transitionDuration: 'var(--duration-fast)',
+                        transitionTimingFunction: 'var(--easing-out)'
+                    }}
                 >
                     <span className="text-sm font-bold">{val ? t('common.enabled') : t('common.disabled')}</span>
-                    <div className={`w-12 h-6 rounded-full p-1 transition-all duration-300 ${val ? 'bg-indigo-500' : 'bg-slate-300'} flex items-center`}>
-                        <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-300 ${val ? 'translate-x-6' : 'translate-x-0'}`} />
+                    <div
+                        className={`w-12 h-6 p-1 flex items-center transition-all`}
+                        style={{
+                            borderRadius: '9999px',
+                            backgroundColor: val ? 'var(--primary)' : 'var(--muted-foreground)',
+                            transitionDuration: 'var(--duration-fast)',
+                            transitionTimingFunction: 'var(--easing-out)'
+                        }}
+                    >
+                        <div
+                            className={`w-4 h-4 bg-white transition-all`}
+                            style={{
+                                borderRadius: '50%',
+                                transform: val ? 'translateX(24px)' : 'translateX(0)',
+                                transitionDuration: 'var(--duration-fast)',
+                                transitionTimingFunction: 'var(--easing-out)'
+                            }}
+                        />
                     </div>
                 </button>
             ) : (
@@ -284,8 +343,13 @@ const SettingField = ({ setting, onUpdate, t }: { setting: SystemSetting, onUpda
                         onChange={(e) => handleChange(e.target.value)}
                         onBlur={handleBlur}
                         onKeyDown={(e) => e.key === 'Enter' && handleBlur()}
-                        className={`w-full bg-slate-50 border rounded-2xl px-5 py-4 font-bold text-slate-700 placeholder:text-slate-300 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 focus:bg-white transition-all outline-none ${isDirty ? 'border-amber-300 bg-amber-50/30' : 'border-slate-200'
+                        className={`w-full bg-surface border px-5 py-4 font-bold text-foreground placeholder:text-muted-foreground/40 focus:ring-4 focus:ring-primary/10 focus:border-primary focus:bg-surface transition-all outline-none ${isDirty ? 'border-warning bg-warning/10' : 'border-border'
                             }`}
+                        style={{
+                            borderRadius: 'var(--radius)',
+                            transitionDuration: 'var(--duration-fast)',
+                            transitionTimingFunction: 'var(--easing-out)'
+                        }}
                     />
                     {isDirty && (
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 text-amber-500 animate-pulse">
@@ -350,17 +414,30 @@ export const AppSettingsTab = ({ t, visibleGroup }: { t: TFunction, visibleGroup
 
     if (isLoading) return (
         <div className="flex flex-col items-center justify-center py-32">
-            <div className="w-16 h-16 rounded-full border-4 border-slate-100 border-t-indigo-500 animate-spin" />
-            <span className="mt-4 text-slate-400 font-black text-xs uppercase tracking-widest animate-pulse">{t('common.loading')}</span>
+            <div
+                className="w-16 h-16 rounded-full border-4 animate-spin"
+                style={{
+                    borderColor: 'var(--border)',
+                    borderTopColor: 'var(--primary)'
+                }}
+            />
+            <span className="mt-4 text-muted-foreground font-black text-xs uppercase tracking-widest animate-pulse">{t('common.loading')}</span>
         </div>
     );
 
     return (
         <div className="space-y-8 animate-in transition-all-custom">
             {Object.entries(groups).map(([group, groupSettings]) => (
-                <div key={group} className="bg-white/70 backdrop-blur-md p-8 rounded-[2rem] border border-white shadow-[0_25px_60px_rgba(0,0,0,0.02)]">
+                <div
+                    key={group}
+                    className="bg-white/70 backdrop-blur-md p-8 border border-white"
+                    style={{
+                        borderRadius: 'calc(var(--radius) * 2)',
+                        boxShadow: 'var(--shadow-subtle)'
+                    }}
+                >
                     <div className="flex items-center gap-4 mb-8">
-                        <div className={`p-3 rounded-2xl ${group === 'general' ? 'bg-indigo-50 text-indigo-600' :
+                        <div className={`p-3 rounded-lg ${group === 'general' ? 'bg-indigo-50 text-indigo-600' :
                             group === 'security' ? 'bg-rose-50 text-rose-600' :
                                 group === 'chat' ? 'bg-teal-50 text-teal-600' :
                                     group === 'email' ? 'bg-violet-50 text-violet-600' :

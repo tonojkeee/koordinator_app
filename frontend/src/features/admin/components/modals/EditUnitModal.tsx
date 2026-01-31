@@ -37,6 +37,10 @@ export const EditUnitModal: React.FC<EditUnitModalProps> = ({
                         icon={isEdit ? <Save size={16} /> : <Plus size={16} />}
                         onClick={() => onSave(formData)}
                         disabled={!formData.name}
+                        style={{
+                            borderRadius: 'var(--radius)',
+                            boxShadow: 'var(--shadow-subtle)'
+                        }}
                     >
                         {isEdit ? t('common.save') : t('common.create')}
                     </Button>

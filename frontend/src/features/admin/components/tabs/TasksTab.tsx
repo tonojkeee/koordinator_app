@@ -50,7 +50,13 @@ export const TasksTab: React.FC<TasksTabProps> = ({
 
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card variant="default" padding="lg" hoverable={false} className="shadow-m3-1 border-border/60">
+                <Card
+                    variant="default"
+                    padding="lg"
+                    hoverable={false}
+                    className="border-border/60"
+                    style={{ boxShadow: 'var(--shadow-subtle)' }}
+                >
                     <h3 className="text-lg font-black text-foreground mb-8 uppercase tracking-widest opacity-90">{t('admin.tasksByStatus')}</h3>
                     <div className="h-64 w-full">
                         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
@@ -70,11 +76,11 @@ export const TasksTab: React.FC<TasksTabProps> = ({
                                 <Tooltip
                                     contentStyle={{
                                         backgroundColor: 'var(--surface)',
-                                        borderRadius: '16px',
+                                        borderRadius: 'var(--radius)',
                                         border: '1px solid var(--border)',
                                         fontWeight: 900,
                                         fontSize: '11px',
-                                        boxShadow: 'var(--shadow-m3-2)'
+                                        boxShadow: 'var(--shadow-medium)'
                                     }}
                                 />
                             </PieChart>
@@ -82,7 +88,13 @@ export const TasksTab: React.FC<TasksTabProps> = ({
                     </div>
                 </Card>
 
-                <Card variant="default" padding="lg" hoverable={false} className="shadow-m3-1 border-border/60">
+                <Card
+                    variant="default"
+                    padding="lg"
+                    hoverable={false}
+                    className="border-border/60"
+                    style={{ boxShadow: 'var(--shadow-subtle)' }}
+                >
                     <h3 className="text-lg font-black text-foreground mb-8 uppercase tracking-widest opacity-90">{t('admin.tasksByUnit')}</h3>
                     <div className="h-64 w-full">
                         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
@@ -102,9 +114,9 @@ export const TasksTab: React.FC<TasksTabProps> = ({
                                 <Tooltip
                                     cursor={{ fill: 'var(--surface-2)' }}
                                     contentStyle={{
-                                        borderRadius: '16px',
+                                        borderRadius: 'var(--radius)',
                                         border: '1px solid var(--border)',
-                                        boxShadow: 'var(--shadow-m3-2)',
+                                        boxShadow: 'var(--shadow-medium)',
                                         fontWeight: 900,
                                         fontSize: '11px'
                                     }}
@@ -118,16 +130,30 @@ export const TasksTab: React.FC<TasksTabProps> = ({
             </div>
 
             {/* Tasks Table */}
-            <Card variant="default" padding="none" hoverable={false} className="overflow-hidden shadow-m3-1 border-border/60">
-                <div className="p-8 border-b border-border flex justify-between items-center bg-surface-1/50">
+            <Card
+                variant="default"
+                padding="none"
+                hoverable={false}
+                className="overflow-hidden border-border/60"
+                style={{ boxShadow: 'var(--shadow-subtle)' }}
+            >
+                <div
+                    className="border-b border-border flex justify-between items-center bg-surface-1/50"
+                    style={{ padding: 'var(--spacing-lg)' }}
+                >
                     <div className="relative group flex-1 max-w-lg">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60 group-focus-within:text-primary transition-colors" size={18} strokeWidth={2.5} />
                         <input
                             type="text"
                             placeholder={t('common.search_placeholder')}
-                            className="w-full pl-12 pr-4 py-3 bg-surface border border-border rounded-2xl text-sm font-black text-foreground focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all shadow-inner placeholder:text-muted-foreground/40 uppercase tracking-widest text-[11px]"
+                            className="w-full pl-12 pr-4 py-3 bg-surface border border-border rounded-lg text-sm font-black text-foreground focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary shadow-inner placeholder:text-muted-foreground/40 uppercase tracking-widest text-[11px]"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
+                            style={{
+                                borderRadius: 'var(--radius)',
+                                transitionDuration: 'var(--duration-fast)',
+                                transitionTimingFunction: 'var(--easing-out)'
+                            }}
                         />
                     </div>
                 </div>
@@ -153,7 +179,14 @@ export const TasksTab: React.FC<TasksTabProps> = ({
                                 </tr>
                             ) : (
                                 filteredTasks.map((task) => (
-                                    <tr key={task.id} className="hover:bg-primary/5 transition-all duration-300 group active:bg-primary/10">
+                                    <tr
+                                        key={task.id}
+                                        className="hover:bg-primary/5 group active:bg-primary/10"
+                                        style={{
+                                            transitionDuration: 'var(--duration-normal)',
+                                            transitionTimingFunction: 'var(--easing-out)'
+                                        }}
+                                    >
                                         <td className="px-8 py-5">
                                             <span className="font-black text-foreground text-sm tracking-tight group-hover:text-primary transition-colors">{task.title}</span>
                                         </td>
@@ -184,7 +217,12 @@ export const TasksTab: React.FC<TasksTabProps> = ({
                                                         onDeleteTask(task.id);
                                                     }
                                                 }}
-                                                className="w-9 h-9 flex items-center justify-center rounded-xl bg-surface-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-border/50 transition-all active:scale-90 shadow-sm opacity-0 group-hover:opacity-100"
+                                                className="w-9 h-9 flex items-center justify-center bg-surface-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-border/50 shadow-sm opacity-0 group-hover:opacity-100"
+                                                style={{
+                                                    borderRadius: 'var(--radius)',
+                                                    transitionDuration: 'var(--duration-fast)',
+                                                    transitionTimingFunction: 'var(--easing-out)'
+                                                }}
                                             >
                                                 <Trash2 size={16} strokeWidth={2.5} />
                                             </button>

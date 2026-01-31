@@ -69,38 +69,38 @@ const LoginPage: React.FC = () => {
     return (
         <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-background">
             {/* Professional Background Pattern */}
-            <div className="absolute inset-0 z-0 opacity-40" style={{
+            <div className="absolute inset-0 z-0 opacity-20" style={{
                 backgroundImage: `radial-gradient(var(--teams-brand) 0.5px, transparent 0.5px)`,
                 backgroundSize: '32px 32px'
             }} />
-            <div className="absolute inset-0 z-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5" />
+            <div className="absolute inset-0 z-0 bg-gradient-to-br from-primary/3 via-transparent to-primary/3" />
 
             {/* Connection Settings Trigger */}
             <button
                 onClick={() => setShowSetup(true)}
-                className="absolute top-6 right-6 p-2.5 text-muted-foreground hover:text-primary hover:bg-surface-2 rounded-xl transition-all z-20 active:scale-90 shadow-sm border border-border bg-surface/50 backdrop-blur-md"
+                className="absolute top-6 right-6 p-2.5 text-muted-foreground hover:text-primary hover:bg-surface-2 rounded-lg transition-all duration-[var(--duration-fast)] z-20 active:scale-90 shadow-subtle border border-border bg-surface/50 backdrop-blur-md"
                 title={t('auth.setup_connection_tooltip')}
             >
                 <Settings size={20} strokeWidth={2.5} />
             </button>
 
             <div className="w-full max-w-[440px] relative z-10 p-4 animate-scale-in">
-                <Card className="p-10 shadow-m3-4 border-border/60 bg-surface/90 backdrop-blur-xl rounded-[2.5rem]">
+                <Card className="p-10 shadow-strong border-border/60 bg-surface/90 backdrop-blur-xl rounded-lg">
                     <div className="text-center mb-10">
-                        <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-2xl bg-primary mb-6 shadow-m3-2 transform transition-transform hover:scale-110 duration-500">
+                        <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-lg bg-primary mb-6 shadow-subtle transform transition-transform hover:scale-110 duration-[var(--duration-slow)]">
                             <img src="/icon.png" alt="Logo" className="w-10 h-10 object-contain brightness-0 invert" />
                         </div>
-                        <h2 className="text-3xl font-black text-foreground tracking-tighter uppercase mb-2">
+                        <h2 className="text-3xl font-black text-secondary uppercase mb-2" style={{ letterSpacing: '-0.02em' }}>
                             {t('auth.signInTitle')}
                         </h2>
-                        <p className="text-muted-foreground font-bold text-sm opacity-70 uppercase tracking-widest">
+                        <p className="text-tertiary font-bold text-sm opacity-80 uppercase tracking-[0.15em]">
                             {t('auth.loginPrompt')}
                         </p>
                     </div>
 
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         {error && (
-                            <div className="bg-destructive/5 border border-destructive/10 p-4 rounded-2xl flex items-start space-x-3 text-destructive animate-slide-up">
+                            <div className="bg-danger/5 border border-danger/20 p-4 rounded-lg flex items-start space-x-3 text-danger animate-slide-up">
                                 <AlertCircle className="shrink-0 mt-0.5" size={18} strokeWidth={2.5} />
                                 <p className="text-xs font-black uppercase tracking-tight leading-tight">{error}</p>
                             </div>
@@ -146,7 +146,7 @@ const LoginPage: React.FC = () => {
                             disabled={loading || !username || !password}
                             variant="primary"
                             size="lg"
-                            className="w-full font-black uppercase tracking-[0.2em] text-xs shadow-m3-2 py-7 rounded-2xl mt-8 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                            className="w-full font-black uppercase tracking-[0.2em] text-xs shadow-subtle py-7 rounded-lg mt-8 transition-all duration-[var(--duration-normal)] hover:scale-[1.02] hover:shadow-medium active:scale-[0.98] active:shadow-subtle hover:translate-y-[-1px] active:translate-y-[1px]"
                             loading={loading}
                             icon={<LogIn size={18} strokeWidth={2.5} />}
                             iconPosition="right"
@@ -157,25 +157,25 @@ const LoginPage: React.FC = () => {
 
                     {registrationAllowed && (
                         <div className="mt-10 text-center border-t border-border/40 pt-8">
-                            <p className="text-[11px] font-black text-muted-foreground uppercase tracking-widest opacity-60">
+                            <p className="text-[11px] font-black text-tertiary uppercase tracking-widest opacity-70">
                                 {t('auth.noAccount')}
                             </p>
                             <Link
                                 to="/register"
-                                className="inline-block mt-3 text-primary font-black uppercase tracking-[0.15em] text-[10px] hover:text-teams-brandHover transition-colors border-b-2 border-primary/20 hover:border-primary"
+                                className="inline-block mt-3 text-primary font-black uppercase tracking-[0.15em] text-[10px] hover:text-primary/80 transition-colors duration-[var(--duration-fast)] border-b-2 border-primary/20 hover:border-primary/40"
                             >
                                 {t('auth.signUp')}
                             </Link>
                         </div>
                     )}
-                </Card>
 
                 {/* Footer Info */}
                 <div className="mt-8 text-center opacity-30 group">
-                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em] transition-opacity group-hover:opacity-100">
+                    <p className="text-[9px] font-black text-tertiary uppercase tracking-[0.4em] transition-opacity duration-[var(--duration-normal)] group-hover:opacity-100">
                         Coordinator System &bull; Secured Enterprise Edition
                     </p>
                 </div>
+                </Card>
             </div>
         </div>
     );

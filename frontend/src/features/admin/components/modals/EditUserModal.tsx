@@ -50,7 +50,14 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                     <Button variant="ghost" onClick={onClose} className="font-black uppercase tracking-widest text-xs px-6">
                         {t('common.cancel')}
                     </Button>
-                    <Button variant="primary" onClick={handleSave} className="shadow-m3-2 font-black uppercase tracking-widest text-xs px-8 scale-105">
+                    <Button
+                        variant="primary"
+                        onClick={handleSave}
+                        className="font-black uppercase tracking-widest text-xs px-8 scale-105"
+                        style={{
+                            boxShadow: 'var(--shadow-medium)'
+                        }}
+                    >
                         {t('common.save')}
                     </Button>
                 </>
@@ -70,9 +77,12 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
 
                 <div className="min-h-[450px] animate-slide-up">
                     {activeSection === 'personal' && (
-                        <div className="space-y-7">
+                         <div className="space-y-7">
                             <div className="flex items-center gap-3 border-b border-border/60 pb-3">
-                                <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary shadow-sm">
+                                <div
+                                    className="w-8 h-8 bg-primary/10 flex items-center justify-center text-primary shadow-sm"
+                                    style={{ borderRadius: 'var(--radius)' }}
+                                >
                                     <UserIcon size={16} strokeWidth={2.5} />
                                 </div>
                                 <h3 className="text-[10px] font-black text-foreground uppercase tracking-[0.2em] opacity-80">
@@ -136,9 +146,12 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                     )}
 
                     {activeSection === 'org' && (
-                        <div className="space-y-7">
+                         <div className="space-y-7">
                             <div className="flex items-center gap-3 border-b border-border/60 pb-3">
-                                <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary shadow-sm">
+                                <div
+                                    className="w-8 h-8 bg-primary/10 flex items-center justify-center text-primary shadow-sm"
+                                    style={{ borderRadius: 'var(--radius)' }}
+                                >
                                     <Building2 size={16} strokeWidth={2.5} />
                                 </div>
                                 <h3 className="text-[10px] font-black text-foreground uppercase tracking-[0.2em] opacity-80">
@@ -223,9 +236,12 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                     )}
 
                     {activeSection === 'security' && (
-                        <div className="space-y-7">
+                         <div className="space-y-7">
                             <div className="flex items-center gap-3 border-b border-border/60 pb-3">
-                                <div className="w-8 h-8 bg-destructive/10 rounded-lg flex items-center justify-center text-destructive shadow-sm">
+                                <div
+                                    className="w-8 h-8 bg-destructive/10 flex items-center justify-center text-destructive shadow-sm"
+                                    style={{ borderRadius: 'var(--radius)' }}
+                                >
                                     <Key size={16} strokeWidth={2.5} />
                                 </div>
                                 <h3 className="text-[10px] font-black text-foreground uppercase tracking-[0.2em] opacity-80">
@@ -236,7 +252,12 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                             <div className="space-y-6">
                                 {!showPassword ? (
                                     <div className="space-y-5">
-                                        <div className="p-5 bg-destructive/5 rounded-2xl border border-destructive/10 animate-scale-in">
+                                        <div
+                                            className="p-5 bg-destructive/5 border border-destructive/10 animate-scale-in"
+                                            style={{
+                                                borderRadius: 'var(--radius)'
+                                            }}
+                                        >
                                             <p className="text-sm text-destructive font-black leading-relaxed tracking-tight">
                                                 {t('admin.securityWarning')}
                                             </p>
@@ -244,8 +265,12 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                         <Button
                                             variant="danger"
                                             onClick={() => setShowPassword(true)}
-                                            className="w-full font-black uppercase tracking-widest text-xs shadow-m3-2 py-4 rounded-xl"
+                                            className="w-full font-black uppercase tracking-widest text-xs py-4"
                                             icon={<Lock size={18} strokeWidth={2.5} />}
+                                            style={{
+                                                borderRadius: 'var(--radius)',
+                                                boxShadow: 'var(--shadow-medium)'
+                                            }}
                                         >
                                             {t('admin.initReset')}
                                         </Button>
@@ -268,13 +293,17 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                         <div className="flex gap-4">
                                             <Button
                                                 variant="danger"
-                                                className="flex-1 font-black uppercase tracking-widest text-xs py-4 shadow-m3-1"
+                                                className="flex-1 font-black uppercase tracking-widest text-xs py-4"
                                                 onClick={() => {
                                                     if (newPassword.length >= 6) {
                                                         onResetPassword(user.id, newPassword);
                                                         setShowPassword(false);
                                                         setNewPassword('');
                                                     }
+                                                }}
+                                                style={{
+                                                    borderRadius: 'var(--radius)',
+                                                    boxShadow: 'var(--shadow-subtle)'
                                                 }}
                                             >
                                                 {t('admin.confirmUpdate')}
@@ -290,10 +319,15 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                     </div>
                                 )}
 
-                                <div className="p-4 bg-amber-500/5 rounded-xl border border-amber-500/10 flex items-start gap-3">
+                                <div
+                                    className="p-4 bg-amber-500/5 border border-amber-500/10 flex items-start gap-3"
+                                    style={{
+                                        borderRadius: 'var(--radius)'
+                                    }}
+                                >
                                     <AlertCircle size={16} className="text-amber-600 shrink-0 mt-0.5" strokeWidth={3} />
                                     <p className="text-[11px] text-amber-800 font-bold leading-relaxed">
-                                        {t('admin.passwordResetNotice', 'Password reset will immediately log the user out of all active sessions on all devices.')}
+                                        {t('admin.passwordResetNotice', 'Password reset will immediately log user out of all active sessions on all devices.')}
                                     </p>
                                 </div>
                             </div>

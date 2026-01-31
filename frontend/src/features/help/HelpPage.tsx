@@ -135,11 +135,11 @@ const HelpPage: React.FC = () => {
                             {categories.map((cat, idx) => (
                                 <div
                                     key={idx}
-                                    className="group relative p-8 bg-surface rounded-2xl border border-border hover:border-primary/20 hover:shadow-m3-2 transition-all duration-500 animate-slide-up cursor-pointer active:scale-95"
+                                    className="group relative p-8 bg-surface rounded-lg border border-border hover:border-primary/20 hover:shadow-m3-2 transition-all duration-500 animate-slide-up cursor-pointer active:scale-95"
                                     style={{ animationDelay: `${idx * 50}ms` }}
                                 >
                                     <div className="relative z-10">
-                                        <div className="w-14 h-14 bg-surface-2 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-sm group-hover:scale-110 group-hover:rotate-3">
+                                        <div className="w-14 h-14 bg-surface-2 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-sm group-hover:scale-110 group-hover:rotate-3">
                                             {cat.icon}
                                         </div>
                                         <h3 className="text-lg font-black text-foreground mb-3 tracking-tight transition-colors group-hover:text-primary">
@@ -164,7 +164,7 @@ const HelpPage: React.FC = () => {
 
                         <div className="relative z-10 flex flex-col lg:flex-row items-center gap-12">
                             <div className="lg:w-1/2 space-y-8">
-                                <div className="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center text-white shadow-m3-2 group-hover:scale-110 transition-transform duration-500 group-hover:rotate-6">
+                                <div className="w-20 h-20 bg-primary rounded-lg flex items-center justify-center text-white shadow-m3-2 group-hover:scale-110 transition-transform duration-500 group-hover:rotate-6">
                                     <Headset size={40} strokeWidth={2} />
                                 </div>
                                 <div className="space-y-4">
@@ -187,14 +187,14 @@ const HelpPage: React.FC = () => {
                             </div>
 
                             <div className="lg:w-1/2 grid grid-cols-2 gap-6">
-                                <div className="p-6 bg-surface rounded-2xl shadow-m3-1 border border-border/50 group-hover:border-primary/10 transition-all hover:translate-y-[-4px]">
+                                <div className="p-6 bg-surface rounded-lg shadow-m3-1 border border-border/50 group-hover:border-primary/10 transition-all hover:translate-y-[-4px]">
                                     <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center text-primary mb-4">
                                         <LifeBuoy size={24} strokeWidth={2.5} />
                                     </div>
                                     <h4 className="font-black text-foreground text-sm tracking-tight uppercase mb-2">{t('help.feature_247_title')}</h4>
                                     <p className="text-xs text-muted-foreground font-bold leading-relaxed opacity-60">{t('help.feature_247_desc')}</p>
                                 </div>
-                                <div className="p-6 bg-surface rounded-2xl shadow-m3-1 border border-border/50 group-hover:border-green-500/10 transition-all translate-y-6 hover:translate-y-2">
+                                <div className="p-6 bg-surface rounded-lg shadow-m3-1 border border-border/50 group-hover:border-green-500/10 transition-all translate-y-6 hover:translate-y-2">
                                     <div className="w-10 h-10 bg-green-500/5 rounded-xl flex items-center justify-center text-green-600 mb-4">
                                         <CheckCircle size={24} strokeWidth={2.5} />
                                     </div>

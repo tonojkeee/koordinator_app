@@ -9,21 +9,20 @@ export const typography = {
   // Font Family
   fontFamily: 'font-sans',
 
-  // Display - for large headers
+  // Display - for large headers (supplementary to 6-level heading system)
   display: {
     large: 'text-3xl font-bold text-teams-text-primary leading-tight tracking-tight',
     medium: 'text-2xl font-bold text-teams-text-primary leading-tight tracking-tight',
     small: 'text-xl font-bold text-teams-text-primary leading-tight tracking-tight',
   },
 
-  // Headings - Semibold for Teams feel
   heading: {
-    h1: 'text-xl font-semibold text-teams-text-primary leading-snug',
-    h2: 'text-lg font-semibold text-teams-text-primary leading-snug',
-    h3: 'text-base font-semibold text-teams-text-primary leading-snug',
-    h4: 'text-sm font-semibold text-teams-text-primary leading-snug',
-    h5: 'text-xs font-bold text-teams-text-primary uppercase tracking-wider',
-    h6: 'text-[10px] font-bold text-teams-text-primary uppercase tracking-widest',
+    h1: 'text-[2rem] font-bold text-teams-text-primary leading-tight tracking-tight',
+    h2: 'text-[1.75rem] font-semibold text-teams-text-primary leading-tight tracking-tight',
+    h3: 'text-[1.5rem] font-semibold text-teams-text-primary leading-tight tracking-tight',
+    h4: 'text-[1.25rem] font-semibold text-teams-text-primary leading-snug tracking-wide',
+    h5: 'text-[0.875rem] font-bold text-teams-text-primary leading-snug tracking-wide',
+    h6: 'text-[0.75rem] font-bold text-teams-text-primary leading-snug tracking-wide',
   },
 
   // Body text - Professional and dense

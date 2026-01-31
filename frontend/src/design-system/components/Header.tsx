@@ -153,7 +153,7 @@ const AnimatedTitle: React.FC<{ title: string; className?: string }> = ({ title,
   return (
     <h1
       className={cn(
-        'text-xl font-semibold text-[#242424] leading-tight truncate transition-all duration-300 ease-in-out',
+        'text-xl font-semibold text-foreground leading-tight truncate transition-all duration-300 ease-in-out',
         isAnimating && 'opacity-0 transform translate-y-1',
         !isAnimating && 'opacity-100 transform translate-y-0',
         className
@@ -191,9 +191,9 @@ export const Header = React.memo<HeaderProps>(({
       )}
     >
       <div className={cn(
-        // Refined Floating Surface: Using M3 Elevation and Teams-like hierarchy
-        'bg-surface border border-border rounded-xl shadow-m3-1 p-3.5',
-        'pointer-events-auto transition-shadow duration-300 hover:shadow-m3-2',
+        // Refined Floating Surface: Using design token shadow hierarchy
+        'bg-surface border border-border rounded-xl shadow-subtle p-3.5',
+        'pointer-events-auto transition-shadow duration-300 hover:shadow-medium',
         'flex flex-col gap-3.5'
       )}>
         {/* Main Content: Icon + Title + Search + Actions */}

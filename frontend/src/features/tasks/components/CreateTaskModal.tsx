@@ -107,7 +107,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose }) =>
                 {/* 1. Target Selection */}
                 <div className="space-y-4">
                         <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1 opacity-70">{t('tasks.create_modal.assignee_label')}</label>
-                        <div className="flex bg-surface-3 p-1 rounded-2xl w-fit mb-4 border border-border shadow-inner">
+                        <div className="flex bg-surface-3 p-1 rounded-lg w-fit mb-4 border border-border shadow-inner">
                             <button
                                 onClick={() => setTargetType('user')}
                                 className={cn(
@@ -230,7 +230,7 @@ const CreateTaskModal: React.FC<CreateTaskModalProps> = ({ isOpen, onClose }) =>
                         />
                         <textarea
                             placeholder={t('tasks.create_modal.description_placeholder')}
-                            className="w-full h-32 p-4 bg-surface-2 border border-border rounded-2xl text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary focus:bg-surface transition-all resize-none shadow-inner placeholder:text-muted-foreground/40"
+                            className="w-full h-32 p-4 bg-surface-2 border border-border rounded-lg text-sm font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary focus:bg-surface transition-all resize-none shadow-inner placeholder:text-muted-foreground/40"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                         />

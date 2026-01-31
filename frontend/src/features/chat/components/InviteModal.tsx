@@ -114,7 +114,7 @@ function InviteModal({ isOpen, onClose, channelName, onInvite }: InviteModalProp
         )}
 
         {/* User selection with autocomplete */}
-        <div className="bg-surface-2 p-1 rounded-2xl border border-border/50">
+        <div className="bg-surface-2 p-1 rounded-lg border border-border/50">
           <UserAutocomplete
             label={t('chat.search_users')}
             placeholder={t('chat.select_users')}

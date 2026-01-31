@@ -26,11 +26,11 @@ const cardVariants = cva(
   {
     variants: {
       selected: {
-        true: 'ring-2 ring-primary border-transparent bg-primary/5',
+        true: 'ring-2 ring-primary border-transparent bg-primary/5 [box-shadow:var(--shadow-strong)]',
         false: '',
       },
       hoverable: {
-        true: 'cursor-pointer hover:shadow-teams-card hover:bg-surface-1 active:scale-[0.99]',
+        true: 'cursor-pointer hover:[box-shadow:var(--shadow-medium)] hover:bg-surface-1 active:scale-[0.99]',
         false: '',
       },
       padding: {
@@ -41,8 +41,8 @@ const cardVariants = cva(
         xl: 'p-10',
       },
       variant: {
-        default: 'shadow-sm hover:shadow-m3-1',
-        elevated: 'shadow-m3-1 border-transparent hover:shadow-m3-2',
+        default: '[box-shadow:var(--shadow-subtle)] hover:[box-shadow:var(--shadow-medium)]',
+        elevated: '[box-shadow:var(--shadow-medium)] border-transparent hover:[box-shadow:var(--shadow-strong)]',
         outlined: 'border border-border bg-transparent shadow-none',
         ghost: 'border-0 shadow-none bg-transparent',
       },

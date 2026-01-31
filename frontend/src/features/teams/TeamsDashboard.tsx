@@ -33,10 +33,10 @@ export const TeamsDashboard = () => {
                 <div className="grid grid-cols-12 gap-6 h-full max-w-7xl mx-auto animate-slide-up">
                     <div className="col-span-12 lg:col-span-8 space-y-6">
 
-                        <div className="bg-primary/5 rounded-2xl p-5 flex items-center justify-between border border-primary/10 shadow-m3-1 overflow-hidden relative group">
+                        <div className="bg-primary/5 rounded-lg p-5 flex items-center justify-between border border-primary/10 shadow-m3-1 overflow-hidden relative group">
                             <div className="absolute top-0 left-0 bottom-0 w-1 bg-primary" />
                             <div className="flex items-center gap-5">
-                                <div className="bg-surface p-3 rounded-2xl text-primary shadow-m3-1 group-hover:scale-110 transition-transform duration-500">
+                                <div className="bg-surface p-3 rounded-lg text-primary shadow-m3-1 group-hover:scale-110 transition-transform duration-500">
                                     <Video size={24} strokeWidth={2} />
                                 </div>
                                 <div>
@@ -122,7 +122,7 @@ export const TeamsDashboard = () => {
 };
 
 const Widget = ({ title, children }: { title: string, children: React.ReactNode }) => (
-    <Card className="p-5 border-border shadow-m3-1 rounded-2xl bg-surface hover:shadow-m3-2 transition-all duration-300">
+    <Card className="p-5 border-border shadow-m3-1 rounded-lg bg-surface hover:shadow-m3-2 transition-all duration-300">
         <div className="flex justify-between items-center mb-5">
             <h3 className="font-black text-foreground text-[10px] uppercase tracking-[0.2em] opacity-80">{title}</h3>
             <button className="text-muted-foreground hover:text-primary transition-colors p-1">
@@ -142,7 +142,7 @@ const PostCard = ({ author, time, content, reactions, isPrimary, image }: {
     image?: string
 }) => (
     <Card className={cn(
-        "p-5 border-border shadow-m3-1 rounded-2xl transition-all duration-500 hover:shadow-teams-card group",
+        "p-5 border-border shadow-m3-1 rounded-lg transition-all duration-500 hover:shadow-teams-card group",
         isPrimary ? 'bg-surface border-primary/10 ring-1 ring-primary/5' : 'bg-surface-1 hover:bg-surface'
     )}>
         <div className="flex gap-4">

@@ -12,7 +12,13 @@ import type { SessionsTabProps } from '../../types';
 import type { User } from '../../../../types';
 
 export const SessionsTab: React.FC<SessionsTabProps> = ({ t, sessions, isLoading }) => (
-    <Card variant="default" padding="none" hoverable={false} className="overflow-hidden animate-fade-in shadow-m3-1 border-border/60">
+    <Card
+        variant="default"
+        padding="none"
+        hoverable={false}
+        className="overflow-hidden animate-fade-in border-border/60"
+        style={{ boxShadow: 'var(--shadow-subtle)' }}
+    >
         {/* Header */}
         <div className="p-8 border-b border-border flex justify-between items-center bg-surface-1/50">
             <h3 className="text-lg font-black text-foreground flex items-center gap-4 uppercase tracking-tight">
@@ -20,7 +26,10 @@ export const SessionsTab: React.FC<SessionsTabProps> = ({ t, sessions, isLoading
                     <Activity size={20} strokeWidth={2.5} />
                 </div>
                 {t('admin.activeSessions')}
-                <span className="px-3 py-1 bg-emerald-500 text-white text-[9px] font-black rounded-full shadow-m3-1 animate-pulse uppercase tracking-[0.2em] ml-2">
+                <span
+                    className="px-3 py-1 bg-emerald-500 text-white text-[9px] font-black rounded-full animate-pulse uppercase tracking-[0.2em] ml-2"
+                    style={{ boxShadow: 'var(--shadow-subtle)' }}
+                >
                     {sessions?.length || 0} {t('common.online')}
                 </span>
             </h3>

@@ -44,8 +44,8 @@ export const SearchInput = React.memo<SearchInputProps>(({
       <Search
         className={cn(
           'absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4',
-          'text-[#616161] transition-colors',
-          'group-focus-within:text-[#5B5FC7]'
+          'text-muted-foreground transition-colors',
+          'group-focus-within:text-primary'
         )}
       />
 
@@ -59,13 +59,13 @@ export const SearchInput = React.memo<SearchInputProps>(({
           // Base styling - responsive width (Requirements 11.2)
           'w-full h-9 pl-9 pr-8',
           // Teams-like background
-          'bg-white border border-[#E0E0E0] rounded-md',
+          'bg-surface border border-border rounded-md',
           // Typography
-          'text-sm font-normal text-[#242424] placeholder:text-[#616161]',
+          'text-sm font-normal text-foreground placeholder:text-muted-foreground',
           // Transitions
           'transition-all outline-none',
           // Focus state enhancement (Requirement 3.3)
-          'focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7]'
+          'focus:border-primary focus:ring-1 focus:ring-ring'
         )}
         {...props}
       />
@@ -77,11 +77,11 @@ export const SearchInput = React.memo<SearchInputProps>(({
           onClick={onClear}
           className={cn(
             'absolute right-2 top-1/2 -translate-y-1/2',
-            'p-0.5 hover:bg-[#F5F5F5] rounded-full transition-colors'
+            'p-0.5 hover:bg-surface-2 rounded-full transition-colors'
           )}
           aria-label="Clear search"
         >
-          <X className="w-3 h-3 text-[#616161]" />
+          <X className="w-3 h-3 text-muted-foreground" />
         </button>
       )}
     </div>

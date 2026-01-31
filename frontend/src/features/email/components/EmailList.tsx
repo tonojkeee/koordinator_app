@@ -102,12 +102,14 @@ const EmailList: React.FC<EmailListProps> = ({
 
     if (emails.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center p-12 text-slate-400 h-full bg-slate-50/20">
-                <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-4 text-cyan-600/30">
-                    <Inbox size={32} strokeWidth={1.5} />
+            <div className="flex flex-col items-center justify-center p-12 h-full bg-slate-50/30">
+                <div className="w-20 h-20 bg-white rounded-lg shadow-subtle border border-slate-100 flex items-center justify-center mb-6 text-cyan-600/40">
+                    <Inbox size={36} strokeWidth={1.5} />
                 </div>
-                <div className="text-sm font-bold text-slate-900">{t('email.list_no_emails')}</div>
-                <div className="text-xs text-slate-500 mt-1">{t('email.list_empty_folder_desc') || "This folder is currently empty"}</div>
+                <div className="text-base font-extrabold text-slate-900 mb-2">{t('email.list_no_emails')}</div>
+                <div className="text-sm font-medium text-slate-500 mb-6 max-w-[240px] text-center leading-relaxed">
+                    {t('email.list_empty_folder_desc') || "This folder is currently empty"}
+                </div>
             </div>
         );
     }
@@ -242,19 +244,19 @@ const EmailList: React.FC<EmailListProps> = ({
                         </div>
                     </div>
 
-                    <div className="flex-1 min-w-0 flex flex-col gap-0">
+                    <div className="flex-1 min-w-0 flex flex-col gap-0.5">
                         <div className="flex justify-between items-baseline">
                             <span className={cn(
-                                "text-[12px] truncate",
-                                isUnread ? "font-bold text-slate-900" : "font-medium text-slate-600"
+                                "text-[13px] truncate font-medium",
+                                isUnread ? "text-slate-900 font-extrabold" : "text-slate-700"
                             )}>
                                 {isSent ? `${t('email.list_to')}: ${email.to_address.split('@')[0]}` : email.from_address.split('@')[0]}
                             </span>
                             <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                                {email.has_attachments && <Paperclip size={11} className="text-slate-400" />}
+                                {email.has_attachments && <Paperclip size={12} className={isUnread ? "text-cyan-600" : "text-slate-400"} />}
                                 <span className={cn(
-                                    "text-[10px] tabular-nums",
-                                    isUnread ? "text-cyan-600 font-bold" : "text-slate-400 font-medium"
+                                    "text-[11px] tabular-nums font-semibold",
+                                    isUnread ? "text-cyan-700" : "text-slate-400"
                                 )}>
                                     {dateStr}
                                 </span>
@@ -262,14 +264,16 @@ const EmailList: React.FC<EmailListProps> = ({
                         </div>
 
                         <div className={cn(
-                            "text-[12px] truncate",
-                            isUnread ? "font-semibold text-slate-900" : "text-slate-600"
+                            "text-[13px] truncate leading-snug",
+                            isUnread ? "font-bold text-slate-900" : "font-medium text-slate-700"
                         )}>
                             {email.subject || t('email.list_no_subject')}
                         </div>
 
-                        <div className="text-[11px] text-slate-500 line-clamp-1 leading-normal">
-                            {email.snippet || t('email.details_no_preview')}
+                        <div className="text-[12px] leading-relaxed line-clamp-1">
+                            <span className={isUnread ? "text-slate-700 font-medium" : "text-slate-500"}>
+                                {email.snippet || t('email.details_no_preview')}
+                            </span>
                         </div>
                     </div>
 

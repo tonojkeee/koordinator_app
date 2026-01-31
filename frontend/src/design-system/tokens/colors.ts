@@ -1,12 +1,22 @@
 /**
  * Design System - Color Tokens
- * 
- * Современная цветовая палитра с улучшенным контрастом и читаемостью.
- * Основана на принципах Material Design 3 и современных UI трендах.
+ *
+ * Modern color palette with improved contrast and readability.
+ * Based on WCAG 2.1 AA accessibility guidelines (4.5:1 minimum contrast).
+ *
+ * COLOR HIERARCHY (6 Semantic Levels):
+ * - primary: Main CTAs/active elements (Corporate blue #0066CC base)
+ * - secondary: Headers/labels (Dark gray for strong readability)
+ * - tertiary: Metadata/captions (Medium gray, WCAG AA compliant)
+ * - success: Completed states (Emerald green)
+ * - warning: Pending tasks (Amber/yellow)
+ * - danger: Errors/destructive actions (Red)
+ *
+ * All colors are defined in CSS variables in index.css for runtime theming.
  */
 
 export const colors = {
-  // Microsoft Teams inspired palette
+  // Teams signature colors (Legacy support)
   teams: {
     purple: 'teams-accent',
     bg: 'teams-bg',
@@ -17,7 +27,7 @@ export const colors = {
     textSecondary: 'teams-text-secondary',
   },
 
-  // Primary palette - now mapped to Teams purple
+  // Primary palette - Corporate blue #0066CC (refined saturation)
   primary: {
     25: 'primary-25',
     50: 'primary-50',
@@ -25,7 +35,7 @@ export const colors = {
     200: 'primary-200',
     300: 'primary-300',
     400: 'primary-400',
-    500: 'primary-500', // #5B5FC7
+    500: 'primary-500', // #0066CC base
     600: 'primary-600',
     700: 'primary-700',
     800: 'primary-800',
@@ -33,7 +43,7 @@ export const colors = {
     950: 'primary-950',
   },
 
-  // Neutral palette - using slate for Teams-like gray scale
+  // Neutral palette - Slate gray scale for Team-like appearance
   neutral: {
     0: 'white',
     25: 'slate-25',
@@ -50,7 +60,7 @@ export const colors = {
     950: 'slate-950',
   },
 
-  // Surface colors for layering
+  // Surface colors for layering hierarchy
   surface: {
     primary: 'white',
     secondary: 'teams-bg',
@@ -59,7 +69,26 @@ export const colors = {
     overlay: 'black/20',
   },
 
-  // Semantic colors
+  // Semantic Colors - 6-Level Hierarchy
+  // All semantic colors must use CSS variables from index.css
+  // Usage guidelines:
+  // - primary: Main CTAs, active states, primary actions
+  // - secondary: Page headers, section labels, important text
+  // - tertiary: Metadata, captions, timestamps, secondary information
+  // - success: Completed tasks, success messages, positive states
+  // - warning: Pending actions, alerts, cautionary states
+  // - danger: Error messages, destructive actions, critical alerts
+
+  semantic: {
+    primary: 'var(--primary)',
+    secondary: 'var(--secondary)',
+    tertiary: 'var(--tertiary)',
+    success: 'var(--success)',
+    warning: 'var(--warning)',
+    danger: 'var(--danger)',
+  },
+
+  // Semantic color palettes (for gradients, hover states, variants)
   success: {
     50: 'emerald-50',
     100: 'emerald-100',
@@ -80,13 +109,6 @@ export const colors = {
     500: 'red-500',
     600: 'red-600',
     700: 'red-700',
-  },
-  info: {
-    50: 'blue-50',
-    100: 'blue-100',
-    500: 'blue-500',
-    600: 'blue-600',
-    700: 'blue-700',
   },
 } as const;
 

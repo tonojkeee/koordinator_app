@@ -204,7 +204,7 @@ const SettingsPage: React.FC = () => {
 
             <div className="flex-1 overflow-y-auto px-6 pb-6 pt-2 custom-scrollbar">
                 <div className="max-w-4xl mx-auto pb-20 animate-slide-up">
-                    <div className="flex items-center space-x-6 mb-8 p-8 bg-surface rounded-2xl border border-border shadow-m3-1 transition-shadow hover:shadow-m3-2 group/profile">
+                    <div className="flex items-center space-x-6 mb-8 p-8 bg-surface rounded-lg border border-border shadow-m3-1 transition-shadow hover:shadow-m3-2 group/profile">
                         <input
                             type="file"
                             ref={fileInputRef}
@@ -251,7 +251,7 @@ const SettingsPage: React.FC = () => {
                             <div
                                 key={section.id}
                                 onClick={section.onClick}
-                                className="flex items-center p-5 rounded-2xl bg-surface border border-border hover:bg-surface-2 hover:border-primary/20 hover:shadow-m3-1 transition-all cursor-pointer group shadow-sm active:scale-[0.99]"
+                                className="flex items-center p-5 rounded-lg bg-surface border border-border hover:bg-surface-2 hover:border-primary/20 hover:shadow-m3-1 transition-all cursor-pointer group shadow-sm active:scale-[0.99]"
                             >
                                 <div className="w-12 h-12 bg-surface-2 rounded-xl flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
                                     <section.icon size={22} strokeWidth={2} />
@@ -487,7 +487,7 @@ const SettingsPage: React.FC = () => {
                         size="md"
                     >
                         <div className="space-y-6">
-                            <div className="bg-orange-50 rounded-2xl p-4 border border-orange-100 flex items-start gap-3">
+                            <div className="bg-orange-50 rounded-lg p-4 border border-orange-100 flex items-start gap-3">
                                 <Lock className="text-orange-600 shrink-0 mt-0.5" size={20} />
                                 <div>
                                     <h3 className="font-bold text-orange-900 text-sm">{t('settings.security_title')}</h3>

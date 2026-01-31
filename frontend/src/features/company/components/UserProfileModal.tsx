@@ -50,7 +50,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-0 text-left align-middle shadow-2xl transition-all border border-slate-200">
+                            <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-white p-0 text-left align-middle shadow-2xl transition-all border border-slate-200">
                                 {/* Header with Gradient Background */}
                                 <div className="h-32 bg-gradient-to-br from-indigo-500 to-purple-600 relative">
                                     <button

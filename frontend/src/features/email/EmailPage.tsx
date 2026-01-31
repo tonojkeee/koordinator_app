@@ -779,7 +779,7 @@ const EmailPage: React.FC = () => {
                                         <div className="w-40 h-40 bg-white rounded-full shadow-sm flex items-center justify-center group-hover:scale-105 transition-all duration-500 ring-8 ring-white/50 border border-slate-100">
                                             <Mail className="w-20 h-20 text-cyan-600" strokeWidth={1.5} />
                                         </div>
-                                        <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-cyan-700 rounded-2xl shadow-lg flex items-center justify-center border-4 border-white text-white">
+                                        <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-cyan-700 rounded-lg shadow-lg flex items-center justify-center border-4 border-white text-white">
                                             <Inbox className="w-8 h-8" />
                                         </div>
                                     </div>
@@ -795,14 +795,14 @@ const EmailPage: React.FC = () => {
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-3xl px-4">
-                                    <div className="p-8 rounded-2xl bg-white shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300 group/tip flex flex-col items-center sm:items-start text-center sm:text-left">
+                                    <div className="p-8 rounded-lg bg-white shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300 group/tip flex flex-col items-center sm:items-start text-center sm:text-left">
                                         <div className="w-12 h-12 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center mb-5 group-hover/tip:scale-110 transition-transform duration-300">
                                             <Keyboard size={24} />
                                         </div>
                                         <h3 className="font-extrabold text-slate-900 text-lg mb-2">{t('email.welcome_tip_shortcuts_title') || "Quick Shortcuts"}</h3>
                                         <p className="text-sm text-slate-500 font-medium leading-relaxed">{t('email.welcome_tip_shortcuts_desc') || "Use 'J' and 'K' to navigate, 'C' to compose, and '/' to search your messages instantly."}</p>
                                     </div>
-                                    <div className="p-8 rounded-2xl bg-white shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300 group/tip flex flex-col items-center sm:items-start text-center sm:text-left">
+                                    <div className="p-8 rounded-lg bg-white shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300 group/tip flex flex-col items-center sm:items-start text-center sm:text-left">
                                         <div className="w-12 h-12 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center mb-5 group-hover/tip:scale-110 transition-transform duration-300">
                                             <Book size={24} />
                                         </div>

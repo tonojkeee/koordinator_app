@@ -52,7 +52,7 @@ const CompanyDepartments: React.FC<CompanyDepartmentsProps> = ({ units, allUsers
                                 style={{ animationDelay: `${index * 30}ms` }}
                             >
                                 <div className="flex items-start space-x-4">
-                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-500 to-indigo-600 flex items-center justify-center text-white text-xl font-bold shadow-xl shadow-indigo-600/20 transform group-hover:scale-110 transition-transform">
+                                    <div className="w-14 h-14 rounded-lg bg-gradient-to-tr from-indigo-500 to-indigo-600 flex items-center justify-center text-white text-xl font-bold shadow-xl shadow-indigo-600/20 transform group-hover:scale-110 transition-transform">
                                         {member.username.charAt(0).toUpperCase()}
                                     </div>
                                     <div className="flex-1 min-w-0">
@@ -108,7 +108,7 @@ const CompanyDepartments: React.FC<CompanyDepartmentsProps> = ({ units, allUsers
                                 <div
                                     key={unit.id}
                                     onClick={() => setSelectedUnit(unit)}
-                                    className="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 transform hover:-translate-y-1 animate-in cursor-pointer"
+                                    className="group bg-white p-5 rounded-lg border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-300 transform hover:-translate-y-1 animate-in cursor-pointer"
                                     style={{ animationDelay: `${index * 30}ms` }}
                                 >
                                     <div className="flex items-start justify-between mb-4">

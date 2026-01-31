@@ -170,7 +170,7 @@ const ConnectionSetup: React.FC<ConnectionSetupProps> = ({ onConfigured, initial
                                     onClick={() => handleSelectServer(server.url)}
                                     className="group flex items-center p-5 bg-white/50 hover:bg-white border border-white/80 hover:border-indigo-200 rounded-3xl transition-all duration-300 text-left shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1"
                                 >
-                                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
+                                    <div className="w-12 h-12 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
                                         <Server size={24} />
                                     </div>
                                     <div className="ml-5 flex-1">
