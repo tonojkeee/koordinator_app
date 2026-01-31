@@ -96,17 +96,17 @@ export const ArchiveFolderCard: React.FC<ArchiveFolderCardProps> = ({
             onDoubleClick={(e) => { e.stopPropagation(); onNavigate(folder); }}
             onContextMenu={handleContextMenu}
             className={cn(
-                "group rounded-2xl border p-5 transition-all duration-500 cursor-pointer relative flex flex-col justify-between min-h-[140px] animate-slide-up active:scale-[0.98]",
+                "group rounded-lg border p-5 transition-all duration-[var(--duration-slow)] cursor-pointer relative flex flex-col justify-between min-h-[140px] animate-slide-up active:scale-[0.98]",
                 isSelected
-                    ? 'bg-primary/5 border-primary shadow-m3-1 ring-2 ring-primary/5'
-                    : 'bg-surface border-border hover:shadow-teams-card hover:border-primary/20 hover:bg-surface-2'
+                    ? 'bg-primary/5 border-primary shadow-subtle ring-2 ring-primary/5'
+                    : 'bg-surface border-border hover:shadow-medium hover:border-primary/20 hover:bg-surface-2 hover:-translate-y-0.5'
             )}
             style={{ animationDelay: `${index * 20}ms` }}
         >
             {canDelete && (
                 <button
                     onClick={(e) => { e.stopPropagation(); onDelete(folder); }}
-                    className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-destructive/5 text-destructive hover:bg-destructive hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 flex items-center justify-center shadow-sm"
+                    className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-danger/5 text-danger hover:bg-danger hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-[var(--duration-normal)] z-10 flex items-center justify-center shadow-sm"
                     title={t('archive.delete')}
                 >
                     <Trash2 size={14} strokeWidth={2.5} />
@@ -114,18 +114,18 @@ export const ArchiveFolderCard: React.FC<ArchiveFolderCardProps> = ({
             )}
             <div>
                 <div className="flex items-start justify-between mb-5">
-                    <div className="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-600 shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
+                    <div className="w-14 h-14 bg-warning/10 rounded-lg flex items-center justify-center text-warning shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-transform duration-[var(--duration-slow)]">
                         <FolderIcon size={28} strokeWidth={2} fill="currentColor" fillOpacity={0.2} />
                     </div>
                 </div>
                 <h3 className={cn(
-                    "font-black text-foreground truncate pr-6 tracking-tight leading-none",
-                    isSelected ? "text-primary" : ""
+                    "font-black text-secondary truncate pr-6 tracking-tight leading-none transition-colors duration-[var(--duration-fast)]",
+                    isSelected ? "text-primary" : "group-hover:text-primary"
                 )} title={folder.name}>
                     {folder.name}
                 </h3>
             </div>
-            <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-muted-foreground mt-5 pt-4 border-t border-border/40 opacity-60">
+            <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-tertiary mt-5 pt-4 border-t border-border/40">
                 <div className="flex items-center space-x-1.5">
                     <UserIcon size={10} strokeWidth={3} />
                     <span className="truncate max-w-[90px]">{folder.owner_name}</span>
@@ -250,17 +250,17 @@ export const ArchiveFileCard: React.FC<ArchiveFileCardProps> = ({
             }}
             onContextMenu={handleContextMenu}
             className={cn(
-                "group rounded-2xl border p-5 transition-all duration-500 cursor-pointer relative overflow-hidden flex flex-col justify-between min-h-[140px] animate-slide-up active:scale-[0.98]",
+                "group rounded-lg border p-5 transition-all duration-[var(--duration-slow)] cursor-pointer relative overflow-hidden flex flex-col justify-between min-h-[140px] animate-slide-up active:scale-[0.98]",
                 isSelected
-                    ? 'bg-primary/5 border-primary shadow-m3-1 ring-2 ring-primary/5'
-                    : 'bg-surface border-border hover:shadow-teams-card hover:border-primary/20 hover:bg-surface-2'
+                    ? 'bg-primary/5 border-primary shadow-subtle ring-2 ring-primary/5'
+                    : 'bg-surface border-border hover:shadow-medium hover:border-primary/20 hover:bg-surface-2 hover:-translate-y-0.5'
             )}
             style={{ animationDelay: `${index * 20}ms` }}
         >
             {canDelete && (
                 <button
                     onClick={(e) => { e.stopPropagation(); onDelete(file); }}
-                    className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-destructive/5 text-destructive hover:bg-destructive hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-300 z-10 flex items-center justify-center shadow-sm"
+                    className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-danger/5 text-danger hover:bg-danger hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-[var(--duration-normal)] z-10 flex items-center justify-center shadow-sm"
                     title={t('archive.delete')}
                 >
                     <Trash2 size={14} strokeWidth={2.5} />
@@ -268,7 +268,7 @@ export const ArchiveFileCard: React.FC<ArchiveFileCardProps> = ({
             )}
             <div>
                 <div className="flex items-start justify-between mb-5">
-                    <div className="w-14 h-14 bg-surface-3 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-sm overflow-hidden shrink-0 group-hover:scale-110 group-hover:rotate-2">
+                    <div className="w-14 h-14 bg-surface-3 rounded-lg flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-[var(--duration-slow)] shadow-sm overflow-hidden shrink-0 group-hover:scale-110 group-hover:rotate-2">
                         {file.mime_type?.startsWith('image/') ? (
                             <img
                                 src={`${useConfigStore.getState().serverUrl || api.defaults.baseURL}/archive/files/${file.id}/view?token=${useAuthStore.getState().token}`}
@@ -284,22 +284,22 @@ export const ArchiveFileCard: React.FC<ArchiveFileCardProps> = ({
                 </div>
 
                 <h3 className={cn(
-                    "font-black text-foreground truncate pr-6 tracking-tight transition-colors leading-none",
+                    "font-black text-secondary truncate pr-6 tracking-tight transition-colors duration-[var(--duration-fast)] leading-none",
                     isSelected ? "text-primary" : "group-hover:text-primary"
                 )} title={file.title}>
                     {file.title}
                 </h3>
             </div>
 
-            <div className="flex flex-col space-y-2 mt-5 pt-4 border-t border-border/40 opacity-70">
-                <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+            <div className="flex flex-col space-y-2 mt-5 pt-4 border-t border-border/40">
+                <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-tertiary">
                     <div className="flex items-center space-x-1.5">
                         <UserIcon size={10} strokeWidth={3} />
                         <span className="truncate max-w-[90px]">{file.owner_name}</span>
                     </div>
                     <span className="tabular-nums">{formatSize(file.file_size)}</span>
                 </div>
-                <div className="flex items-center space-x-1.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-60 tabular-nums">
+                <div className="flex items-center space-x-1.5 text-[9px] font-black uppercase tracking-widest text-tertiary tabular-nums">
                     <Clock size={10} strokeWidth={3} />
                     <span>{formatDate(file.created_at, t)}</span>
                 </div>

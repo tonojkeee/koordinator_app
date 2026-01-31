@@ -90,7 +90,7 @@ export const ArchiveFolderItem: React.FC<ArchiveFolderListRowProps> = ({
     return (
         <div
             className={cn(
-                "grid grid-cols-12 gap-4 px-6 py-2 border-b border-border/40 transition-all duration-300 cursor-pointer group items-center relative overflow-hidden",
+                "grid grid-cols-12 gap-4 px-6 py-2 border-b border-border/40 transition-all duration-[var(--duration-normal)] cursor-pointer group items-center relative overflow-hidden",
                 isSelected ? 'bg-primary/5 shadow-[inset_3px_0_0_0_var(--teams-brand)]' : 'hover:bg-surface-2'
             )}
             onMouseEnter={onMouseEnter}
@@ -100,26 +100,26 @@ export const ArchiveFolderItem: React.FC<ArchiveFolderListRowProps> = ({
             onContextMenu={handleContextMenu}
         >
             <div className="col-span-6 flex items-center space-x-4 min-w-0">
-                <div className="w-8 h-8 flex items-center justify-center text-muted-foreground group-hover:text-amber-500 transition-all duration-300 shrink-0 bg-surface-3 rounded-lg shadow-sm group-hover:scale-110">
+                <div className="w-8 h-8 flex items-center justify-center text-tertiary group-hover:text-warning transition-all duration-[var(--duration-normal)] shrink-0 bg-surface-3 rounded-lg shadow-sm group-hover:scale-110">
                     <FolderIcon size={18} strokeWidth={2.5} fill="currentColor" fillOpacity={0.2} />
                 </div>
                 <span className={cn(
-                    "text-sm font-bold truncate transition-colors tracking-tight",
-                    isSelected ? "text-primary" : "text-foreground group-hover:text-primary"
+                    "text-sm font-bold truncate transition-colors tracking-tight duration-[var(--duration-fast)]",
+                    isSelected ? "text-primary" : "text-secondary group-hover:text-primary"
                 )}>
                     {folder.name}
                 </span>
             </div>
-            <div className="col-span-2 flex items-center text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-40">
+            <div className="col-span-2 flex items-center text-[10px] text-tertiary font-black uppercase tracking-widest">
                 —
             </div>
-            <div className="col-span-3 flex items-center text-[10px] text-muted-foreground font-bold tabular-nums uppercase tracking-widest opacity-60">
+            <div className="col-span-3 flex items-center text-[10px] text-tertiary font-bold tabular-nums uppercase tracking-widest">
                 {formatDate(folder.created_at, t)}
             </div>
             <div className="col-span-1 flex items-center justify-end">
                 <button
                     onClick={(e) => { e.stopPropagation(); onDelete(folder); }}
-                    className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all opacity-0 group-hover:opacity-100 active:scale-90"
+                    className="p-1.5 rounded-lg text-tertiary hover:text-danger hover:bg-danger/10 transition-all duration-[var(--duration-fast)] opacity-0 group-hover:opacity-100 active:scale-90"
                 >
                     <Trash2 size={16} strokeWidth={2.5} />
                 </button>
@@ -212,7 +212,7 @@ export const ArchiveFileItem: React.FC<ArchiveFileListRowProps> = ({
     return (
         <div
             className={cn(
-                "grid grid-cols-12 gap-4 px-6 py-2 border-b border-border/40 transition-all duration-300 cursor-pointer group items-center relative overflow-hidden",
+                "grid grid-cols-12 gap-4 px-6 py-2 border-b border-border/40 transition-all duration-[var(--duration-normal)] cursor-pointer group items-center relative overflow-hidden",
                 isSelected ? 'bg-primary/5 shadow-[inset_3px_0_0_0_var(--teams-brand)]' : 'hover:bg-surface-2'
             )}
             onMouseEnter={onMouseEnter}
@@ -221,27 +221,27 @@ export const ArchiveFileItem: React.FC<ArchiveFileListRowProps> = ({
             onContextMenu={handleContextMenu}
         >
             <div className="col-span-6 flex items-center space-x-4 min-w-0">
-                <div className="w-8 h-8 flex items-center justify-center text-muted-foreground group-hover:text-primary transition-all duration-300 shrink-0 bg-surface-3 rounded-lg shadow-sm group-hover:scale-110 group-hover:bg-primary/5">
+                <div className="w-8 h-8 flex items-center justify-center text-tertiary group-hover:text-primary transition-all duration-[var(--duration-normal)] shrink-0 bg-surface-3 rounded-lg shadow-sm group-hover:scale-110 group-hover:bg-primary/5">
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {React.cloneElement(getFileIcon(file.mime_type) as React.ReactElement<any>, { size: 18, strokeWidth: 2.5 } as any)}
                 </div>
                 <span className={cn(
-                    "text-sm font-bold truncate transition-colors tracking-tight",
-                    isSelected ? "text-primary" : "text-foreground group-hover:text-primary"
+                    "text-sm font-bold truncate transition-colors tracking-tight duration-[var(--duration-fast)]",
+                    isSelected ? "text-primary" : "text-secondary group-hover:text-primary"
                 )}>
                     {file.title}
                 </span>
             </div>
-            <div className="col-span-2 flex items-center text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-60 tabular-nums">
+            <div className="col-span-2 flex items-center text-[10px] text-tertiary font-black uppercase tracking-widest tabular-nums">
                 {fileSize}
             </div>
-            <div className="col-span-3 flex items-center text-[10px] text-muted-foreground font-bold tabular-nums uppercase tracking-widest opacity-60">
+            <div className="col-span-3 flex items-center text-[10px] text-tertiary font-bold tabular-nums uppercase tracking-widest">
                 {formatDate(file.created_at, t)}
             </div>
             <div className="col-span-1 flex items-center justify-end">
                 <button
                     onClick={(e) => { e.stopPropagation(); onDelete(file); }}
-                    className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all opacity-0 group-hover:opacity-100 active:scale-90"
+                    className="p-1.5 rounded-lg text-tertiary hover:text-danger hover:bg-danger/10 transition-all duration-[var(--duration-fast)] opacity-0 group-hover:opacity-100 active:scale-90"
                 >
                     <Trash2 size={16} strokeWidth={2.5} />
                 </button>

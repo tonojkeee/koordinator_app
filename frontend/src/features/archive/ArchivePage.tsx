@@ -60,17 +60,17 @@ const RenameModal: React.FC<{
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose} />
-            <div className="bg-surface rounded-2xl w-full max-w-md p-7 shadow-m3-3 relative animate-in scale-in duration-300 border border-border">
-                <h3 className="text-lg font-black text-foreground mb-6 flex items-center gap-4">
-                    <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary shadow-sm">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-[var(--duration-normal)]" onClick={onClose} />
+            <div className="bg-surface rounded-lg w-full max-w-md p-7 shadow-strong relative animate-in scale-in duration-[var(--duration-slow)] border border-border">
+                <h3 className="text-lg font-black text-secondary mb-6 flex items-center gap-4">
+                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary shadow-sm">
                         <Edit2 size={20} strokeWidth={2.5} />
                     </div>
                     {t('archive.rename')}
                 </h3>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label className="block text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2.5 ml-1 opacity-70">
+                        <label className="block text-[10px] font-black text-tertiary uppercase tracking-widest mb-2.5 ml-1">
                             {t('archive.newName')}
                         </label>
                         <input
@@ -78,7 +78,7 @@ const RenameModal: React.FC<{
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="w-full px-4 py-3.5 bg-surface-2 border border-transparent rounded-xl focus:bg-surface focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all outline-none font-bold text-foreground shadow-sm placeholder-muted-foreground/40"
+                            className="w-full px-4 py-3.5 bg-surface-2 border border-transparent rounded-lg focus:bg-surface focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-[var(--duration-fast)] outline-none font-bold text-secondary shadow-sm placeholder:text-tertiary/50"
                             placeholder={t('archive.enterName')}
                         />
                     </div>
@@ -88,7 +88,7 @@ const RenameModal: React.FC<{
                             disabled={!name.trim() || name === item.name}
                             variant="primary"
                             size="lg"
-                            className="w-full font-black uppercase tracking-widest text-xs shadow-m3-1"
+                            className="w-full font-black uppercase tracking-widest text-xs shadow-subtle hover:shadow-medium hover:translate-y-[-0.5px] active:shadow-subtle active:translate-y-[0.5px] transition-all duration-[var(--duration-normal)]"
                         >
                             {t('common.save')}
                         </Button>
@@ -130,25 +130,25 @@ const PropertiesModal: React.FC<{
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose} />
-            <div className="bg-surface rounded-2xl w-full max-w-md p-7 shadow-m3-3 relative animate-in scale-in duration-300 border border-border">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-[var(--duration-normal)]" onClick={onClose} />
+            <div className="bg-surface rounded-lg w-full max-w-md p-7 shadow-strong relative animate-in scale-in duration-[var(--duration-slow)] border border-border">
                 <div className="flex items-center justify-between mb-8">
-                    <h3 className="text-lg font-black text-foreground flex items-center gap-4">
-                        <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary shadow-sm">
+                    <h3 className="text-lg font-black text-secondary flex items-center gap-4">
+                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary shadow-sm">
                             <Info size={20} strokeWidth={2.5} />
                         </div>
                         {t('archive.properties')}
                     </h3>
-                    <button onClick={onClose} className="p-2.5 hover:bg-surface-3 rounded-xl text-muted-foreground hover:text-foreground transition-all">
+                    <button onClick={onClose} className="p-2.5 hover:bg-surface-3 rounded-lg text-tertiary hover:text-secondary transition-all duration-[var(--duration-fast)]">
                         <X size={20} strokeWidth={2.5} />
                     </button>
                 </div>
 
                 <div className="space-y-5">
                     {details.map((detail, idx) => (
-                        <div key={idx} className="flex flex-col space-y-1.5 p-3 rounded-xl bg-surface-2 border border-border/50 transition-colors hover:bg-surface-3/50">
-                            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-70">{detail.label}</span>
-                            <span className="text-foreground text-sm font-bold break-all select-text">{detail.value}</span>
+                        <div key={idx} className="flex flex-col space-y-1.5 p-3 rounded-lg bg-surface-2 border border-border/50 transition-colors hover:bg-surface-3/50">
+                            <span className="text-[9px] font-black text-tertiary uppercase tracking-widest">{detail.label}</span>
+                            <span className="text-secondary text-sm font-bold break-all select-text">{detail.value}</span>
                         </div>
                     ))}
                 </div>
@@ -203,25 +203,25 @@ const CreateFolderModal: React.FC<{
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-surface w-full max-w-sm rounded-2xl shadow-m3-3 overflow-hidden animate-in scale-in duration-300 border border-border">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-[var(--duration-normal)]">
+            <div className="bg-surface w-full max-w-sm rounded-lg shadow-strong overflow-hidden animate-in scale-in duration-[var(--duration-slow)] border border-border">
                 <div className="px-7 py-8">
-                    <div className="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-600 mx-auto mb-6 shadow-sm">
+                    <div className="w-14 h-14 bg-warning/10 rounded-lg flex items-center justify-center text-warning mx-auto mb-6 shadow-sm">
                         <FolderPlus size={28} strokeWidth={2} />
                     </div>
-                    <h3 className="text-xl font-black text-foreground tracking-tight mb-8 text-center uppercase tracking-widest">
+                    <h3 className="text-xl font-black text-secondary tracking-tight mb-8 text-center uppercase tracking-widest">
                         {t('archive.createFolder')}
                     </h3>
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <input
-                            autoFocus
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="w-full px-4 py-3.5 bg-surface-2 border border-transparent rounded-xl focus:bg-surface focus:border-primary focus:ring-2 focus:ring-primary/10 text-foreground font-black text-center placeholder-muted-foreground/40 transition-all outline-none text-lg shadow-inner"
-                            placeholder={t('archive.folderNamePlaceholder')}
-                            required
-                        />
+                            <input
+                                autoFocus
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="w-full px-4 py-3.5 bg-surface-2 border border-transparent rounded-lg focus:bg-surface focus:border-primary focus:ring-2 focus:ring-primary/10 text-secondary font-black text-center placeholder:text-tertiary/40 transition-all duration-[var(--duration-fast)] outline-none text-lg shadow-inner"
+                                placeholder={t('archive.folderNamePlaceholder')}
+                                required
+                            />
                         <div className="flex space-x-3 mt-8">
                             <Button
                                 type="button"
@@ -235,7 +235,7 @@ const CreateFolderModal: React.FC<{
                                 type="submit"
                                 disabled={isLoading || !name}
                                 variant="primary"
-                                className="flex-1 font-black uppercase tracking-widest text-[10px] bg-amber-600 hover:bg-amber-700 shadow-m3-1"
+                                className="flex-1 font-black uppercase tracking-widest text-[10px] bg-warning hover:bg-warning/90 shadow-subtle hover:shadow-medium hover:translate-y-[-0.5px] active:shadow-subtle active:translate-y-[0.5px] transition-all duration-[var(--duration-normal)]"
                             >
                                 {isLoading ? '...' : t('common.create')}
                             </Button>
@@ -403,8 +403,8 @@ const UploadArchiveModal: React.FC<{
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white w-full max-w-lg rounded-lg shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 border border-[#E0E0E0]">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-[var(--duration-normal)]">
+            <div className="bg-white w-full max-w-lg rounded-lg shadow-medium overflow-hidden animate-in zoom-in-95 duration-[var(--duration-normal)] border border-border">
                 <div className="px-6 py-6">
                     <div className="flex items-center justify-between mb-6">
                         <div>
@@ -415,7 +415,7 @@ const UploadArchiveModal: React.FC<{
                                 {isFolder ? t('archive.files_count', { count: folderData.files.length }) : t('archive.uploadModal.subtitle')}
                             </p>
                         </div>
-                        <button onClick={onClose} className="p-1.5 text-[#616161] hover:text-[#242424] hover:bg-[#F5F5F5] rounded-md transition-all">
+                        <button onClick={onClose} className="p-1.5 text-tertiary hover:text-secondary hover:bg-surface-2 rounded-lg transition-all duration-[var(--duration-fast)]">
                             <Plus className="rotate-45" size={20} />
                         </button>
                     </div>
@@ -425,25 +425,25 @@ const UploadArchiveModal: React.FC<{
                             <>
                                 {/* Folder info */}
                                 <div className="bg-[#FFF4E5] rounded-md p-4 border border-[#FFEDD5]">
-                                    <div className="flex items-center space-x-3 mb-2">
-                                        <FolderIcon size={20} className="text-[#D97706]" strokeWidth={1.5} />
-                                        <span className="font-bold text-[#242424]">{folderData.folderName}</span>
-                                    </div>
-                                    <p className="text-xs text-[#D97706]">
-                                        {t('archive.folder_structure_info', { count: folderData.files.length })}
-                                    </p>
+                            <div className="flex items-center space-x-3 mb-2">
+                                <FolderIcon size={20} className="text-warning" strokeWidth={1.5} />
+                                <span className="font-bold text-secondary">{folderData.folderName}</span>
+                            </div>
+                            <p className="text-xs text-warning">
+                                {t('archive.folder_structure_info', { count: folderData.files.length })}
+                            </p>
                                 </div>
 
                                 {/* Progress */}
                                 {isUploading && (
                                     <div className="space-y-2">
-                                        <div className="flex justify-between text-xs font-medium text-[#616161]">
+                                        <div className="flex justify-between text-xs font-medium text-tertiary">
                                             <span>{t('archive.uploading')}</span>
                                             <span>{uploadProgress.current} / {uploadProgress.total}</span>
                                         </div>
-                                        <div className="w-full bg-[#E0E0E0] rounded-full h-1.5 overflow-hidden">
+                                        <div className="w-full bg-surface-2 rounded-lg h-1.5 overflow-hidden">
                                             <div
-                                                className="bg-[#5B5FC7] h-full transition-all duration-300"
+                                                className="bg-primary h-full transition-all duration-[var(--duration-normal)]"
                                                 style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
                                             />
                                         </div>
@@ -453,39 +453,39 @@ const UploadArchiveModal: React.FC<{
                         ) : (
                             <>
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold uppercase tracking-wide text-[#616161] ml-1">{t('archive.uploadModal.fileLabel')}</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-wide text-tertiary ml-1">{t('archive.uploadModal.fileLabel')}</label>
                                     <label className="block w-full cursor-pointer group">
-                                        <div className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center transition-all ${file ? 'border-[#5B5FC7]/50 bg-[#EEF2FF]' : 'border-[#E0E0E0] hover:border-[#5B5FC7] hover:bg-[#F5F5F5]'}`}>
-                                            <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-3 transition-colors ${file ? 'bg-white text-[#5B5FC7]' : 'bg-[#F0F0F0] text-[#888888] group-hover:bg-white group-hover:text-[#5B5FC7]'}`}>
+                                        <div className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center transition-all duration-[var(--duration-fast)] ${file ? 'border-primary/50 bg-primary/5' : 'border-border hover:border-primary hover:bg-surface-2'}`}>
+                                            <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-3 transition-colors ${file ? 'bg-white text-primary' : 'bg-surface-2 text-tertiary group-hover:bg-white group-hover:text-primary'}`}>
                                                 <Plus size={24} strokeWidth={1.5} />
                                             </div>
-                                            <span className={`text-sm text-center font-bold ${file ? 'text-[#5B5FC7]' : 'text-[#616161] group-hover:text-[#5B5FC7]'}`}>
+                                            <span className={`text-sm text-center font-bold ${file ? 'text-primary' : 'text-tertiary group-hover:text-primary'}`}>
                                                 {file ? file.name : t('archive.uploadModal.dropzone')}
                                             </span>
-                                            {file && <span className="text-[10px] text-[#5B5FC7] mt-1">{formatSize(file.size)}</span>}
+                                            {file && <span className="text-[10px] text-primary mt-1">{formatSize(file.size)}</span>}
                                             <input type="file" className="hidden" onChange={handleFileChange} />
                                         </div>
                                     </label>
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold uppercase tracking-wide text-[#616161] ml-1">{t('archive.uploadModal.nameLabel')}</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-wide text-tertiary ml-1">{t('archive.uploadModal.nameLabel')}</label>
                                     <input
                                         type="text"
                                         value={title}
                                         onChange={(e) => setTitle(e.target.value)}
-                                        className="w-full h-10 px-4 bg-[#F5F5F5] border border-transparent rounded-md focus:bg-white focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7] text-[#242424] font-medium placeholder-[#888888] transition-all text-sm outline-none"
+                                        className="w-full h-10 px-4 bg-surface-2 border border-transparent rounded-lg focus:bg-surface focus:border-primary focus:ring-1 focus:ring-primary text-secondary font-medium placeholder-muted-foreground transition-all duration-[var(--duration-fast)] text-sm outline-none"
                                         placeholder={t('archive.name_placeholder')}
                                         required
                                     />
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold uppercase tracking-wide text-[#616161] ml-1">{t('archive.uploadModal.descLabel')}</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-wide text-tertiary ml-1">{t('archive.uploadModal.descLabel')}</label>
                                     <textarea
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
-                                        className="w-full px-4 py-3 bg-[#F5F5F5] border border-transparent rounded-md focus:bg-white focus:border-[#5B5FC7] focus:ring-1 focus:ring-[#5B5FC7] text-[#242424] font-medium placeholder-[#888888] transition-all min-h-[90px] resize-none text-sm outline-none"
+                                        className="w-full px-4 py-3 bg-surface-2 border border-transparent rounded-lg focus:bg-surface focus:border-primary focus:ring-1 focus:ring-primary text-secondary font-medium placeholder-muted-foreground transition-all duration-[var(--duration-fast)] min-h-[90px] resize-none text-sm outline-none"
                                         placeholder={t('archive.description_placeholder')}
                                     />
                                 </div>
@@ -497,14 +497,14 @@ const UploadArchiveModal: React.FC<{
                                 type="button"
                                 onClick={onClose}
                                 disabled={isUploading}
-                                className="flex-1 h-10 bg-white border border-[#E0E0E0] text-[#616161] rounded-md font-bold hover:bg-[#F5F5F5] transition-all disabled:opacity-50 text-sm"
+                                className="flex-1 h-10 bg-surface border border-border text-tertiary rounded-lg font-bold hover:bg-surface-2 hover:text-secondary transition-all duration-[var(--duration-normal)] disabled:opacity-50 text-sm active:translate-y-[0.5px]"
                             >
                                 {t('common.cancel')}
                             </button>
                             <button
                                 type="submit"
                                 disabled={(!file && !isFolder) || (!title && !isFolder) || isUploading}
-                                className="flex-[2] h-10 bg-[#5B5FC7] text-white rounded-md font-bold hover:bg-[#4f52b2] active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 transition-all shadow-sm flex items-center justify-center text-sm"
+                                className="flex-[2] h-10 bg-primary text-white rounded-lg font-bold hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 transition-all duration-[var(--duration-normal)] shadow-subtle hover:shadow-medium hover:translate-y-[-0.5px] active:shadow-subtle active:translate-y-[0.5px] flex items-center justify-center text-sm"
                             >
                                 {isUploading ? t('archive.uploading') : (isFolder ? t('archive.upload_folder_button') : t('archive.uploadModal.submit'))}
                             </button>
@@ -1555,14 +1555,14 @@ const ArchivePage: React.FC = () => {
         >
             {/* Drag and Drop Overlay */}
             {isDragging && (
-                <div className="absolute inset-0 z-[60] flex items-center justify-center bg-primary/5 backdrop-blur-[2px] border-4 border-dashed border-primary/40 m-4 rounded-2xl animate-in scale-in duration-300">
-                    <div className="bg-surface px-10 py-8 rounded-2xl shadow-m3-3 flex flex-col items-center space-y-4 border border-border scale-110">
-                        <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shadow-sm animate-bounce">
+                <div className="absolute inset-0 z-[60] flex items-center justify-center bg-primary/5 backdrop-blur-[2px] border-4 border-dashed border-primary/40 m-4 rounded-lg animate-in scale-in duration-[var(--duration-slow)]">
+                    <div className="bg-surface px-10 py-8 rounded-lg shadow-strong flex flex-col items-center space-y-4 border border-border scale-110">
+                        <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center text-primary shadow-sm animate-bounce">
                             <Plus size={32} strokeWidth={2.5} />
                         </div>
                         <div className="text-center">
-                            <h3 className="text-xl font-black text-foreground tracking-tight uppercase tracking-widest">{t('archive.dropzone.release')}</h3>
-                            <p className="text-xs text-muted-foreground font-bold opacity-70">{t('archive.dropzone.tip')}</p>
+                <h3 className="text-xl font-black text-secondary tracking-tight uppercase tracking-widest">{t('archive.dropzone.release')}</h3>
+                <p className="text-xs text-tertiary font-bold">{t('archive.dropzone.tip')}</p>
                         </div>
                     </div>
                 </div>
@@ -1593,8 +1593,8 @@ const ArchivePage: React.FC = () => {
                             <button
                                 onClick={() => setViewMode('grid')}
                                 className={cn(
-                                    "p-1.5 rounded-md transition-all duration-300",
-                                    viewMode === 'grid' ? 'bg-surface text-primary shadow-m3-1' : 'text-muted-foreground hover:bg-surface-3 hover:text-foreground'
+                                    "p-1.5 rounded-lg transition-all duration-[var(--duration-fast)]",
+                                    viewMode === 'grid' ? 'bg-surface text-primary shadow-subtle' : 'text-tertiary hover:bg-surface-3 hover:text-secondary'
                                 )}
                             >
                                 <LayoutGrid size={16} strokeWidth={2} />
@@ -1602,8 +1602,8 @@ const ArchivePage: React.FC = () => {
                             <button
                                 onClick={() => setViewMode('list')}
                                 className={cn(
-                                    "p-1.5 rounded-md transition-all duration-300",
-                                    viewMode === 'list' ? 'bg-surface text-primary shadow-m3-1' : 'text-muted-foreground hover:bg-surface-3 hover:text-foreground'
+                                    "p-1.5 rounded-lg transition-all duration-[var(--duration-fast)]",
+                                    viewMode === 'list' ? 'bg-surface text-primary shadow-subtle' : 'text-tertiary hover:bg-surface-3 hover:text-secondary'
                                 )}
                             >
                                 <List size={16} strokeWidth={2} />
@@ -1620,25 +1620,25 @@ const ArchivePage: React.FC = () => {
                                     title={t('archive.createFolder')}
                                     className="bg-surface border-border hover:border-primary/30"
                                 />
-                                <Button
-                                    variant="primary"
-                                    size="md"
-                                    icon={<Plus size={18} />}
-                                    onClick={() => setIsUploadModalOpen(true)}
-                                    className="shadow-m3-2"
-                                >
-                                    <span className="hidden sm:inline">{t('archive.upload')}</span>
-                                </Button>
-                                {clipboard && (
-                                    <Button
-                                        variant="primary"
-                                        size="md"
-                                        icon={<ClipboardList size={18} />}
-                                        onClick={handlePasteItems}
-                                        title={t('archive.button_paste', { count: clipboard.items.length })}
-                                        className="bg-green-600 hover:bg-green-700 shadow-m3-2"
-                                    />
-                                )}
+                        <Button
+                            variant="primary"
+                            size="md"
+                            icon={<Plus size={18} />}
+                            onClick={() => setIsUploadModalOpen(true)}
+                            className="shadow-medium hover:shadow-strong hover:translate-y-[-0.5px] active:shadow-medium active:translate-y-[0.5px] transition-all duration-[var(--duration-normal)]"
+                        >
+                            <span className="hidden sm:inline">{t('archive.upload')}</span>
+                        </Button>
+                        {clipboard && (
+                            <Button
+                                variant="primary"
+                                size="md"
+                                icon={<ClipboardList size={18} />}
+                                onClick={handlePasteItems}
+                                title={t('archive.button_paste', { count: clipboard.items.length })}
+                                className="bg-success hover:bg-success/90 shadow-medium hover:shadow-strong hover:translate-y-[-0.5px] active:shadow-medium active:translate-y-[0.5px] transition-all duration-[var(--duration-normal)]"
+                            />
+                        )}
                             </>
                         )}
                     </div>
@@ -1654,41 +1654,41 @@ const ArchivePage: React.FC = () => {
                 {/* Breadcrumbs */}
                 {path.length > 1 && (
                     <div className="pb-3 pt-1 animate-fade-in">
-                        <div className="flex items-center gap-2 bg-surface p-1.5 rounded-xl border border-border max-w-2xl shadow-sm overflow-hidden">
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (path.length > 1) {
-                                        const parentPath = path[path.length - 2];
-                                        handleBreadcrumbClick(parentPath, path.length - 2);
-                                    }
-                                }}
-                                className="h-8 w-8 flex items-center justify-center rounded-lg bg-surface-2 text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all shadow-sm active:scale-90"
-                            >
-                                <ArrowUp size={16} strokeWidth={2.5} />
-                            </button>
-                            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
-                                {path.map((p, i) => (
-                                    <React.Fragment key={i}>
-                                        {i > 0 && <ChevronRight size={14} className="text-muted-foreground/30 shrink-0 mx-0.5" strokeWidth={3} />}
+                        <div className="flex items-center gap-2 bg-surface p-1.5 rounded-lg border border-border max-w-2xl shadow-sm overflow-hidden">
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                handleBreadcrumbClick(p, i);
+                                                if (path.length > 1) {
+                                                    const parentPath = path[path.length - 2];
+                                                    handleBreadcrumbClick(parentPath, path.length - 2);
+                                                }
                                             }}
-                                            className={cn(
-                                                "flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all text-xs font-black shrink-0 whitespace-nowrap",
-                                                i === path.length - 1
-                                                    ? 'bg-primary/10 text-primary shadow-sm border border-primary/10'
-                                                    : 'text-muted-foreground hover:text-foreground hover:bg-surface-2'
-                                            )}
+                                            className="h-8 w-8 flex items-center justify-center rounded-lg bg-surface-2 text-tertiary hover:text-primary hover:bg-primary/5 transition-all duration-[var(--duration-fast)] shadow-sm active:scale-90"
                                         >
-                                            {i === 0 ? <Home size={14} strokeWidth={2.5} /> : <FolderIcon size={14} className="text-amber-500" strokeWidth={2.5} fill="currentColor" fillOpacity={0.2} />}
-                                            <span>{i === 0 ? (activeTab === 'global' ? t('archive.breadcrumb_all') : t('archive.breadcrumb_my')) : p.name}</span>
+                                            <ArrowUp size={16} strokeWidth={2.5} />
                                         </button>
-                                    </React.Fragment>
-                                ))}
-                            </div>
+                                        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
+                                            {path.map((p, i) => (
+                                                <React.Fragment key={i}>
+                                                    {i > 0 && <ChevronRight size={14} className="text-tertiary/40 shrink-0 mx-0.5" strokeWidth={3} />}
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleBreadcrumbClick(p, i);
+                                                        }}
+                                                        className={cn(
+                                                            "flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-[var(--duration-fast)] text-xs font-black shrink-0 whitespace-nowrap",
+                                                            i === path.length - 1
+                                                                ? 'bg-primary/10 text-primary shadow-sm border border-primary/10'
+                                                                : 'text-tertiary hover:text-secondary hover:bg-surface-2'
+                                                        )}
+                                                    >
+                                                        {i === 0 ? <Home size={14} strokeWidth={2.5} /> : <FolderIcon size={14} className="text-warning" strokeWidth={2.5} fill="currentColor" fillOpacity={0.2} />}
+                                                        <span>{i === 0 ? (activeTab === 'global' ? t('archive.breadcrumb_all') : t('archive.breadcrumb_my')) : p.name}</span>
+                                                    </button>
+                                                </React.Fragment>
+                                            ))}
+                                        </div>
                         </div>
                     </div>
                 )}
@@ -1697,7 +1697,7 @@ const ArchivePage: React.FC = () => {
                     {isLoading ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-pulse pt-4">
                             {[1, 2, 3, 4, 5, 8].map(i => (
-                                <div key={i} className="h-44 bg-surface rounded-2xl border border-border/50 shadow-sm" />
+                                <div key={i} className="h-44 bg-surface rounded-lg border border-border/50 shadow-sm" />
                             ))}
                         </div>
                     ) : (
@@ -1713,17 +1713,17 @@ const ArchivePage: React.FC = () => {
                                         onClick={() => {
                                             setPath([{ id: null, name: 'Root' }, { id: null, unitId: null, name: t('archive.allDepartments') }]);
                                         }}
-                                        className="group bg-surface rounded-3xl border border-border p-10 hover:shadow-m3-3 hover:border-primary/20 transition-all duration-500 cursor-pointer flex flex-col items-center text-center space-y-6 relative overflow-hidden active:scale-[0.98]"
+                                        className="group bg-surface rounded-lg border border-border p-10 hover:shadow-strong hover:border-primary/20 transition-all duration-[var(--duration-slow)] cursor-pointer flex flex-col items-center text-center space-y-6 relative overflow-hidden active:scale-[0.98]"
                                     >
                                         <div className="absolute top-0 left-0 w-full h-1.5 bg-primary/10 group-hover:bg-primary transition-colors" />
-                                        <div className="w-24 h-24 bg-primary/5 rounded-3xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-m3-1 group-hover:scale-110 group-hover:rotate-3">
+                                        <div className="w-24 h-24 bg-primary/5 rounded-lg flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-[var(--duration-slow)] shadow-subtle group-hover:scale-110 group-hover:rotate-3">
                                             <HardDrive size={48} strokeWidth={2} />
                                         </div>
                                         <div>
-                                            <h3 className="text-2xl font-black text-foreground group-hover:text-primary transition-colors mb-3 tracking-tight uppercase">
+                                            <h3 className="text-2xl font-black text-secondary group-hover:text-primary transition-colors mb-3 tracking-tight uppercase">
                                                 {t('archive.allDepartments')}
                                             </h3>
-                                            <p className="text-sm text-muted-foreground font-bold leading-relaxed max-w-xs opacity-70">
+                                            <p className="text-sm text-tertiary font-bold leading-relaxed max-w-xs">
                                                 {t('archive.drive_global_desc')}
                                             </p>
                                         </div>
@@ -1738,18 +1738,18 @@ const ArchivePage: React.FC = () => {
                                         onClick={() => {
                                             handleTabChange('mine');
                                         }}
-                                        className="group bg-surface rounded-3xl border border-border p-10 hover:shadow-m3-3 hover:border-amber-500/20 transition-all duration-500 cursor-pointer flex flex-col items-center text-center space-y-6 relative overflow-hidden active:scale-[0.98]"
+                                        className="group bg-surface rounded-lg border border-border p-10 hover:shadow-strong hover:border-warning/20 transition-all duration-[var(--duration-slow)] cursor-pointer flex flex-col items-center text-center space-y-6 relative overflow-hidden active:scale-[0.98]"
                                     >
-                                        <div className="absolute top-0 left-0 w-full h-1.5 bg-amber-500/10 group-hover:bg-amber-600 transition-colors" />
-                                        <div className="w-24 h-24 bg-amber-500/5 rounded-3xl flex items-center justify-center text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-all duration-500 shadow-m3-1 group-hover:scale-110 group-hover:-rotate-3">
+                                        <div className="absolute top-0 left-0 w-full h-1.5 bg-warning/10 group-hover:bg-warning transition-colors" />
+                                        <div className="w-24 h-24 bg-warning/5 rounded-lg flex items-center justify-center text-warning group-hover:bg-warning group-hover:text-white transition-all duration-[var(--duration-slow)] shadow-subtle group-hover:scale-110 group-hover:-rotate-3">
                                             <HardDrive size={48} strokeWidth={2} />
                                         </div>
                                         <div>
-                                            <h3 className="text-2xl font-black text-foreground group-hover:text-amber-600 transition-colors mb-3 tracking-tight uppercase">
+                                            <h3 className="text-2xl font-black text-secondary group-hover:text-warning transition-colors mb-3 tracking-tight uppercase">
                                                 {t('archive.myDepartment')}
                                             </h3>
-                                            <p className="text-sm text-muted-foreground font-bold leading-relaxed max-w-xs opacity-70">
-                                                {t('archive.drive_dept_desc')}
+                                            <p className="text-sm text-tertiary font-bold leading-relaxed max-w-xs">
+                                                {t('archive.drive_mine_desc')}
                                             </p>
                                         </div>
                                         <div className="flex items-center gap-2 text-amber-600 font-black text-xs uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all translate-y-3 group-hover:translate-y-0">
@@ -1768,24 +1768,24 @@ const ArchivePage: React.FC = () => {
                                             onMouseLeave={() => setHoveredItem(null)}
                                             onClick={() => navigateToUnit(unit)}
                                             className={cn(
-                                                "group bg-surface rounded-2xl border border-border p-6 hover:shadow-m3-2 hover:border-primary/20 transition-all duration-300 cursor-pointer relative flex flex-col items-center text-center space-y-4 active:scale-95",
+                                                "group bg-surface rounded-lg border border-border p-6 hover:shadow-medium hover:border-primary/20 transition-all duration-[var(--duration-normal)] cursor-pointer relative flex flex-col items-center text-center space-y-4 active:scale-95",
                                                 activeUser?.unit_id && unit.id === activeUser.unit_id ? 'ring-2 ring-primary/20 bg-primary/5' : ''
                                             )}
                                         >
-                                            <div className="w-16 h-16 bg-surface-2 rounded-2xl flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm">
+                                            <div className="w-16 h-16 bg-surface-2 rounded-lg flex items-center justify-center text-tertiary group-hover:bg-primary group-hover:text-white transition-all duration-[var(--duration-normal)] shadow-sm">
                                                 <Building2 size={32} strokeWidth={1.5} />
                                             </div>
-                                            <div>
-                                                <h3 className="font-black text-foreground group-hover:text-primary transition-colors text-sm tracking-tight">
-                                                    {unit.name}
-                                                </h3>
-                                                <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1 opacity-60">
-                                                    {unit.description || t('archive.departmentArchive')}
-                                                </p>
-                                            </div>
+                                    <div>
+                                        <h3 className="font-black text-secondary group-hover:text-primary transition-colors text-sm tracking-tight">
+                                            {unit.name}
+                                        </h3>
+                                        <p className="text-[10px] text-tertiary font-bold uppercase tracking-widest mt-1">
+                                            {t('archive.unit_description')}
+                                        </p>
+                                    </div>
                                             {activeUser?.unit_id && unit.id === activeUser.unit_id && (
                                                 <div className="absolute top-3 right-3 flex flex-col items-end">
-                                                    <div className="px-2 py-0.5 bg-primary text-white text-[9px] font-black rounded-full shadow-m3-1 uppercase tracking-widest">
+                                                    <div className="px-2 py-0.5 bg-primary text-white text-[9px] font-black rounded-full shadow-subtle uppercase tracking-widest">
                                                         {t('archive.yourWorkspace')}
                                                     </div>
                                                 </div>
@@ -1794,28 +1794,28 @@ const ArchivePage: React.FC = () => {
                                     ))}
                                 </div>
                             ) : (activeTab === 'mine' && !activeUser?.unit_id) ? (
-                                <div className="flex-1 flex flex-col items-center justify-center w-full bg-surface-2/40 rounded-3xl border-2 border-dashed border-border animate-scale-in">
-                                    <div className="w-24 h-24 bg-destructive/5 rounded-3xl flex items-center justify-center text-destructive mb-8 shadow-inner">
+                                <div className="flex-1 flex flex-col items-center justify-center w-full bg-surface-2/40 rounded-lg border-2 border-dashed border-border animate-scale-in">
+                                    <div className="w-24 h-24 bg-danger/5 rounded-lg flex items-center justify-center text-danger mb-8 shadow-inner">
                                         <Building2 size={48} strokeWidth={1.5} />
                                     </div>
-                                    <h3 className="text-2xl font-black text-foreground mb-4 text-center tracking-tight uppercase">{t('archive.noUnitTitle')}</h3>
-                                    <p className="text-muted-foreground font-bold text-center max-w-sm mb-10 leading-relaxed opacity-70">
+                                    <h3 className="text-2xl font-black text-secondary mb-4 text-center tracking-tight uppercase">{t('archive.noUnitTitle')}</h3>
+                                    <p className="text-tertiary font-bold text-center max-w-sm mb-10 leading-relaxed opacity-70">
                                         {t('archive.noUnitDesc')}
                                     </p>
-                                    <div className="px-8 py-5 bg-surface rounded-2xl border border-border shadow-m3-1 flex items-center gap-4 text-sm text-foreground font-black">
-                                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 shadow-sm">
+                                    <div className="px-8 py-5 bg-surface rounded-lg border border-border shadow-subtle flex items-center gap-4 text-sm text-secondary font-black">
+                                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0 shadow-sm">
                                             <Shield size={20} strokeWidth={2.5} />
                                         </div>
                                         <span className="uppercase tracking-widest text-xs">{t('archive.contact_admin')}</span>
                                     </div>
                                 </div>
                             ) : (filteredData.folders?.length === 0 && filteredData.files?.length === 0) ? (
-                                <div className="flex-1 flex flex-col items-center justify-center w-full bg-surface-2/30 rounded-3xl border-2 border-dashed border-border animate-scale-in py-20">
-                                    <div className="w-24 h-24 bg-surface-2 rounded-3xl flex items-center justify-center text-muted-foreground/20 mb-6 shadow-inner">
-                                        <ArchiveIcon size={48} strokeWidth={1} />
+                                <div className="flex-1 flex flex-col items-center justify-center w-full bg-surface-2/30 rounded-lg border-2 border-dashed border-border animate-scale-in py-20">
+                                    <div className="w-24 h-24 bg-surface-2 rounded-lg flex items-center justify-center text-tertiary/20 mb-6 shadow-inner">
+                                        <ArchiveIcon size={40} className="mx-auto mb-4 opacity-10 text-tertiary" strokeWidth={1} />
                                     </div>
-                                    <h3 className="text-xl font-black text-foreground mb-3 tracking-tight uppercase">{t('archive.emptyTitle')}</h3>
-                                    <p className="text-xs text-muted-foreground font-bold text-center max-w-xs mb-10 leading-relaxed opacity-60">
+                                    <h3 className="text-xl font-black text-secondary mb-3 tracking-tight uppercase">{t('archive.emptyTitle')}</h3>
+                                    <p className="text-xs text-tertiary font-bold text-center max-w-xs mb-10 leading-relaxed">
                                         {t('archive.emptyDesc')}
                                     </p>
                                     {canInteract && (
@@ -1825,7 +1825,7 @@ const ArchivePage: React.FC = () => {
                                                 variant="secondary"
                                                 size="lg"
                                                 icon={<FolderPlus size={18} />}
-                                                className="font-black uppercase tracking-widest text-[10px] px-8"
+                                                className="font-black uppercase tracking-widest text-[10px] px-8 shadow-subtle hover:shadow-medium hover:translate-y-[-0.5px] active:shadow-subtle active:translate-y-[0.5px] transition-all duration-[var(--duration-normal)]"
                                             >
                                                 {t('archive.button_create_folder_fallback')}
                                             </Button>
@@ -1834,7 +1834,7 @@ const ArchivePage: React.FC = () => {
                                                 variant="primary"
                                                 size="lg"
                                                 icon={<Upload size={18} />}
-                                                className="font-black uppercase tracking-widest text-[10px] px-8 shadow-m3-2"
+                                                className="font-black uppercase tracking-widest text-[10px] px-8 shadow-medium hover:shadow-strong hover:translate-y-[-0.5px] active:shadow-medium active:translate-y-[0.5px] transition-all duration-[var(--duration-normal)]"
                                             >
                                                 {t('archive.button_upload_fallback')}
                                             </Button>
@@ -1844,9 +1844,9 @@ const ArchivePage: React.FC = () => {
                             ) : (
                                 /* View based on toggle */
                                 viewMode === 'list' ? (
-                                    <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden animate-fade-in" onClick={(e) => e.stopPropagation()}>
+                                    <div className="bg-surface rounded-lg border border-border shadow-sm overflow-hidden animate-fade-in" onClick={(e) => e.stopPropagation()}>
                                         {/* Minimalist Explorer Header */}
-                                        <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-surface-2 border-b border-border text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] select-none items-center">
+                                        <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-surface-2 border-b border-border text-[9px] font-black text-tertiary uppercase tracking-[0.2em] select-none items-center">
                                             <div
                                                 className="col-span-6 flex items-center cursor-pointer hover:text-primary transition-colors group"
                                                 onClick={() => handleSort('name')}
@@ -2040,15 +2040,15 @@ const ArchivePage: React.FC = () => {
                 {
                     deleteConfirm.isOpen && (
                         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })} />
-                            <div className="bg-surface rounded-2xl w-full max-w-md p-8 shadow-m3-4 relative animate-in scale-in duration-300 border border-border">
-                                <div className="w-16 h-16 bg-destructive/10 rounded-2xl flex items-center justify-center text-destructive mb-6 mx-auto shadow-sm">
+                            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-[var(--duration-slow)]" onClick={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })} />
+                            <div className="bg-surface rounded-lg w-full max-w-md p-8 shadow-strong relative animate-in scale-in duration-[var(--duration-slow)] border border-border">
+                                <div className="w-16 h-16 bg-danger/10 rounded-lg flex items-center justify-center text-danger mb-6 mx-auto shadow-sm">
                                     <Trash2 size={32} strokeWidth={2.5} />
                                 </div>
-                                <h3 className="text-xl font-black text-foreground text-center mb-2 tracking-tight uppercase">
+                                <h3 className="text-xl font-black text-secondary text-center mb-2 tracking-tight uppercase">
                                     {deleteConfirm.items.length > 1 ? t('archive.delete_multiple_confirm_title', { count: deleteConfirm.items.length }) : t('archive.deleteConfirmTitle')}
                                 </h3>
-                                <p className="text-muted-foreground font-bold text-sm text-center mb-10 opacity-70">
+                                <p className="text-tertiary font-bold text-sm text-center mb-10 opacity-70">
                                     {deleteConfirm.items.length > 1
                                         ? t('archive.delete_multiple_confirm_text', { count: deleteConfirm.items.length })
                                         : deleteConfirm.items[0]?.type === 'file'
@@ -2060,7 +2060,7 @@ const ArchivePage: React.FC = () => {
                                         onClick={confirmDelete}
                                         variant="danger"
                                         size="lg"
-                                        className="w-full font-black uppercase tracking-widest text-xs shadow-m3-2"
+                                        className="w-full font-black uppercase tracking-widest text-xs shadow-medium hover:shadow-strong hover:translate-y-[-0.5px] active:shadow-medium active:translate-y-[0.5px] transition-all duration-[var(--duration-normal)]"
                                     >
                                         {t('common.delete')}
                                     </Button>
